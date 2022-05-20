@@ -1,0 +1,175 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="/dist/output.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="container flex justify-between items-center p-6 mx-auto
+        border-b border-green-400">
+            <!-- Company Name -->
+            <div class="text-lg font-bold text-blue-500">
+                (Flybot Pte Ltd)
+            </div>
+
+            <!-- Menu items -->
+            <nav class="text-lg text-blue-400 hidden lg:flex lg:justify-evenly lg:space-x-10">
+                <p class="hidden lg:inline-block">[</p>
+                <a href="index.html" class="block mt-4 lg:inline-block hover:text-gray-700 lg:mt-0">
+                    Home
+                </a>
+                <a href="apply.html" class="block mt-4 lg:inline-block hover:text-gray-700 lg:mt-0">
+                    Apply
+                </a>
+                <a href="#footer-contact" class="block hover:text-gray-700 mt-4 lg:inline-block lg:mt-0">
+                    Contact
+                </a>
+                <p class="hidden lg:inline-block">]</p>
+            </nav>
+
+
+
+            <!-- Hamburger icon -->
+            <div class="lg:hidden">
+                <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+                    <button id="buger-button"
+                        class="flex items-center px-4 py-3 border rounded text-blue-400 border-blue-400 focus:outline-none">
+
+                        <svg class="fill-blue-400 h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <title>Menu</title>
+                            <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
+                        </svg>
+                    </button>
+                </a>
+            </div>
+        </div>
+
+        <!-- Menu items Mobile -->
+        <nav id="myLinks" class="container hidden text-lg text-blue-500 text-center mx-auto
+        border-b border-green-400 bg-blue-50">
+            <a href="index.html" class="block p-4 border border-green-500
+            hover:bg-white hover:border-blue-900 hover:text-blue-900">
+                Home
+            </a>
+            <a href="apply.html" class="block p-4 border border-green-500
+            hover:bg-white hover:border-blue-900 hover:text-blue-900">
+                Apply
+            </a>
+            <a href="#footer-contact" class="block p-4 border border-green-500
+            hover:bg-white hover:border-blue-900 hover:text-blue-900">
+                Contact
+            </a>
+        </nav>
+
+    </header>
+
+    <section class="container mx-auto">
+        <!-- Job description -->
+        <div class="w-full p-10 border-b lg:border-r border-green-400">
+            <div class="w-full">
+                <h2 class="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                    Job description
+                </h2>
+                <p>As an software engineer at Flybot, you will:</p>
+                <ul class="pb-3 text-left">
+                    <li class="pl-3">-> Work on Clojure backend apps for mobile games</li>
+                    <li class="pl-3">-> Work on improving the workflow to ease the release of new apps in the future
+                    </li>
+                    <li class="pl-3">-> Take part in a data-oriented experimental stack using Clojure backend libs
+                        integrated in Unity</li>
+                    <li class="pl-3">-> Be exposed to lots of new technologies and frameworks</li>
+                    <li class="pl-3">-> Have real software engineering experience requiring professionalism and
+                        organisational skills</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Qualifications -->
+        <div class="w-full p-10 border-b bg-blue-50 lg:border-l border-green-400">
+            <div class="w-full pb-5">
+                <h2 class="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                    Qualifications
+                </h2>
+                <p>What we look for in Flybot applicants:</p>
+                <ul class="pb-3 text-left">
+                    <li class="pl-3">-> Computer Science major</li>
+                    <li class="pl-3">-> Willing to learn the functional programming language Clojure</li>
+                    <li class="pl-3">-> Proficiency in one or more of the following developer skills: Clojure, Java,
+                        JavaScript, Scala, Haskell, C/C++, PHP, Python, Ruby</li>
+                    <li class="pl-3">-> Familiar with functional programming concepts is a plus.</li>
+                    <li class="pl-3">-> Machine Learning, and Artificial Intelligence experience are a plus.</li>
+                    <li class="pl-3">-> API design skills</li>
+                    <li class="pl-3">-> At least B2 level in English</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- End goal -->
+        <div class="w-full p-10 border-b lg:border-r border-green-400">
+            <div class="w-full pb-5">
+                <h2 class="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                    End goal
+                </h2>
+                <p class=pb-3>If you are intern, we hope you will carry on with us for a full-time position in the
+                    future (depending on candidate performance and motivation).</p>
+                <p>If you are a full-timer, we hope you will gain good knowledge and independence becoming an efficient
+                    software engineer who will provide good value to our company.</p>
+            </div>
+        </div>
+
+        <!-- Application Method -->
+        <div class="w-full p-10 bg-blue-50 border-b lg:border-l border-green-400">
+            <div class="w-full">
+                <h2 class="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                    Application Method
+                </h2>
+                <p class="pb-3">Please fill this google form:</p>
+                <a href="https://docs.google.com/forms/d/e/1FAIpQLScq-J0zaqLhWYtllUkBL3OpY-t7OiqJEKPJHsbEKvM3EB1lbg/viewform"
+                    class="block text-center p-5 border rounded bg-green-50 text-blue-500 border-blue-500 focus:outline-none
+                    hover:bg-white hover:border-blue-900 hover:text-blue-900" target="_blank">
+                    APPLICATION FOR EMPLOYMENT
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer-contact">
+        <div class="container lg:flex lg:justify-evenly mx-auto
+        border-t border-green-400 text-center lg:text-left">
+            <div class="m-10">
+                <h3 class="text-lg text-blue-400">Address</h3>
+                <p>1 Commonwealth Lane</p>
+                <p>#08-14</p>
+                <p>One Commonwealth</p>
+                <p>Singapore 149544</p>
+            </div>
+            <div class="m-10">
+                <h3 class="text-lg text-blue-400">Business Hours</h3>
+                <p>Monday - Friday, 08:30 - 17:00</p>
+            </div>
+            <div class="m-10">
+                <h3 class="text-lg text-blue-400">Email</h3>
+                <p>zhengliming@basecity.com</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* Toggle between showing and hiding the navigation menu links when the user clicks on the hamburger menu / bar icon */
+        function myFunction() {
+            var x = document.getElementById("myLinks");
+            console.log(x);
+            if (x.style.display === "block") {
+                x.style.display = "none";
+            } else {
+                x.style.display = "block";
+            }
+        }
+    </script>
+</body>
+
+</html>
