@@ -1,17 +1,22 @@
 import Head from "./componenents/Head"
+import Header from "./componenents/Header";
+import Footer from "./componenents/Footer";
 import Home from "./pages/Home";
 import Apply from "./pages/Apply";
 import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
 function App() {
   return (
-    <div>
+    <div className="bg-zinc-50 text-zin-900 min-h-screen
+    dark:bg-zinc-900 dark:text-sky-50">
       <Head />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/apply" element={<Apply />} />
-        </Routes>
+          <Header />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/apply" element={<Apply />} />
+          </Routes>
+          <Footer />
       </BrowserRouter>
     </div>
 
