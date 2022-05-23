@@ -1,15 +1,11 @@
-import Header from "../componenents/Header";
-import Footer from "../componenents/Footer";
-
 function Apply() {
     return (
         <div>
-            <Header />
             <section className="container mx-auto">
                 {/* Job description */}
                 <div className="w-full p-10 border-b lg:border-r border-green-400">
                     <div className="w-full">
-                        <h2 className="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                        <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
                             Job description
                         </h2>
                         <p>As an software engineer at Flybot, you will:</p>
@@ -27,9 +23,10 @@ function Apply() {
                 </div>
 
                 {/* Qualifications */}
-                <div className="w-full p-10 border-b bg-blue-50 lg:border-l border-green-400">
+                <div className="w-full p-10 border-b bg-sky-50 lg:border-l border-green-400
+                dark:bg-zinc-800">
                     <div className="w-full pb-5">
-                        <h2 className="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                        <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
                             Qualifications
                         </h2>
                         <p>What we look for in Flybot applicants:</p>
@@ -49,7 +46,7 @@ function Apply() {
                 {/* End goal */}
                 <div className="w-full p-10 border-b lg:border-r border-green-400">
                     <div className="w-full pb-5">
-                        <h2 className="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                        <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
                             End goal
                         </h2>
                         <p className="pb-3">If you are intern, we hope you will carry on with us for a full-time position in the
@@ -60,21 +57,20 @@ function Apply() {
                 </div>
 
                 {/* Application Method */}
-                <div className="w-full p-10 bg-blue-50 border-b lg:border-l border-green-400">
+                <div className="w-full p-10 bg-sky-50 border-b lg:border-l border-green-400
+                dark:bg-zinc-800">
                     <div className="w-full">
-                        <h2 className="text-lg font-bold text-center lg:text-left text-blue-500 pb-3">
+                        <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
                             Application Method
                         </h2>
                         <p className="pb-3">Please fill this google form:</p>
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLScq-J0zaqLhWYtllUkBL3OpY-t7OiqJEKPJHsbEKvM3EB1lbg/viewform"
-                            className="block text-center p-5 border rounded bg-green-50 text-blue-500 border-blue-500 focus:outline-none
-                    hover:bg-white hover:border-blue-900 hover:text-blue-900" target="_blank" rel="noreferrer">
+                            className="block text-center p-5 rounded bg-sky-900 border border-white text-white focus:outline-none" target="_blank" rel="noreferrer">
                             APPLICATION FOR EMPLOYMENT
                         </a>
                     </div>
                 </div>
             </section>
-            <Footer />
         </div>
     );
 }
