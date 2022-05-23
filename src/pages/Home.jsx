@@ -25,7 +25,13 @@ function Home() {
                             <img src={CLojureLogo} alt="Clojure logo" />
                         </div>
 
-                        <p className="pb-3"> We use Clojure as our main programming language for development.</p>
+                        <p className="pb-3"> We use
+                            <a href="https://clojure.org/"
+                                className="underline text-blue-400"
+                                target='_blank'
+                                rel="noreferrer"
+                            > Clojure </a>
+                            Clojure as our main programming language for development.</p>
                         <p>In short, clojure is:</p>
                         <ul className="pb-3 text-left">
                             <li className="pl-3">- a Functional Programming language</li>
@@ -77,8 +83,13 @@ function Home() {
                             <img src={SuitsImage} alt="Card suits" />
                         </div>
 
-                        <p className="pb-3">We provide technical support and solutions to clients who run 18 games in total in the
-                            game platform - Golden Island.</p>
+                        <p className="pb-3">We provide technical support and solutions to clients who run 18 games in total in the platform
+                            <a href="https://www.80166.com/"
+                                className="underline text-blue-400"
+                                target='_blank'
+                                rel="noreferrer"
+                            > Golden Island</a>.
+                        </p>
                         <p className="pb-3">Lots of the server-side code base is written in Clojure such as user account,
                             authentification, coins top up, message, activity, tasks/rewards, data analysis and some web pages.
                         </p>
@@ -101,13 +112,27 @@ function Home() {
                         <p className="pb-3">Java (Clojure) - JavaScript (ClojureScript) - CLR (ClojureCLR)</p>
                         <p className="pb-3">However, the ClojureCLR does not work with Unity as it has limited control over the
                             generated dlls and IL2CPP for iOS is not allowed with the DLR used by ClojureCLR.</p>
-                        <p className="pb-3">Hence the MAGIC bootstrapped compiler written in Clojure targeting the CLR. We are now
+                        <p className="pb-3">Hence the
+                            <a href="https://github.com/nasser/magic"
+                                className="underline text-blue-400"
+                                target='_blank'
+                                rel="noreferrer"
+                                aria-label='Github'
+                            > MAGIC </a>
+                            bootstrapped compiler written in Clojure targeting the CLR. We are now
                             able to compile Clojure libraries easily to dlls and import and use them in our Unity games.</p>
                         <p>We are currently working on:</p>
                         <ul className="pb-3 text-left">
                             <li className="pl-3">- improving the performance of the compiler</li>
                             <li className="pl-3">- improving the dependencies management to easily import Clojure libraries to
-                                Unity projects via Nostrand</li>
+                                Unity projects via
+                                <a href="https://github.com/nasser/nostrand"
+                                    className="underline text-blue-400"
+                                    target='_blank'
+                                    rel="noreferrer"
+                                    aria-label='Github'
+                                > Nostrand </a>
+                            </li>
                             <li className="pl-3">- integrate Clojure directly to Unity using the Entity Component System (ECS)</li>
                         </ul>
                     </div>
