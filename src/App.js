@@ -7,7 +7,7 @@ import { Route, Routes, BrowserRouter } from 'react-router-dom';
 
 function App() {
   return (
-    <div className="bg-zinc-50 text-zin-900 min-h-screen
+    <div className="bg-zinc-50 text-zin-900
     dark:bg-zinc-900 dark:text-sky-50">
       <Head />
       <BrowserRouter>
