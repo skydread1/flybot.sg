@@ -1,7 +1,7 @@
 function Footer() {
     return (
-        <footer id="footer-contact">
-            <div className="container lg:flex lg:justify-evenly mx-auto
+        <footer id="footer-contact" >
+            <div className="container lg:flex lg:justify-evenly mx-auto p-6
                             border-t border-green-400 text-center lg:text-left">
                 <div className="m-10">
                     <h3 className="text-lg font-bold text-sky-400

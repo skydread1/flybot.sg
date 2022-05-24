@@ -14,8 +14,8 @@ function Home() {
                 {/* Clojure */}
                 <div
                     className="lg:flex lg:space-x-10 w-full justify-center items-center p-10 border-b lg:border-r border-green-400
-                    group hover:shadow-lg
-                    dark:shadow-sky-200">
+                    group hover:shadow-md hover:border relative z-50
+                    dark:shadow-green-400">
                     <div className="hidden lg:block w-full lg:w-1/4 group-hover:animate-pulse">
                         <img src={ClojureLogo} alt="Clojure logo"
                             className="w-1/2 dark:hidden" />
@@ -58,8 +58,8 @@ function Home() {
                 {/* Functional Programming */}
                 <div
                     className="lg:flex lg:space-x-10 w-full justify-center items-center p-10 border-b bg-sky-50 lg:border-l border-green-400
-                    group hover:shadow-lg 
-                    dark:bg-zinc-800 dark:shadow-sky-200">
+                    group hover:shadow-md hover:border relative z-40
+                    dark:bg-zinc-800 dark:shadow-green-400">
                     <div className="w-full lg:w-2/4">
                         <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 lg:pb-3
                         dark:text-sky-200">
@@ -92,8 +92,8 @@ function Home() {
                 {/* Client */}
                 <div
                     className="lg:flex lg:space-x-10 w-full justify-center items-center p-10 border-b lg:border-r border-green-400
-                    group hover:shadow-lg
-                    dark:shadow-sky-200">
+                    group hover:shadow-md hover:border relative z-30
+                    dark:shadow-green-400">
                     <div className="hidden lg:block lg:w-1/4 group-hover:animate-pulse">
                         <img src={SuitsImage} alt="4 suits of a classic deck"
                             className="w-1/2 dark:hidden" />
@@ -130,8 +130,8 @@ function Home() {
                 {/* Magic */}
                 <div
                     className="lg:flex lg:space-x-10 w-full justify-center items-center p-10 bg-sky-50 lg:border-l border-green-400
-                    group hover:shadow-lg 
-                    dark:bg-zinc-800 dark:shadow-sky-200">
+                    group hover:shadow-md hover:border relative z-20
+                    dark:bg-zinc-800 dark:shadow-green-400">
                     <div className="w-full lg:w-2/4">
                         <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 lg:pb-3
                         dark:text-sky-200">
