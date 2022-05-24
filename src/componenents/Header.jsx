@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from 'react-router-dom';
 import useDarkMode from '../hooks/useDarkMode'
+import flybotLogo from '../assets/flybot-logo.png'
 
 function Header() {
     // dark mode hook
@@ -18,38 +19,46 @@ function Header() {
         <header>
             <div className="container flex justify-between items-center p-6 mx-auto border-b border-green-500">
                 {/* Company Name */}
-                <div className="text-lg font-bold text-sky-600
-                dark:text-sky-100">
-                    (Flybot Pte Ltd)
+                <div>
+                    <img src={flybotLogo} alt="FLybot logo"
+                        className="w-16 lg:w-28"/>
                 </div>
 
                 {/* Dark Mode switch*/}
-                <div onClick={() => setTheme(nextTheme)}>
+                <div className="cursor-pointer group"
+                    onClick={() => setTheme(nextTheme)}>
                     {nextTheme === 'light'
                         ?
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 fill-sky-200" viewBox="0 0 20 20">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            className="w-8 fill-sky-200 group-hover:fill-yellow-200 group-hover:animate-pulse"
+                            viewBox="0 0 20 20">
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                         </svg>
                         :
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 fill-sky-400" viewBox="0 0 20 20">
+                        <svg xmlns="http://www.w3.org/2000/svg"
+                            className="w-8 fill-sky-400 group-hover:fill-red-400 group-hover:animate-pulse"
+                            viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
                         </svg>
                     }
                 </div>
 
                 {/* Menu items */}
-                <nav className="text-lg text-sky-400 hidden lg:flex lg:justify-evenly lg:space-x-10
+                <nav className="text-lg text-sky-400 hidden lg:flex lg:justify-evenly lg:space-x-10 
                 dark:text-sky-200">
                     <p className="hidden lg:inline-block">[</p>
                     <Link to="/" className="block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0
+                    hover:animate-pulse
                     dark:hover:text-white">
                         Home
                     </Link>
                     <Link to="/apply" className="block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0
+                    hover:animate-pulse
                     dark:hover:text-white">
                         Apply
                     </Link>
                     <a href="#footer-contact" className="block mt-4 hover:text-zinc-900 lg:inline-block lg:mt-0
+                    hover:animate-pulse
                     dark:hover:text-white">
                         Contact
                     </a>
