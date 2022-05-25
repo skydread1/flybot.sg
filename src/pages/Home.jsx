@@ -42,15 +42,15 @@ function Home() {
                                 target='_blank'
                                 rel="noreferrer"
                             > Clojure </a>
-                            Clojure as our main programming language for development.</p>
-                        <p>In short, clojure is:</p>
+                            as our main programming language for development.</p>
+                        <p>In short, Clojure is:</p>
                         <ul className="list-disc list-inside pb-3 text-left">
-                            <li>a Functional Programming language</li>
-                            <li>a member of the Lisp family of languages</li>
-                            <li>has a powerful runtime polymorphism</li>
-                            <li>simplifies multi-threaded programming</li>
-                            <li>hosted on the JVM</li>
-                            <li>a dynamic environment</li>
+                            <li>A Functional Programming language</li>
+                            <li>A member of the Lisp family of languages</li>
+                            <li>A dynamic environment</li>
+                            <li>Having a powerful runtime polymorphism</li>
+                            <li>Simplifying multi-threaded programming</li>
+                            <li>Hosted on the JVM</li>
                         </ul>
                     </div>
                 </div>
@@ -122,7 +122,7 @@ function Home() {
                             > Golden Island</a>.
                         </p>
                         <p className="pb-3">Lots of the server-side code base is written in Clojure such as user account,
-                            authentification, coins top up, message, activity, tasks/rewards, data analysis and some web pages.
+                            authentication, coins top up, message, activity, tasks/rewards, data analysis and some web pages.
                         </p>
                     </div>
                 </div>
@@ -140,9 +140,9 @@ function Home() {
 
                         {/* Image for Mobile */}
                         <div className="lg:hidden mx-auto">
-                            <img src={BinaryImage} alt="Spell the word love in banary"
+                            <img src={BinaryImage} alt="Spell the word love in binary"
                                 className="w-1/2 mx-auto dark:hidden" />
-                            <img src={BinaryImageDark} alt="Spell the word love in banary"
+                            <img src={BinaryImageDark} alt="Spell the word love in binary"
                                 className="w-1/2 mx-auto hidden dark:block" />
                         </div>
 
@@ -160,10 +160,9 @@ function Home() {
                             bootstrapped compiler written in Clojure targeting the CLR. We are now
                             able to compile Clojure libraries easily to dlls and import and use them in our Unity games.</p>
                         <p>We are currently working on:</p>
-                        <ul className="pb-3 text-left">
-                            <li className="pl-3">- improving the performance of the compiler</li>
-                            <li className="pl-3">- improving the dependencies management to easily import Clojure libraries to
-                                Unity projects via
+                        <ul className="list-disc list-inside pb-3 text-left">
+                            <li className="pl-3">Improving the performance of the compiler</li>
+                            <li className="pl-3">Improving the deps/package/project management tool
                                 <a href="https://github.com/nasser/nostrand"
                                     className="underline text-sky-400"
                                     target='_blank'
@@ -171,13 +170,13 @@ function Home() {
                                     aria-label='Github'
                                 > Nostrand </a>
                             </li>
-                            <li className="pl-3">- integrate Clojure directly to Unity using the Entity Component System (ECS)</li>
+                            <li className="pl-3">Integrating Clojure directly to Unity using the Entity Component System (ECS)</li>
                         </ul>
                     </div>
                     <div className="hidden lg:block w-full lg:w-1/4 group-hover:animate-pulse">
-                        <img src={BinaryImage} alt="Spell the word love in banary"
+                        <img src={BinaryImage} alt="Spell the word love in binary"
                             className="w-1/2 dark:hidden" />
-                        <img src={BinaryImageDark} alt="Spell the word love in banary"
+                        <img src={BinaryImageDark} alt="Spell the word love in binary"
                             className="w-1/2 hidden dark:block" />
                     </div>
                 </div>
