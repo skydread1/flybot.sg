@@ -11,15 +11,15 @@ function Apply() {
                             Job description
                         </h2>
                         <p>As an software engineer (full-time or intern) at Flybot, you will:</p>
-                        <ul className="pb-3 text-left">
-                            <li className="pl-3">- Work on Clojure backend apps for mobile games</li>
-                            <li className="pl-3">- Work on improving the workflow to ease the release of new apps in the future
+                        <ul className="list-disc list-inside pb-3 text-left">
+                            <li className="pl-3">Work on Clojure backend apps for mobile games</li>
+                            <li className="pl-3">Work on improving the workflow to ease the release of new apps in the future
                             </li>
-                            <li className="pl-3">- Take part in a data-oriented experimental stack using Clojure backend libs
+                            <li className="pl-3">Take part in a data-oriented experimental stack using Clojure backend libs
                                 integrated in Unity</li>
-                            <li className="pl-3">- Be exposed to lots of new technologies and frameworks</li>
-                            <li className="pl-3">- Have real software engineering experience requiring professionalism and
-                                organisational skills</li>
+                            <li className="pl-3">Be exposed to lots of new technologies and frameworks</li>
+                            <li className="pl-3">Have a real software engineering experience requiring professionalism and
+                                organizational skills</li>
                         </ul>
                     </div>
                 </div>
@@ -27,9 +27,9 @@ function Apply() {
                 {/* Qualifications */}
                 <div className="w-full p-10 border-b bg-sky-50 lg:border-l border-green-400
                 dark:bg-zinc-800
-                hover:shadow-md hover:border relative z-50
+                hover:shadow-md hover:border relative z-40
               dark:shadow-green-400">
-                    <div className="w-full pb-5">
+                    <div className="w-full">
                         <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
                             Qualifications
                         </h2>
@@ -49,9 +49,9 @@ function Apply() {
 
                 {/* End goal */}
                 <div className="w-full p-10 border-b lg:border-r border-green-400
-                hover:shadow-md hover:border relative z-50
+                hover:shadow-md hover:border relative z-30
               dark:shadow-green-400">
-                    <div className="w-full pb-5">
+                    <div className="w-full">
                         <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
                             End goal
                         </h2>
@@ -65,7 +65,7 @@ function Apply() {
                 {/* Application Method */}
                 <div className="w-full p-10 bg-sky-50 border-b lg:border-l border-green-400
                 dark:bg-zinc-800
-                hover:shadow-md hover:border relative z-50
+                hover:shadow-md hover:border relative z-20
               dark:shadow-green-400">
                     <div className="w-full">
                         <h2 className="text-lg font-bold text-center lg:text-left text-sky-500 pb-3">
@@ -73,10 +73,10 @@ function Apply() {
                         </h2>
                         <p className="pb-3">Please fill this google form:</p>
                         <a href="https://docs.google.com/forms/d/e/1FAIpQLScq-J0zaqLhWYtllUkBL3OpY-t7OiqJEKPJHsbEKvM3EB1lbg/viewform"
-                            className="block text-center lg:w-1/4 p-5 rounded bg-sky-900 border border-white text-white
+                            className="block text-center lg:w-1/4 p-4 rounded bg-sky-900 border border-white text-white
                             focus:outline-none hover:border-black hover:text-black"
                             target="_blank" rel="noreferrer">
-                            APPLICATION FOR EMPLOYMENT
+                            APPLY
                         </a>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import useDarkMode from '../hooks/useDarkMode'
 import flybotLogo from '../assets/flybot-logo.png'
 
@@ -20,8 +20,8 @@ function Header() {
             <div className="container flex justify-between items-center p-6 mx-auto border-b border-green-500">
                 {/* Company Name */}
                 <div>
-                    <img src={flybotLogo} alt="FLybot logo"
-                        className="w-16 lg:w-28"/>
+                    <img src={flybotLogo} alt="Flybot logo"
+                        className="w-16 lg:w-28" />
                 </div>
 
                 {/* Dark Mode switch*/}
@@ -47,17 +47,26 @@ function Header() {
                 <nav className="text-lg text-sky-400 hidden lg:flex lg:justify-evenly lg:space-x-10 
                 dark:text-sky-200">
                     <p className="hidden lg:inline-block">[</p>
-                    <Link to="/" className="block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0
-                    hover:animate-pulse
-                    dark:hover:text-white">
+                    <NavLink to="/"
+                        className={({ isActive }) =>
+                            "block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0 hover:animate-pulse dark:hover:text-white "
+                            + (isActive ? 'text-green-500' : '')}>
                         Home
-                    </Link>
-                    <Link to="/apply" className="block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0
-                    hover:animate-pulse
-                    dark:hover:text-white">
+                    </NavLink>
+                    <NavLink to="/apply"
+                        className={({ isActive }) =>
+                            "block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0 hover:animate-pulse dark:hover:text-white "
+                            + (isActive ? 'text-green-500' : '')}>
                         Apply
-                    </Link>
-                    <a href="#footer-contact" className="block mt-4 hover:text-zinc-900 lg:inline-block lg:mt-0
+                    </NavLink>
+                    <NavLink to="/about"
+                        className={({ isActive }) =>
+                            "block mt-4 lg:inline-block hover:text-zinc-900 lg:mt-0 hover:animate-pulse dark:hover:text-white "
+                            + (isActive ? 'text-green-500' : '')}>
+                        About Us
+                    </NavLink>
+                    <a href="#footer-contact"
+                        className="block mt-4 hover:text-zinc-900 lg:inline-block lg:mt-0
                     hover:animate-pulse
                     dark:hover:text-white">
                         Contact
@@ -67,7 +76,7 @@ function Header() {
 
                 {/* Hamburger icon */}
                 <div className="lg:hidden">
-                    <button id="buger-button"
+                    <button
                         onClick={handleToggle}
                         className="flex items-center px-4 py-3 border rounded border-sky-400 text-sky-400 focus:outline-none
                         dark:border-sky-200 dark:text-sky-200">
@@ -79,29 +88,35 @@ function Header() {
             </div>
 
             {/* Menu items Mobile */}
-            <nav className={"container text-lg text-sky-500 text-center mx-auto bg-sky-50 dark:bg-zinc-800 "
+            <nav className={"container text-lg text-sky-500 text-center mx-auto bg-sky-50 dark:bg-zinc-800 dark:text-sky-200 "
                 + (navbarOpen ? 'block' : 'hidden')}
                 onClick={() => closeMenu()}>
-                <Link to="/"
-                    className="block p-4 border-x border-b border-green-500
-            hover:bg-white hover:text-sky-900
-            dark:text-sky-200 dark:hover:bg-zinc-500 dark:hover:text-white">
+                <NavLink to="/"
+                    className={({ isActive }) =>
+                        "block p-4 border-x border-b border-green-500 hover:bg-white hover:text-sky-900 dark:hover:bg-zinc-500 dark:hover:text-white "
+                        + (isActive ? 'text-green-500' : '')}>
                     Home
-                </Link>
-                <Link to="/apply"
-                    className="block p-4 border-x border-green-500
-            hover:bg-white hover:text-sky-900
-            dark:text-sky-200 dark:hover:bg-zinc-500 dark:hover:text-white">
+                </NavLink>
+                <NavLink to="/apply"
+                    className={({ isActive }) =>
+                        "block p-4 border-x border-b border-green-500 hover:bg-white hover:text-sky-900 dark:hover:bg-zinc-500 dark:hover:text-white "
+                        + (isActive ? 'text-green-500' : '')}>
                     Apply
-                </Link>
+                </NavLink>
+                <NavLink to="/about"
+                    className={({ isActive }) =>
+                        "block p-4 border-x border-b border-green-500 hover:bg-white hover:text-sky-900 dark:hover:bg-zinc-500 dark:hover:text-white "
+                        + (isActive ? 'text-green-500' : '')}>
+                    About Us
+                </NavLink>
                 <a href="#footer-contact"
-                    className="block p-4 border border-green-500
+                    className="block p-4 border-x border-b border-green-500
             hover:bg-white hover:text-sky-900
             dark:text-sky-200 dark:hover:bg-zinc-500 dark:hover:text-white">
                     Contact
                 </a>
             </nav>
-        </header>
+        </header >
     )
 }
 
