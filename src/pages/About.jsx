@@ -1,3 +1,4 @@
+import Head from '../components/Head'
 import flybotLogo from '../assets/flybot-logo.png'
 import GitHubLogo from '../assets/github-mark-logo.png'
 import GitHubLogoDark from '../assets/github-mark-logo-dark-mode.png'
@@ -6,6 +7,11 @@ import LinkedinLogo from '../assets/linkedin-logo.png'
 function About() {
     return (
         <section className="container mx-auto">
+            <Head
+                title="Flybot - About Us"
+                description="We are a high-tech software development firm with the mission of providing the most advanced technological services and vision of serving clients all over the globe."
+                keywords="Clojure, Development, Singapore, About, Presentation, Team">
+            </Head>
             {/* The company */}
             <div
                 className="lg:flex lg:space-x-10 w-full justify-center items-center p-10 border-b lg:border-r border-green-400

@@ -1,7 +1,14 @@
+import Head from "../components/Head";
+
 function Apply() {
     return (
         <div>
             <section className="container mx-auto">
+                <Head
+                    title="Flybot - Apply"
+                    description="We are hiring Clojure developers or fresh graduates as full-timers or interns."
+                    keywords="Clojure, Development, Singapore, Job, Hiring, Offer">
+                </Head>
                 {/* Job description */}
                 <div className="w-full p-10 border-b lg:border-r border-green-400
                 hover:shadow-md hover:border relative z-50
