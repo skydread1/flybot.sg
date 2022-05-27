@@ -12,13 +12,13 @@ function App() {
     dark:bg-zinc-900 dark:text-sky-50">
       <Head />
       <BrowserRouter>
-          <Header />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/apply" element={<Apply />} />
-            <Route path="/about" element={<About />} />
-          </Routes>
-          <Footer />
+        <Header />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/apply" element={<Apply />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+        <Footer />
       </BrowserRouter>
     </div>
 
