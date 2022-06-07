@@ -1,0 +1,30 @@
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+## Clojure
+.cpcache/
+.lsp
+.nrepl*
+.target/
+.DS_Store
+.rebel*
+*.swp
+deps/
+build/
+.idea/
+*.iml
+.calva
+.clj-kondo
+.nrepl-port
+
+## reagent/figwheel
+target
+
+
