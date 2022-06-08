@@ -1,26 +1,65 @@
 (ns flybot.core
   (:require [reagent.dom :as rdom]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [reitit.frontend :as rf]
+            [reitit.frontend.easy :as rfe]
+            [flybot.pages.home :refer [home-page]]
+            [flybot.pages.apply :refer [apply-page]]
+            [flybot.pages.about :refer [about-page]]))
 
+;; State
 (defonce app-db
   (r/atom
-   {:navbar-open false}))
+   {:current-view nil
+    :navbar-open false}))
 
-(def navbar-content
+;; Router
+(defn current-section []
+  (if-let [view (-> @app-db :current-view :data :view)]
+    (view)
+    (home-page)))
+
+(def routes
+  [["/"
+    {:name ::home
+     :view home-page}]
+   
+   ["/apply"
+    {:name ::apply
+     :view apply-page}]
+   
+   ["/about"
+    {:name ::about
+     :view about-page}]])
+
+(def router
+  (rf/router routes))
+
+(defn on-navigate [new-match]
+  (when new-match
+    (swap! app-db assoc :current-view new-match)))
+
+(defn init-routes! []
+  (rfe/start!
+   router
+   on-navigate
+   {:use-fragment false}))
+
+(defn navbar-content []
   [[:p "["]
-   [:a {:href "/", :aria-current "page"} "Home"]
-   [:a {:href "/apply"} "Apply"]
-   [:a {:href "/about"} "About Us"]
+   [:a {:href (rfe/href ::home)} "Home"]
+   [:a {:href (rfe/href ::apply)} "Apply"]
+   [:a {:href (rfe/href ::about)} "About Us"]
    [:a {:href "#footer-contact"} "Contact"]
    [:p "]"]])
 
 (defn navbar-web []
-  (->> navbar-content (cons :nav) vec))
+  (->> (navbar-content) (cons :nav) vec))
 
 (defn navbar-mobile []
   (if (-> @app-db :navbar-open)
-    (->> navbar-content (cons :nav.show) vec)
-    (->> navbar-content (cons :nav.hidden) vec)))
+    (->> (navbar-content) (cons :nav.show) vec)
+    (->> (navbar-content) (cons :nav.hidden) vec)))
 
 (defn header []
   [:header.container
@@ -70,8 +109,11 @@
 (defn simple-component []
   [:div
    [header]
+   [current-section]
    [footer]])
 
-(def dom-node (. js/document (getElementById "app")))
+(defn mount-root []
+  (init-routes!)
+  (rdom/render [simple-component] (. js/document (getElementById "app"))))
 
-(rdom/render [simple-component] dom-node)
+(mount-root)

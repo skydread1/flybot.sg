@@ -3,6 +3,7 @@
            com.bhauman/figwheel-main       {:mvn/version "0.2.18"}
            com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
            reagent/reagent                 {:mvn/version "1.1.1"}
+           metosin/reitit                  {:mvn/version "0.5.18"}
            cljsjs/react                    {:mvn/version "18.0.0-rc.0-0"}
            cljsjs/react-dom                {:mvn/version "18.0.0-rc.0-0"}}
  ;; setup some development paths
