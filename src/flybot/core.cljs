@@ -23,11 +23,11 @@
   [["/"
     {:name ::home
      :view home-page}]
-   
+
    ["/apply"
     {:name ::apply
      :view apply-page}]
-   
+
    ["/about"
     {:name ::about
      :view about-page}]])
@@ -45,12 +45,20 @@
    on-navigate
    {:use-fragment false}))
 
+(defn internal-link [page-name text]
+  (let [current-page (-> @app-db :current-view :data :name)]
+    [:a {:href (rfe/href page-name)
+         :class (when (= page-name current-page)
+                  "active")}
+     text]))
+
 (defn navbar-content []
   [[:p "["]
-   [:a {:href (rfe/href ::home)} "Home"]
-   [:a {:href (rfe/href ::apply)} "Apply"]
-   [:a {:href (rfe/href ::about)} "About Us"]
-   [:a {:href "#footer-contact"} "Contact"]
+   (internal-link ::home "Home")
+   (internal-link ::apply "Apply")
+   (internal-link ::about "About Us")
+   [:a {:href "#footer-contact"}
+    "Contact"]
    [:p "]"]])
 
 (defn navbar-web []

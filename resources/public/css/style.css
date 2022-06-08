@@ -1,3 +1,14 @@
+/* vars */
+:root {
+    /* dark theme */
+    --zinc-900: #18181b;
+    --zinc-800: #27272a;
+    --sky-400: #38bdf8;
+    --sky-200: #bae6fd;
+    --sky-50: #f0f9ff;
+    --green-500: #22c55e;
+  }
+
 /* General */
 
 * {
@@ -20,8 +31,8 @@ html{
 
 body {
     min-height: 100vh;
-    background-color: #18181b /* zinc-900 */;
-    color: #f0f9ff /*sky-50 */;
+    background-color: var(--zinc-900);
+    color: var(--sky-50);
 }
 
 header, section, footer {
@@ -29,23 +40,23 @@ header, section, footer {
 }
 
 h3 {
-    font-size: 1.125rem/* 18px */;
-    line-height: 1.75rem/* 28px */;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
     font-weight: 700;
-    color: #bae6fd /*sky-200*/;
+    color: var(--sky-200);
 }
 
 a {
     display: block;
-    color: #38bdf8 /* sky-400 */;
+    color: var(--sky-400);
 }
 
 button {
     padding: 0.5rem;
-    background-color: #18181b;
+    background-color: var(--zinc-900);
     border-radius: 0.25rem; 
     border-width: 2px;
-    border-color: #bae6fd;
+    border-color: var(--sky-200);
 }
 
 img, svg {
@@ -96,17 +107,17 @@ img, svg {
 }
 
 .moonlogo {
-    fill: #bae6fd;
+    fill: var(--sky-200);
     width:  32px;
     height: 32px;
 }
 
 .moonlogo:hover {
-    fill: #fef08a;
+    fill: yellow;
 }
 
 .burger {
-    fill: #bae6fd;
+    fill: var(--sky-200);
     width:  32px;
     height: 32px;
 }
@@ -118,7 +129,7 @@ header {
     text-align: center;
     border-bottom-style: solid;
     border-bottom-width: 1px;
-    border-color: #22c55e /* green-500 */;
+    border-color: var(--green-500) /* green-500 */;
 }
 
 header .top {
@@ -136,7 +147,7 @@ nav {
     display: none;
     font-size: 1.125rem;
     line-height: 1.75rem;
-    color: #bae6fd ;
+    color: var(--sky-200) ;
 }
 
 nav p {
@@ -155,11 +166,11 @@ nav a {
     }
 
     nav a {
-        background-color: #27272a /* zinc-800 */;
+        background-color: var(--zinc-800);
         margin: 0;
         padding: 1rem;
         border-style: solid;
-        border-color: #22c55e;
+        border-color: var(--green-500);
         border-width: 1px 1px 0px 1px;
     }
 }
@@ -179,6 +190,10 @@ nav a:hover {
     animation: pulse;
 }
 
+nav .active {
+    color: var(--green-500);
+}
+
 header button {
     display: inline-block;
 }
@@ -195,7 +210,7 @@ footer {
     padding: 1.5rem;
     border-top-style: solid;
     border-top-width: 1px;
-    border-color:  #22c55e;
+    border-color:  var(--green-500);
     text-align: center;
 }
 
