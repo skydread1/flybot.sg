@@ -1,20 +1,13 @@
 (ns flybot.core
   (:require [reagent.dom :as rdom]
-            [reagent.core :as r]
             [reitit.frontend :as rf]
             [reitit.frontend.easy :as rfe]
+            [flybot.db :refer [app-db]]
             [flybot.lib.localstorage :as l-storage]
             [flybot.lib.class-utils :as cu]
             [flybot.pages.home :refer [home-page]]
             [flybot.pages.apply :refer [apply-page]]
             [flybot.pages.about :refer [about-page]]))
-
-;; State
-(defonce app-db
-  (r/atom
-   {:theme :dark
-    :current-view nil
-    :navbar-open false}))
 
 (def root-elem (. js/document -documentElement))
 
