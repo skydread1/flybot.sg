@@ -1,12 +1,26 @@
 /* vars */
 :root {
+    color-scheme: light dark; /* both supported */
+
+    /* common */
+    --sky-400: #38bdf8; /*sky-400*/
+    --green-500: #22c55e; /*green-500*/
+
     /* dark theme */
-    --zinc-900: #18181b;
-    --zinc-800: #27272a;
-    --sky-400: #38bdf8;
-    --sky-200: #bae6fd;
-    --sky-50: #f0f9ff;
-    --green-500: #22c55e;
+    --bg-primary: #18181b; /*zinc-900*/
+    --bg-secondary: #27272a; /*zinc-800*/
+    
+    --text-primary: #bae6fd; /*sky-200*/
+    --text-secondary: #f0f9ff; /*sky-50*/
+  }
+
+  :root.light {
+    /* light theme */
+    --bg-primary: #fafafa; /*zinc-50*/
+    --bg-secondary: #f0f9ff; /*sky-50*/
+    
+    --text-primary: #0ea5e9; /*sky-500*/
+    --text-secondary: #18181b; /*zinc-900*/
   }
 
 /* General */
@@ -31,8 +45,8 @@ html{
 
 body {
     min-height: 100vh;
-    background-color: var(--zinc-900);
-    color: var(--sky-50);
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
 }
 
 header, section, footer {
@@ -43,7 +57,7 @@ h3 {
     font-size: 1.125rem;
     line-height: 1.75rem;
     font-weight: 700;
-    color: var(--sky-200);
+    color: var(--text-primary);
 }
 
 a {
@@ -53,10 +67,10 @@ a {
 
 button {
     padding: 0.5rem;
-    background-color: var(--zinc-900);
+    background-color: var(--bg-primary);
     border-radius: 0.25rem; 
     border-width: 2px;
-    border-color: var(--sky-200);
+    border-color: var(--text-primary);
 }
 
 img, svg {
@@ -107,7 +121,7 @@ img, svg {
 }
 
 .moonlogo {
-    fill: var(--sky-200);
+    fill: var(--text-primary);
     width:  32px;
     height: 32px;
 }
@@ -116,8 +130,18 @@ img, svg {
     fill: yellow;
 }
 
+.sunlogo {
+    fill: var(--sky-400);
+    width:  32px;
+    height: 32px;
+}
+
+.sunlogo:hover {
+    fill: yellow;
+}
+
 .burger {
-    fill: var(--sky-200);
+    fill: var(--text-primary);
     width:  32px;
     height: 32px;
 }
@@ -147,7 +171,7 @@ nav {
     display: none;
     font-size: 1.125rem;
     line-height: 1.75rem;
-    color: var(--sky-200) ;
+    color: var(--text-primary) ;
 }
 
 nav p {
@@ -166,7 +190,7 @@ nav a {
     }
 
     nav a {
-        background-color: var(--zinc-800);
+        background-color: var(--bg-secondary);
         margin: 0;
         padding: 1rem;
         border-style: solid;
