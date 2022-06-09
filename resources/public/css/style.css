@@ -12,6 +12,8 @@
     
     --text-primary-color: #bae6fd; /*sky-200*/
     --text-secondary-color: #f0f9ff; /*sky-50*/
+
+    --button-primary-color: black;
   }
 
   :root.light {
@@ -21,6 +23,8 @@
     
     --text-primary-color: #0ea5e9; /*sky-500*/
     --text-secondary-color: #18181b; /*zinc-900*/
+
+    --button-primary-color: white;
   }
 
 /* General */
@@ -94,7 +98,7 @@ ul {
 }
 
 li {
-
+    padding-bottom: 0.5rem;
 }
 
 button {
@@ -284,6 +288,15 @@ footer div {
 
 section .card:nth-of-type(odd) {
     background-color: var(--bg-secondary-color);
+    border-right-width: 1px;
+    border-right-color: var(--border-primary-color);
+    border-right-style: solid;
+}
+
+section .card:nth-of-type(even) {
+    border-left-width: 1px;
+    border-left-color: var(--border-primary-color);
+    border-left-style: solid;
 }
 
 .subsec {
@@ -322,14 +335,19 @@ section .card:nth-of-type(odd) {
     .subsec .text {
         width: 50%;
     }
-    .subsec.left {
-        border-right-width: 1px;
-        border-right-color: var(--border-primary-color);
-        border-right-style: solid;
+
+    .subsec .text.only {
+        width: 100%;
     }
-    .subsec.right {
-        border-left-width: 1px;
-        border-left-color: var(--border-primary-color);
-        border-left-style: solid;
-    }
+}
+
+section a.button {
+    text-decoration: none;
+    border-radius: 0.3rem;
+    margin-top: 0.5rem;
+    padding: 1rem 2rem;
+    border-style: solid;
+    border-width: 2px;
+    border-color: var(--border-primary-color);
+    background-color: var(--button-primary-color);
 }

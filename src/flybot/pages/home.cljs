@@ -1,6 +1,7 @@
 (ns flybot.pages.home
 
-  (:require [flybot.db :refer [app-db]]))
+  (:require [flybot.db :refer [app-db]]
+            [flybot.components.subsection :refer [sub-section]]))
 
 (defn sub1 []
   {:title [:h2 "{:our-language \"Clojure\"}"]
@@ -115,30 +116,6 @@
               :href "https://github.com/nasser/nostrand"}
              "Nostrand"]]
            [:li "Integrating Clojure directly to Unity using the Entity Component System (ECS)"]]]})
-
-(defn sub-section
-  [{:keys [title image text image-side]}]
-  ;; Desktop arrangement
-  [:div.card
-   (if (= :left image-side)
-     [:div.subsec.left
-      [:div.image
-       image]
-      [:div.text
-       title
-       text]]
-     [:div.subsec.right
-      [:div.text
-       title
-       text]
-      [:div.image
-       image]])
-  ;; Mobile arrangement
-   [:div.subsec.mobile
-    [:div
-     title
-     image
-     text]]])
 
 (defn home-page []
   [:section.container
