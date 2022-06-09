@@ -30,6 +30,9 @@
 (defn toggle-navbar[]
   (swap! app-db update :navbar-open not))
 
+(defn close-navbar []
+  (swap! app-db assoc :navbar-open false))
+
 ;; Router
 (defn current-section []
   (if-let [view (-> @app-db :current-view :data :view)]
@@ -67,6 +70,7 @@
 (defn internal-link [page-name text]
   (let [current-page (-> @app-db :current-view :data :name)]
     [:a {:href (rfe/href page-name)
+         :on-click close-navbar
          :class (when (= page-name current-page)
                   "active")}
      text]))
@@ -76,8 +80,8 @@
    (internal-link ::home "Home")
    (internal-link ::apply "Apply")
    (internal-link ::about "About Us")
-   [:a {:href "#footer-contact"}
-    "Contact"]
+   [:a {:href "#footer-contact"
+        :on-click close-navbar} "Contact"]
    [:p "]"]])
 
 (defn navbar-web []
@@ -122,17 +126,17 @@
 (defn footer []
   [:footer#footer-contact.container
    [:div
-    [:h3 "Address"]
+    [:h2 "Address"]
     [:p "1 Commonwealth Lane"]
     [:p "#08-14"]
     [:p "One Commonwealth"]
     [:p "Singapore 149544"]]
    [:div
-    [:h3
+    [:h2
      "Business Hours"]
     [:p "Monday - Friday, 08:30 - 17:00"]]
    [:div
-    [:h3 "Contact"]
+    [:h2 "Contact"]
     [:p "zhengliming@basecity.com"]
     [:a
      {:rel "noreferrer",

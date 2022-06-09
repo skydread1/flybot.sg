@@ -61,15 +61,8 @@ section {
     background-color: var(--bg-primary-color);
 }
 
-h3 {
-    font-size: 1.125rem;
-    line-height: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary-color);
-}
-
 h2 {
-    
+    padding-bottom: 1rem;
     font-size: 1.125rem;
     line-height: 1.75rem;
     font-weight: 700;
@@ -80,6 +73,13 @@ h2 {
     h2 {
         text-align: center;
     }
+}
+
+h3 {
+    font-size: 1rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary-color);
 }
 
 p {
@@ -284,7 +284,7 @@ footer div {
     margin: 2.5rem
 }
 
-/* Page */
+/* Page - all pages */
 
 section .card:nth-of-type(odd) {
     background-color: var(--bg-secondary-color);
@@ -318,10 +318,6 @@ section .card:nth-of-type(even) {
     .subsec {
         display: none;   
     }
-    
-    .subsec.mobile img {
-        padding: 1.25rem;
-    }
 }
 
 @media (min-width: 1024px) {
@@ -341,6 +337,8 @@ section .card:nth-of-type(even) {
     }
 }
 
+/* Apply page */
+
 section a.button {
     text-decoration: none;
     border-radius: 0.3rem;
@@ -350,4 +348,27 @@ section a.button {
     border-width: 2px;
     border-color: var(--border-primary-color);
     background-color: var(--button-primary-color);
+}
+
+/* About Us page */
+
+section .members {
+    text-align: center;
+}
+
+section .team {
+    text-align: center;
+    display: block;
+}
+
+@media (min-width: 1024px) {
+    section .team {
+        display: flex;
+        justify-content: space-evenly;
+    }
+}
+
+section .team img {
+    margin: 1rem;;
+    width: 3rem;
 }
