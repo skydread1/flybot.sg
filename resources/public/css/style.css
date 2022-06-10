@@ -45,7 +45,7 @@
 }
 
 html{
-    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji
+    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
 }
 
 body {
@@ -201,7 +201,7 @@ header {
     text-align: center;
     border-bottom-style: solid;
     border-bottom-width: 1px;
-    border-color: var(--border-primary-color) /* green-500 */;
+    border-color: var(--border-primary-color);
 }
 
 header .top {
@@ -223,7 +223,7 @@ nav {
     display: none;
     font-size: 1.125rem;
     line-height: 1.75rem;
-    color: var(--text-primary-color) ;
+    color: var(--text-primary-color);
 }
 
 nav p {
@@ -233,7 +233,7 @@ nav p {
 
 nav a {
     margin: 1.5rem;
-    text-decoration: none
+    text-decoration: none;
 }
 
 @media (max-width: 1024px) {
@@ -296,7 +296,7 @@ footer {
 }
 
 footer div {
-    margin: 2.5rem
+    margin: 2.5rem;
 }
 
 /* Page - all pages */
@@ -394,6 +394,6 @@ section .team > div {
 }
 
 section .team img {
-    margin: 1rem;;
+    margin: 1rem;
     width: 3rem;
 }
