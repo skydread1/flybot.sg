@@ -1,0 +1,2 @@
+{:main flybot.core
+ :optimizations :advanced}

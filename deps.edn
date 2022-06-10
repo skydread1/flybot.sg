@@ -8,4 +8,11 @@
  ;; setup some development paths
  :paths   ["src" "target" "resources"]
  ;; setup a helpful alias to start the build
- :aliases {:build-dev {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}}}
+ :aliases
+ {:dev
+  {:main-opts ["--main"  "figwheel.main"
+               "--build" "dev"
+               "--repl"]}
+  :prod
+  {:main-opts ["--main"       "figwheel.main"
+               "--build-once" "prod"]}}}
