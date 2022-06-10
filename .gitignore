@@ -24,6 +24,7 @@ build/
 .nrepl-port
 
 ## reagent/figwheel
-target
+target/
+index.html
 
 

@@ -29,11 +29,6 @@
   [e class]
   (class-swap! e #(distinct (conj % (keyword class)))))
 
-(defn remove-class!
-  "Remove a class from an element."
-  [e class]
-  (class-swap! e (fn [current] (remove #(= % (keyword class)) current))))
-
 (defn toggle-class!
   "Toggle between 2 classes, one of which is already on the element."
   [e class1 class2]
