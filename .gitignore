@@ -13,7 +13,6 @@
 .lsp
 .nrepl*
 .target/
-.DS_Store
 .rebel*
 *.swp
 deps/
