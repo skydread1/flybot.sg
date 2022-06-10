@@ -5,6 +5,7 @@
     /* common */
     --link-primary-color: #38bdf8; /*sky-400*/
     --border-primary-color: #22c55e; /*green-500*/
+    --pulse-animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
     /* dark theme */
     --bg-primary-color: #18181b; /*zinc-900*/
@@ -144,6 +145,17 @@ img, svg {
     }
 }
 
+/* Animation */
+
+@keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+}
+
 /* Assets */
 
 .flybotlogo {
@@ -199,8 +211,12 @@ header .top {
     align-items: center;
 }
 
-.thememode {
+.pointer {
     cursor: pointer;
+}
+
+header img:hover, svg:hover, a:hover {
+    animation: var(--pulse-animation);
 }
 
 nav {
@@ -248,7 +264,6 @@ nav a {
 
 nav a:hover {
     color: white;
-    animation: pulse;
 }
 
 nav .active {
@@ -294,6 +309,7 @@ section .card:nth-of-type(odd) {
 }
 
 section .card:nth-of-type(even) {
+    background-color: var(--bg-primary-color);
     border-left-width: 1px;
     border-left-color: var(--border-primary-color);
     border-left-style: solid;
@@ -307,6 +323,10 @@ section .card:nth-of-type(even) {
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: var(--border-primary-color);
+}
+
+.subsec:hover img {
+    animation: var(--pulse-animation);
 }
 
 .subsec.mobile {
@@ -359,6 +379,11 @@ section .members {
 section .team {
     text-align: center;
     display: block;
+}
+
+section .team > div {
+    width: 30%;
+    
 }
 
 @media (min-width: 1024px) {

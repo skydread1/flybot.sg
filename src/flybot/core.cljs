@@ -99,7 +99,7 @@
      [:img.flybotlogo
       {:alt "Flybot logo",
        :src "assets/flybot-logo.png"}]]
-    [:div.thememode
+    [:div.pointer
      {:on-click toggle-theme}
      (if (= :dark (:theme @app-db))
        [:svg.moonlogo
