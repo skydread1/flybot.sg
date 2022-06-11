@@ -1,39 +1,38 @@
 /* vars */
 :root {
-    color-scheme: light dark; /* both supported */
+    color-scheme: light dark;
 
     /* common */
-    --link-primary-color: #38bdf8; /*sky-400*/
-    --border-primary-color: #22c55e; /*green-500*/
+    --link-primary-color: #38bdf8;
+    --border-primary-color: #22c55e;
     --pulse-animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
-    /* dark theme */
-    --bg-primary-color: #18181b; /*zinc-900*/
-    --bg-secondary-color: #27272a; /*zinc-800*/
-    
-    --text-primary-color: #bae6fd; /*sky-200*/
-    --text-secondary-color: #f0f9ff; /*sky-50*/
+    --bg-primary-color: #18181b;
+    --bg-secondary-color: #27272a;
+
+    --text-primary-color: #bae6fd;
+    --text-secondary-color: #f0f9ff;
 
     --button-primary-color: black;
-  }
+}
 
-  :root.light {
+:root.light {
     /* light theme */
-    --bg-primary-color: #fafafa; /*zinc-50*/
-    --bg-secondary-color: #f0f9ff; /*sky-50*/
-    
-    --text-primary-color: #0ea5e9; /*sky-500*/
-    --text-secondary-color: #18181b; /*zinc-900*/
+    --bg-primary-color: #fafafa;
+    --bg-secondary-color: #f0f9ff;
+
+    --text-primary-color: #0ea5e9;
+    --text-secondary-color: #18181b;
 
     --button-primary-color: white;
-  }
+}
 
 /* General */
 
 * {
     margin: 0;
     padding: 0;
-    box-sizing:border-box;
+    box-sizing: border-box;
 }
 
 .hidden {
@@ -44,17 +43,25 @@
     display: block
 }
 
-html{
-    font-family: ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+html {
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
 body {
     min-height: 100vh;
-    background-image: linear-gradient(to right, var(--bg-secondary-color) , var(--bg-primary-color));
+    background-image: linear-gradient(to right, var(--bg-secondary-color) 15%, var(--bg-primary-color) 85%);
     color: var(--text-secondary-color);
 }
 
-header, section, footer {
+@media(max-width: 1024px) {
+    body {
+        background-image: linear-gradient(to right, var(--bg-secondary-color), var(--bg-primary-color));
+    }
+}
+
+header,
+section,
+footer {
     margin: auto;
 }
 
@@ -105,12 +112,13 @@ li {
 button {
     padding: 0.5rem;
     background-color: var(--bg-primary-color);
-    border-radius: 0.25rem; 
+    border-radius: 0.25rem;
     border-width: 2px;
     border-color: var(--text-primary-color);
 }
 
-img, svg {
+img,
+svg {
     display: block;
     margin: auto;
 }
@@ -124,21 +132,25 @@ img, svg {
         max-width: 640px;
     }
 }
+
 @media (min-width: 768px) {
     .container {
         max-width: 768px;
     }
 }
+
 @media (min-width: 1024px) {
     .container {
         max-width: 1024px;
     }
 }
+
 @media (min-width: 1280px) {
     .container {
         max-width: 1280px;
     }
 }
+
 @media (min-width: 1536px) {
     .container {
         max-width: 1536px;
@@ -148,11 +160,14 @@ img, svg {
 /* Animation */
 
 @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
+
+    0%,
+    100% {
+        opacity: 1;
     }
+
     50% {
-      opacity: .5;
+        opacity: .5;
     }
 }
 
@@ -170,7 +185,7 @@ img, svg {
 
 .moonlogo {
     fill: var(--text-primary-color);
-    width:  32px;
+    width: 32px;
     height: 32px;
 }
 
@@ -180,7 +195,7 @@ img, svg {
 
 .sunlogo {
     fill: var(--link-primary-color);
-    width:  32px;
+    width: 32px;
     height: 32px;
 }
 
@@ -190,7 +205,7 @@ img, svg {
 
 .burger {
     fill: var(--text-primary-color);
-    width:  32px;
+    width: 32px;
     height: 32px;
 }
 
@@ -211,11 +226,19 @@ header .top {
     align-items: center;
 }
 
+@media (max-width: 1024px) {
+    header .top>* {
+        width: 20%;
+    }
+}
+
 .pointer {
     cursor: pointer;
 }
 
-header img:hover, svg:hover, a:hover {
+header img:hover,
+svg:hover,
+a:hover {
     animation: var(--pulse-animation);
 }
 
@@ -257,13 +280,15 @@ nav a {
         display: flex;
         justify-content: space-evenly;
     }
-    nav p, nav a {
+
+    nav p,
+    nav a {
         display: inline-block;
     }
 }
 
 nav a:hover {
-    color: white;
+    color: var(--text-secondary-color);
 }
 
 nav .active {
@@ -272,11 +297,13 @@ nav .active {
 
 header button {
     display: inline-block;
+    width: 54px;
+    height: 54px;
 }
 
-@media (min-width: 1024px) {
-    header button {
-        display: none;
+@media (max-width: 1024px) {
+    header .button {
+        display: block;
     }
 }
 
@@ -291,12 +318,15 @@ footer {
     footer {
         display: flex;
         justify-content: space-evenly;
-        text-align: left;
     }
 }
 
 footer div {
     margin: 2.5rem;
+}
+
+footer p {
+    padding: 0.2rem;
 }
 
 /* Page - all pages */
@@ -325,6 +355,10 @@ section .card:nth-of-type(even) {
     border-bottom-color: var(--border-primary-color);
 }
 
+.subsec img {
+    margin: 1.5rem auto;
+}
+
 .subsec:hover img {
     animation: var(--pulse-animation);
 }
@@ -336,7 +370,7 @@ section .card:nth-of-type(even) {
 
 @media (max-width: 1024px) {
     .subsec {
-        display: none;   
+        display: none;
     }
 }
 
@@ -347,7 +381,8 @@ section .card:nth-of-type(even) {
 
     .subsec .image {
         width: 25%;
-    }   
+    }
+
     .subsec .text {
         width: 50%;
     }
@@ -359,7 +394,16 @@ section .card:nth-of-type(even) {
 
 /* Apply page */
 
+@media (max-width: 1024px) {
+    section .application {
+        text-align: center;
+    }
+}
+
+
+
 section a.button {
+    text-align: center;
     text-decoration: none;
     border-radius: 0.3rem;
     margin-top: 0.5rem;
@@ -381,15 +425,14 @@ section .team {
     display: block;
 }
 
-section .team > div {
-    width: 30%;
-    
-}
-
 @media (min-width: 1024px) {
     section .team {
         display: flex;
         justify-content: space-evenly;
+    }
+
+    section .team>div {
+        width: 30%;
     }
 }
 

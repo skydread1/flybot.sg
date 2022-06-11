@@ -33,7 +33,7 @@
 
    {:id "apply-application"
     :title [:h2 "{:job \"Application\"}"]
-    :text [:div
+    :text [:div.application
            [:p "Please fill this google form:"]
            [:a.button
             {:rel "noreferrer",

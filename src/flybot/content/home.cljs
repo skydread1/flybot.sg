@@ -86,11 +86,11 @@
     :image-side :right
     :image (if (= :dark (:theme @app-db))
              [:img.clojurelogo
-              {:style {:width "50%"}
+              {:style {:width "50%" :margin "auto"}
                :alt "Spell the word love in binary"
                :src "assets/binary-dark-mode.svg"}]
              [:img.clojurelogo
-              {:style {:width "50%"}
+              {:style {:width "50%" :margin "auto"}
                :alt "Spell the word love in binary"
                :src "assets/binary.svg"}])
     :text [:div
