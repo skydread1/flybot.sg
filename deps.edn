@@ -1,0 +1,21 @@
+{:deps    {org.clojure/clojurescript       {:mvn/version "1.10.758"}
+           com.bhauman/figwheel-main       {:mvn/version "0.2.18"}
+           com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
+           reagent/reagent                 {:mvn/version "1.1.1"}
+           metosin/reitit                  {:mvn/version "0.5.18"}
+           cljsjs/react                    {:mvn/version "18.0.0-rc.0-0"}
+           cljsjs/react-dom                {:mvn/version "18.0.0-rc.0-0"}}
+ ;; setup some development paths
+ :paths   ["src" "target" "resources"]
+ ;; setup a helpful alias to start the build
+ :aliases
+ {:dev
+  {:main-opts ["--main"  "figwheel.main"
+               "--build" "dev"
+               "--repl"]}
+  :prod
+  {:main-opts ["--main"       "figwheel.main"
+               "--build-once" "prod"]}
+  :build
+  {:deps {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}}
+   :ns-default build}}}

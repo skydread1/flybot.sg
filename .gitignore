@@ -1,13 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
 # production
 /build
 
@@ -18,6 +8,23 @@
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+## Clojure
+.cpcache/
+.lsp
+.nrepl*
+.target/
+.rebel*
+*.swp
+deps/
+build/
+.idea/
+*.iml
+.calva
+.clj-kondo
+.nrepl-port
+
+## reagent/figwheel
+target/
+index.html
+
+
