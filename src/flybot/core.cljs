@@ -2,8 +2,8 @@
   (:require [flybot.components.footer :refer [footer-comp]]
             [flybot.components.header :refer [header-comp]]
             [flybot.db :refer [app-db]]
-            [flybot.lib.localstorage :as l-storage]
-            [flybot.lib.router :as router]
+            [flybot.lib.cljs.localstorage :as l-storage]
+            [flybot.lib.cljs.router :as router]
             [flybot.pages.home :refer [home-page]]
             [reagent.dom :as rdom]))
 
@@ -22,9 +22,9 @@
 
 ;; Initialization
 
-(defn mount-root []
+(defn start-app! []
   (router/init-routes!)
   (l-storage/init-theme!)
   (rdom/render [app] (. js/document (getElementById "app"))))
 
-(mount-root)
+(start-app!)

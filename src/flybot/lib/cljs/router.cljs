@@ -1,4 +1,4 @@
-(ns flybot.lib.router
+(ns flybot.lib.cljs.router
   
   (:require [reitit.frontend :as rf]
             [reitit.frontend.easy :as rfe]
@@ -7,7 +7,8 @@
             [flybot.db :refer [app-db]]
             [flybot.pages.home :refer [home-page]]
             [flybot.pages.apply :refer [apply-page]]
-            [flybot.pages.about :refer [about-page]]))
+            [flybot.pages.about :refer [about-page]]
+            [flybot.pages.blog :refer [blog-page]]))
 
 (def routes
   [["/"
@@ -21,6 +22,10 @@
    ["/about"
     {:name :flybot/about
      :view about-page}]
+   
+   ["/blog"
+    {:name :flybot/blog
+     :view blog-page}]
 
    ["#footer-contact"
     {:name :flybot/contact}]])

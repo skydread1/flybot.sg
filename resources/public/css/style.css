@@ -69,24 +69,36 @@ section {
     background-color: var(--bg-primary-color);
 }
 
-h2 {
-    padding-bottom: 1rem;
-    font-size: 1.125rem;
-    line-height: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary-color);
+h1, h2, h3, h4, h5, h6 {
+    padding-bottom: 0.5rem;
+    padding-top: 0.5rem;
 }
 
 @media (max-width: 1024px) {
-    h2 {
+    h1, h2, h3, h4, h5, h6 {
         text-align: center;
     }
 }
 
+h1 {
+    font-size: 1.7rem;
+    color: var(--text-primary-color);
+}
+
+h2 {
+    font-size: 1.3rem;
+    color: var(--text-secondary-color);
+}
+
 h3 {
-    font-size: 1rem;
-    line-height: 1.75rem;
-    font-weight: 700;
+    color: var(--text-primary-color);
+}
+
+h4 {
+    color: var(--text-secondary-color);
+}
+
+h5 {
     color: var(--text-primary-color);
 }
 
@@ -107,6 +119,10 @@ ul {
 
 li {
     padding-bottom: 0.5rem;
+}
+
+li a {
+    padding: 0;
 }
 
 button {
@@ -207,6 +223,11 @@ svg {
     fill: var(--text-primary-color);
     width: 32px;
     height: 32px;
+}
+
+svg {
+    fill: var(--text-primary-color);
+    width: 250px;
 }
 
 /* Header */
@@ -331,6 +352,16 @@ footer p {
 
 /* Page - all pages */
 
+section .card {
+    display: flex;
+    padding: 2.5rem;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--border-primary-color);
+    justify-content: space-evenly;
+    align-items: center;
+}
+
 section .card:nth-of-type(odd) {
     background-color: var(--bg-secondary-color);
     border-right-width: 1px;
@@ -339,57 +370,47 @@ section .card:nth-of-type(odd) {
 }
 
 section .card:nth-of-type(even) {
+    flex-direction: row-reverse;
     background-color: var(--bg-primary-color);
     border-left-width: 1px;
     border-left-color: var(--border-primary-color);
     border-left-style: solid;
 }
 
-.subsec {
-    padding: 2.5rem;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-bottom-color: var(--border-primary-color);
+section .card>div {
+    padding: 1.5rem;
 }
 
-.subsec img {
-    margin: 1.5rem auto;
+section .card>.image {
+    width: 25%;
 }
 
-.subsec:hover img {
-    animation: var(--pulse-animation);
+section .card>.text {
+    width: 50%;
 }
 
-.subsec.mobile {
-    display: block;
+section .card>.textonly {
     width: 100%;
 }
 
+section .image>img {
+    max-width: 50%;
+}
+
 @media (max-width: 1024px) {
-    .subsec {
-        display: none;
+    section .card {
+        padding: 0.5rem;
+        display: block;
+    }
+    section .card>.image, section .card>.text {
+        width: 100%;
+        margin: auto;
+        padding: 1.5rem;
     }
 }
 
-@media (min-width: 1024px) {
-    .subsec.mobile {
-        display: none;
-    }
-
-    .subsec .image {
-        width: 25%;
-    }
-
-    .subsec .text {
-        width: 50%;
-    }
-
-    .subsec .text.only {
-        width: 100%;
-    }
+.card:hover img {
+    animation: var(--pulse-animation);
 }
 
 /* Apply page */
@@ -399,8 +420,6 @@ section .card:nth-of-type(even) {
         text-align: center;
     }
 }
-
-
 
 section a.button {
     text-align: center;
@@ -439,4 +458,10 @@ section .team {
 section .team img {
     margin: 1rem;
     width: 3rem;
+}
+
+/* Blog page */
+
+section.blog h1 {
+    text-transform: uppercase;
 }
