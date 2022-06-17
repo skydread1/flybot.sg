@@ -1,8 +1,8 @@
 (ns flybot.components.header
   
   (:require [flybot.db :refer [app-db]]
-            [flybot.lib.localstorage :as l-storage]
-            [flybot.lib.class-utils :as cu]
+            [flybot.lib.cljs.localstorage :as l-storage]
+            [flybot.lib.cljs.class-utils :as cu]
             [reitit.frontend.easy :as rfe]))
 
 ;; Dark mode
@@ -40,6 +40,7 @@
    (internal-link :flybot/home "Home")
    (internal-link :flybot/apply "Apply")
    (internal-link :flybot/about "About Us")
+   (internal-link :flybot/blog "Blog")
    (internal-link :flybot/contact "Contact" false)
    [:p "]"]])
 

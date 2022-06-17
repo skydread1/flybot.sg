@@ -1,6 +1,6 @@
-(ns flybot.pages.home
+(ns flybot.pages.blog
   (:require [flybot.components.section :refer [section]]))
 
-(defn home-page [] 
+(defn blog-page []
   [:section.container.home
-   (section "home")])
+   (section "blog")])

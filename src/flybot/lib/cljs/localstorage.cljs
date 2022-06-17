@@ -1,7 +1,7 @@
-(ns flybot.lib.localstorage
+(ns flybot.lib.cljs.localstorage
   
   (:require [flybot.db :refer [app-db]]
-            [flybot.lib.class-utils :as cu]))
+            [flybot.lib.cljs.class-utils :as cu]))
 
 (defn set-item
   "Set `key' in browser's localStorage to `val`."

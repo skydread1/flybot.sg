@@ -1,4 +1,4 @@
-(ns flybot.lib.class-utils
+(ns flybot.lib.cljs.class-utils
   
   (:require [clojure.string :as string]))
 
