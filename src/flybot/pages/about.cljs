@@ -1,13 +1,16 @@
 (ns flybot.pages.about
   (:require [flybot.lib.cljs.md-to-hiccup :as m]
+            [flybot.db :refer [app-db]]
             [flybot.components.section :refer [section]]))
 
-(defn github-logo [] 
-  (m/to-dark-mode
-   [:img
-    {:alt "Github Mark logo"
-     :src "assets/github-mark-logo.png"}]
-   "github-mark-logo.png"))
+(defn github-logo []
+  (let [hiccup [:img
+                {:alt "Github Mark logo"
+                 :src "assets/github-mark-logo.png"}]
+        image "github-mark-logo.png"]
+    (if (= :dark (:theme @app-db))
+      (m/to-dark-mode hiccup image)
+      hiccup)))
 
 (defn linkedin-logo []
   [:img
