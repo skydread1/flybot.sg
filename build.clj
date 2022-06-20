@@ -18,5 +18,6 @@
    - Moves the prod-main.js from target/public to resources/public."
   [_]
   (clean nil)
-  (b/process {:command-args ["clj" "-M:prod"]})
-  (move-js nil))
+  (b/process {:command-args ["clojure" "-M:prod"]})
+  (move-js nil)
+  (clean nil))

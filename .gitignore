@@ -26,5 +26,6 @@ build/
 ## reagent/figwheel
 target/
 index.html
+main.js
 
 
