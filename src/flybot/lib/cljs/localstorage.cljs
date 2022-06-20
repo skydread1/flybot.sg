@@ -1,6 +1,7 @@
 (ns flybot.lib.cljs.localstorage
   
-  (:require [flybot.db :refer [app-db]]
+  (:require [clojure.edn :as edn]
+            [flybot.db :refer [app-db]]
             [flybot.lib.cljs.class-utils :as cu]))
 
 (defn set-item
@@ -14,7 +15,7 @@
   (.getItem (.-localStorage js/window) key))
 
 (defn init-theme! []
-  (if-let [l-storage-theme (keyword (get-item "theme"))]
+  (if-let [l-storage-theme (-> :theme get-item edn/read-string)]
     (swap! app-db assoc :theme l-storage-theme)
     (set-item :theme (:theme @app-db)))
   (cu/add-class!
