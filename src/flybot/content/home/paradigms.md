@@ -1,7 +1,6 @@
-{:order 1
- :image-beside "lambda-logo.svg"
- :image-alt "Lambda Logo"
- :image-dark-mode? true}
+{:order         1
+ :image-beside  {:file "lambda-logo.svg" :alt "Lambda Logo"}
+ :dark-mode-img ["lambda-logo.svg"]}
 +++
 
 # Functional Programming

@@ -1,7 +1,6 @@
-{:order 0
- :image-beside "clojure-logo.svg"
- :image-alt "Clojure Logo"
- :image-dark-mode? true}
+{:order         0
+ :image-beside  {:file "clojure-logo.svg" :alt "Clojure Logo"}
+ :dark-mode-img ["clojure-logo.svg"]}
 +++
 
 # Our-language: Clojure

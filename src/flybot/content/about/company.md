@@ -1,6 +1,5 @@
-{:order 0
- :image-beside "flybot-logo.png"
- :image-alt "Flybot Logo"}
+{:order        0
+ :image-beside {:file "flybot-logo.png" :alt "Flybot Logo"}}
 +++
 
 # The company

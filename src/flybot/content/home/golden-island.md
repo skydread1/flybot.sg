@@ -1,7 +1,6 @@
-{:order 2
- :image-beside "4suits.svg"
- :image-alt "4 suits of a deck"
- :image-dark-mode? true}
+{:order         2
+ :image-beside  {:file "4suits.svg" :alt "4 suits of a deck"}
+ :dark-mode-img ["4suits.svg"]}
 +++
 
 # Our-client: Golden Island

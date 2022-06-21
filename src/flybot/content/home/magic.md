@@ -1,7 +1,6 @@
-{:order 3
- :image-beside "binary.svg"
- :image-alt "Love word written in base 2"
- :image-dark-mode? true}
+{:order         3
+ :image-beside  {:file "binary.svg" :alt "Love word written in base 2"}
+ :dark-mode-img ["binary.svg"]}
 +++
 
 # R&D project: Clojure in Unity
