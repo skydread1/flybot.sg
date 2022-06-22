@@ -39,7 +39,7 @@
    It assumes the image has a dark-mode source equivalent ending with '-dark-mode'
    in the same folder has the regular image."
   [hiccup images]
-  (if-not (seq images)
-    hiccup
-    (recur (dark-image hiccup (first images))
-           (drop 1 images))))
+  (let [[i & r] images]
+    (if i
+       (recur (dark-image hiccup i) r)
+       hiccup)))
