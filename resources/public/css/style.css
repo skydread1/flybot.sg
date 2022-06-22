@@ -413,14 +413,6 @@ section .image>img {
     animation: var(--pulse-animation);
 }
 
-/* Apply page */
-
-@media (max-width: 1024px) {
-    section .application {
-        text-align: center;
-    }
-}
-
 section a.button {
     text-align: center;
     text-decoration: none;
@@ -433,11 +425,15 @@ section a.button {
     background-color: var(--button-primary-color);
 }
 
-/* About Us page */
+/* Apply page */
 
-section .members {
-    text-align: center;
+@media (max-width: 1024px) {
+    section .application {
+        text-align: center;
+    }
 }
+
+/* About Us page */
 
 section .team {
     text-align: center;
@@ -445,12 +441,12 @@ section .team {
 }
 
 @media (min-width: 1024px) {
-    section .team {
+    section .members {
         display: flex;
         justify-content: space-evenly;
     }
 
-    section .team>div {
+    section .members>div {
         width: 30%;
     }
 }
