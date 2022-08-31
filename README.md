@@ -26,7 +26,7 @@ The website:
 
 Each page section is divided into sub-sections (cards).
 Each card is a markdown file that accepts some optional configuration.
-The markdown files are located in `src/flybot/content`.
+The markdown files are located in `src/cljs/flybot/content`.
 
 The folder name is the page name and the files in that folder are the cards names such as:
 

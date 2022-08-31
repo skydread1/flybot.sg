@@ -5,18 +5,31 @@
            metosin/reitit                        {:mvn/version "0.5.18"}
            cljsjs/react                          {:mvn/version "18.0.0-rc.0-0"}
            cljsjs/react-dom                      {:mvn/version "18.0.0-rc.0-0"}
-           markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}}
+           markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
+           cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}}
  ;; setup some development paths
  :paths   ["src" "target" "resources"]
  ;; setup a helpful alias to start the build
  :aliases
  {:dev
-  {:main-opts ["--main"  "figwheel.main"
+  {:extra-paths ["src/cljs/flybot"]
+   :main-opts ["--main"  "figwheel.main"
                "--build" "dev"
-               "--repl"]}
+               "--repl"]} 
   :prod
-  {:main-opts ["--main"       "figwheel.main"
+  {:extra-paths ["src/cljs/flybot"]
+   :main-opts ["--main"       "figwheel.main"
                "--build-once" "prod"]}
   :build
   {:deps {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}}
-   :ns-default build}}}
+   :ns-default build}
+
+  :dev-server
+  {:extra-paths ["src/clj/flybot"]
+   :extra-deps {aleph/aleph               {:mvn/version "0.4.6"}
+                metosin/muuntaja          {:mvn/version "0.6.8"}
+                mount/mount               {:mvn/version "0.1.16"}
+                datalevin/datalevin       {:mvn/version "0.6.16"}
+                com.cognitect/transit-clj {:mvn/version "1.0.329"}}
+   :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+              "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}}}
