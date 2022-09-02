@@ -1,8 +1,7 @@
-(ns cljs.flybot.components.header
-  
+(ns cljs.flybot.components.header 
   (:require [cljs.flybot.db :refer [app-db]]
-            [cljs.flybot.lib.cljs.localstorage :as l-storage]
-            [cljs.flybot.lib.cljs.class-utils :as cu]
+            [cljs.flybot.lib.localstorage :as l-storage]
+            [cljs.flybot.lib.class-utils :as cu]
             [reitit.frontend.easy :as rfe]))
 
 ;; Dark mode

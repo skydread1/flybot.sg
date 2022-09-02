@@ -2,8 +2,8 @@
   (:require [cljs.flybot.components.footer :refer [footer-comp]]
             [cljs.flybot.components.header :refer [header-comp]]
             [cljs.flybot.db :refer [app-db]]
-            [cljs.flybot.lib.cljs.localstorage :as l-storage]
-            [cljs.flybot.lib.cljs.router :as router]
+            [cljs.flybot.lib.localstorage :as l-storage]
+            [cljs.flybot.lib.router :as router]
             [cljs.flybot.pages.home :refer [home-page]]
             [reagent.dom :as rdom]))
 

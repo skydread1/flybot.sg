@@ -1,37 +1,34 @@
 (ns cljs.flybot.components.section
   (:require [cljs.flybot.db :refer [app-db]]
-            [cljs.flybot.lib.cljs.md-to-hiccup :as m]))
+            [cljs.flybot.lib.image :as img]))
 
 (defn card
   "Returns a card (sub-section) using the hiccup `content` and `config`."
-  [{:keys [content md-path config]}]
-  (let [{:keys [file alt] :as image-beside}
-        (:image-beside config)] 
+  [content {:keys [title image-beside]}]
+  (let [{:keys [file alt]} image-beside] 
     (if image-beside
     ;; returns 2 hiccup divs to be displayed in 2 columns
       [:div.card
-       {:key md-path}
+       {:key title}
        [:div.image
         [:img {:src (str "assets/" file) :alt alt}]]
        [:div.text
         content]]
     ;; returns 1 hiccup div
       [:div.card
-       {:key md-path}
+       {:key title}
        [:div.textonly
         content]])))
 
 (defn section
   "Given the `dir`, returns the section content."
-  [dir]
-  (let [files-names     (m/page-files-names dir)
-        hiccups-info         (map #(m/hiccup-info-of dir %) files-names)
-        ordered-hiccups (sort-by #(-> % :config :order) hiccups-info)]
+  [hiccups]
+  (let [ordered-hiccups (sort-by #(-> % :config :order) hiccups)]
     (doall
      (for [hiccup ordered-hiccups
-           :let [card (card hiccup)
-                 config (:config hiccup)]]
+           :let [{:keys [content config]} hiccup
+                 card (card content config)]]
        (if (= :dark (:theme @app-db))
-         (m/toggle-image-mode card (:dark-mode-img config))
+         (img/toggle-image-mode card (:dark-mode-img config))
          card)))))
 

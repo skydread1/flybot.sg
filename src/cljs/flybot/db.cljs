@@ -1,5 +1,4 @@
-(ns cljs.flybot.db
-  
+(ns cljs.flybot.db 
   (:require [reagent.core :as r]))
 
 ;; State
@@ -7,4 +6,5 @@
   (r/atom
    {:theme :dark
     :current-view nil
-    :navbar-open false}))
+    :navbar-open false
+    :content {}}))

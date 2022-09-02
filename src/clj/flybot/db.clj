@@ -1,53 +1,35 @@
 (ns clj.flybot.db 
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [datalevin.core :as d]))
-
-;; ---------- IO ----------
-
-(def directory "./src/cljs/flybot/content/")
-(def sub-dirs ["home" "apply" "about" "blog"])
-
-(defn get-md-files
-  "Returns a map with the
-   - dir as key
-   - map {file-name file-content} as value"
-  [dir]
-  (let [dir-path  (str directory dir)
-        file-names (-> dir-path io/file .list seq)]
-    (->> file-names
-         (filter #(str/ends-with? % ".md"))
-         (reduce (fn [acc f]
-                   (assoc acc f (slurp (str directory dir "/" f))))
-                 {})
-         (assoc {} dir))))
-
-(def get-all-md-files
-  "Returns all the md contents from all the files as a map."
-  (->> sub-dirs
-       (map get-md-files)
-       (reduce merge)))
+  (:require [datalevin.core :as d]
+            [clj.flybot.md-to-hiccup :as hiccup]))
 
 ;; ---------- DB ----------
 
-;; Open a key value DB on disk and get the DB handle
-(defn create-db []
+(defn create-db
+  "Open a key value DB on disk and get the DB handle"
+  []
   (d/open-kv "./mykvdb"))
 
-(defn populate-md-table
+(def db (create-db))
+
+(defn populate-content
+  "Slurps contents of the md files from the content folder
+   and convert it to hiccups and configs.
+   Then store the content and config in a kv db."
   [db]
-  (d/open-dbi db "md-content")
+  (d/open-dbi db "content")
   (d/transact-kv
    db
-   [[:put "md-content" :md-content get-all-md-files]]))
+   [[:put "content" :content hiccup/get-all-hiccups]]))
 
-(defn get-md-content
-  [db]
-  (d/get-value db "md-content" :md-content))
+(defn get-content-of
+  "Returns a vector of the differents posts of given `page`."
+  [db page]
+  (-> (d/get-value db "content" :content)
+       (get page)))
 
-(defn delete-md-content
+(defn delete-content-table
   [db]
-  (d/transact-kv db [[:del "md-content" :md-content]]))
+  (d/transact-kv db [[:del "content" :ontent]]))
 
 (defn close-db
   [db]
