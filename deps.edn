@@ -1,21 +1,29 @@
-{:deps    {com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
+{:deps    {;; front-end
+           com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
            org.clojure/clojurescript             {:mvn/version "1.11.57"}
            reagent/reagent                       {:mvn/version "1.1.1"}
-           metosin/malli                         {:mvn/version "0.8.4"}
-           metosin/reitit                        {:mvn/version "0.5.18"}
            cljsjs/react                          {:mvn/version "18.0.0-rc.0-0"}
            cljsjs/react-dom                      {:mvn/version "18.0.0-rc.0-0"}
            markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
-           cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}}
- ;; setup some development paths
- :paths   ["src" "target" "resources"]
- ;; setup a helpful alias to start the build
+           cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}
+
+           ;; both fron-end and back-end
+           metosin/malli                         {:mvn/version "0.8.4"}
+           metosin/reitit                        {:mvn/version "0.5.18"}
+
+           ;; back-end
+           aleph/aleph                           {:mvn/version "0.4.6"}
+           metosin/muuntaja                      {:mvn/version "0.6.8"}
+           mount/mount                           {:mvn/version "0.1.16"}
+           datalevin/datalevin                   {            :mvn/version "0.6.16"}
+           com.cognitect/transit-clj             {:mvn/version "1.0.329"}} 
+ :paths   ["src" "target" "resources"] 
  :aliases
  {:dev
   {:extra-paths ["src/cljs/flybot"]
    :main-opts ["--main"  "figwheel.main"
                "--build" "dev"
-               "--repl"]} 
+               "--repl"]}
   :prod
   {:extra-paths ["src/cljs/flybot"]
    :main-opts ["--main"       "figwheel.main"
@@ -26,10 +34,9 @@
 
   :dev-server
   {:extra-paths ["src/clj/flybot"]
-   :extra-deps {aleph/aleph               {:mvn/version "0.4.6"}
-                metosin/muuntaja          {:mvn/version "0.6.8"}
-                mount/mount               {:mvn/version "0.1.16"}
-                datalevin/datalevin       {:mvn/version "0.6.16"}
-                com.cognitect/transit-clj {:mvn/version "1.0.329"}}
+   :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+              "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
+  :uberjar
+  {:omit true
    :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
               "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}}}
