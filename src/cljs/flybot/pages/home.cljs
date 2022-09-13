@@ -20,6 +20,6 @@
      :error-handler error-handler}))
 
 (defn home-page []
-  (get-content)
+  (when-not (-> @app-db :content :home) (get-content))
   [:section.container.home
    (section (-> @app-db :content :home))])

@@ -1,7 +1,8 @@
 (ns clj.flybot.core 
   (:require [aleph.http :as http] 
             [mount.core :as mount]
-            [clj.flybot.handler :as handler])
+            [clj.flybot.handler :as handler]
+            [clj.flybot.db :as db])
   (:gen-class))
 
 (declare http-server)
@@ -15,4 +16,6 @@
   (mount/stop))
 
 (defn -main [& _]
-  (mount/start))
+  (mount/start)
+  (db/add-schemas)
+  (db/add-pages))

@@ -12,19 +12,19 @@
   {:body (slurp (io/resource "public/index.html"))})
 
 (defn home-handler [_]
-  {:body    (db/get-content-of "home")
+  {:body    (db/get-posts "home")
    :headers {"content-type" "application/edn"}})
 
 (defn apply-handler [_]
-  {:body    (db/get-content-of "apply")
+  {:body    (db/get-posts "apply")
    :headers {"content-type" "application/edn"}})
 
 (defn about-handler [_]
-  {:body    (db/get-content-of "about")
+  {:body    (db/get-posts "about")
    :headers {"content-type" "application/edn"}})
 
 (defn blog-handler [_]
-  {:body    (db/get-content-of "blog")
+  {:body    (db/get-posts "blog")
    :headers {"content-type" "application/edn"}})
 
 (def app-routes

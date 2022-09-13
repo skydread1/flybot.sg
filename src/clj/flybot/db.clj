@@ -1,38 +1,184 @@
-(ns clj.flybot.db 
-  (:require [datalevin.core :as d]
-            [mount.core :refer [defstate]]
-            [clj.flybot.md-to-hiccup :as hiccup]))
+(ns clj.flybot.db
+  (:require [mount.core :refer [defstate]]
+            [clojure.string :as str]
+            [datomic.api :as d]))
+
+;; ---------- DB connection in mem (datomic-free) ----------
+
+(def db-uri "datomic:mem://website")
 
 (declare ^:dynamic *db*)
+
 (defstate ^:dynamic *db*
-  :start (d/open-kv "./mykvdb")
-  :stop (d/close-kv *db*))
+  :start (d/create-database db-uri)
+  :stop  (d/delete-database db-uri))
 
-;; ---------- DB ----------
-
-(defn populate-content
-  "Slurps contents of the md files from the content folder
-   and convert it to hiccups and configs.
-   Then store the content and config in a kv db."
+(defn conn
   []
-  (d/open-dbi *db* "content")
-  (d/transact-kv
-   *db*
-   [[:put "content" :content hiccup/get-all-hiccups]]))
+  (d/connect db-uri))
 
-(defn get-content-of
-  "Returns a vector of the differents posts of given `page`."
-  [page]
-  (-> (d/get-value *db* "content" :content)
-       (get page)))
-
-(defn delete-content-table
+(defn delete-db
   []
-  (d/transact-kv *db* [[:del "content" :ontent]]))
+  (d/delete-database db-uri))
 
-(defn close-db
+;; ---------- Schemas ----------
+
+(def image-schema
+  [{:db/ident :image/src
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :image/alt
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}])
+
+(def post-schema
+  [{:db/ident :post/title
+    :db/valueType :db.type/string
+    :db/unique :db.unique/identity
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :post/order
+    :db/valueType :db.type/long
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :post/image-beside
+    :db/valueType :db.type/ref
+    :db/isComponent true
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :post/dk-images
+    :db/valueType :db.type/ref
+    :db/isComponent true
+    :db/cardinality :db.cardinality/many}
+   {:db/ident :post/md-content
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}])
+
+(def page-schema
+  [{:db/ident :page/title
+    :db/valueType :db.type/string
+    :db/unique :db.unique/identity
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :page/posts
+    :db/valueType :db.type/ref
+    :db/isComponent true
+    :db/cardinality :db.cardinality/many}])
+
+
+(defn add-schemas
   []
-  (d/close-kv *db*))
+  (d/transact (conn) image-schema)
+  (d/transact (conn) post-schema)
+  (d/transact (conn) page-schema))
 
+;; ---------- Assertions ----------
 
+(def directory "./src/clj/flybot/content/")
 
+(defn slurp-md
+  "Slurp the md file but only returns the md content without the config."
+  [page-name file-name]
+  (-> (slurp (str directory page-name "/" file-name))
+      (str/split #"\+\+\+")
+      reverse
+      first))
+
+(comment
+  (slurp-md "home" "clojure.md"))
+
+(def about-page
+  {:page/title "about"
+   :page/posts 
+   [{:post/order 0
+     :post/title "company"
+     :post/md-content (slurp-md "about" "company.md")
+     :post/image-beside {:image/src "flybot-logo.png"
+                         :image/alt "Flybot Logo"}}
+    {:post/order 1
+     :post/title "team"
+     :post/md-content (slurp-md "about" "team.md") 
+     :post/dk-images [{:image/src "github-mark-logo.png"}]}]})
+
+(def apply-page
+  {:page/title "apply"
+   :page/posts
+   [{:post/order 0
+     :post/title "description"
+     :post/md-content (slurp-md "apply" "description.md")}
+    {:post/order 1
+     :post/title "qualifications"
+     :post/md-content (slurp-md "apply" "qualifications.md")}
+    {:post/order 2
+     :post/title "goal"
+     :post/md-content (slurp-md "apply" "goal.md")}
+    {:post/order 3
+     :post/title "application"
+     :post/md-content (slurp-md "apply" "application.md")}]})
+
+(def blog-page
+  {:page/title "blog"
+   :page/posts
+   [{:post/order 0
+     :post/title "welcome"
+     :post/md-content (slurp-md "blog" "welcome.md")}]})
+
+(def home-page
+  {:page/title "home"
+   :page/posts
+   [{:post/order 0
+     :post/title "clojure"
+     :post/md-content (slurp-md "home" "clojure.md")
+     :post/image-beside {:image/src "clojure-logo.svg"
+                         :image/alt "Clojure Logo"}
+     :post/dk-images [{:image/src "clojure-logo.svg"}]}
+    {:post/order 1
+     :post/title "paradigms"
+     :post/md-content (slurp-md "home" "paradigms.md")
+     :post/image-beside {:image/src "lambda-logo.svg"
+                         :image/alt "Lambda Logo"}
+     :post/dk-images [{:image/src "lambda-logo.svg"}]}
+    {:post/order 2
+     :post/title "golden-island"
+     :post/md-content (slurp-md "home" "golden-island.md")
+     :post/image-beside {:image/src "4suits.svg"
+                         :image/alt "4 suits of a deck"}
+     :post/dk-images [{:image/src "4suits.svg"}]}
+    {:post/order 3
+     :post/title "magic"
+     :post/md-content (slurp-md "home" "magic.md")
+     :post/image-beside {:image/src "binary.svg"
+                         :image/alt "Love word written in base 2"}
+     :post/dk-images [{:image/src "binary.svg"}]}]})
+
+(defn add-pages
+  "Add all pre-defined pages in the DB"
+  []
+  (d/transact (conn) [about-page])
+  (d/transact (conn) [apply-page])
+  (d/transact (conn) [blog-page])
+  (d/transact (conn) [home-page]))
+
+(defn add-post
+  "Add `post` of `page` in the DB"
+  [post page]
+  (d/transact (conn) [{:page/title page
+                     :page/posts [post]}]))
+
+;; ---------- Read ----------
+
+(def page-pull-pattern
+  [{:page/posts [:post/title
+                 :post/order
+                 :post/md-content
+                 {:post/image-beside [:image/src :image/alt]}
+                 {:post/dk-images [:image/src]}]}])
+
+(defn get-posts
+  "Get all the posts of the given `page-name`."
+  [page-name] 
+  (->> (d/q
+        '[:find (pull ?page pull-pattern)
+          :in $ ?page-name pull-pattern
+          :where [?page :page/title ?page-name]]
+        (d/db (conn))
+        page-name
+        page-pull-pattern)
+       ffirst
+       :page/posts))

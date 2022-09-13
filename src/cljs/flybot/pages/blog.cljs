@@ -20,6 +20,6 @@
      :error-handler error-handler}))
 
 (defn blog-page []
-  (get-content)
+  (when-not (-> @app-db :content :blog) (get-content))
   [:section.container.blog
    (section (-> @app-db :content :blog))])

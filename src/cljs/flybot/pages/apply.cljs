@@ -2,7 +2,7 @@
   (:require [cljs.flybot.components.section :refer [section]]
             [clojure.edn :as edn]
             [cljs.flybot.db :refer [app-db]]
-            [ajax.core :refer [GET POST]]))
+            [ajax.core :refer [GET]]))
 
 (defn content-handler [response]
   (->> response
@@ -20,6 +20,6 @@
      :error-handler error-handler}))
 
 (defn apply-page []
-  (get-content)
+  (when-not (-> @app-db :content :apply) (get-content))
   [:section.container.apply
    (section (-> @app-db :content :apply))])
