@@ -4,9 +4,9 @@
             [cljs.flybot.lib.hiccup :as h]))
 
 (defn card
-  "Returns a card (sub-section) using the hiccup `content` and `config`."
+  "Returns a card (post) using the hiccup `content` and `config`."
   [{:post/keys [title image-beside hiccup-content]}]
-  (let [{:image/keys [src alt]} image-beside] 
+  (let [{:image/keys [src alt]} image-beside]
     (if image-beside
     ;; returns 2 hiccup divs to be displayed in 2 columns
       [:div.card

@@ -1,7 +1,7 @@
 (ns cljs.flybot.core
   (:require [cljs.flybot.components.footer :refer [footer-comp]]
             [cljs.flybot.components.header :refer [header-comp]]
-            [cljs.flybot.db :refer [app-db]]
+            [cljs.flybot.db :as db :refer [app-db]]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.router :as router]
             [cljs.flybot.pages.home :refer [home-page]]
@@ -25,6 +25,7 @@
 (defn start-app! []
   (router/init-routes!)
   (l-storage/init-theme!)
+  (db/get-all-posts)
   (rdom/render [app] (. js/document (getElementById "app"))))
 
 (start-app!)

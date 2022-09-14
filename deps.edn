@@ -15,10 +15,7 @@
            aleph/aleph                           {:mvn/version "0.4.6"}
            metosin/muuntaja                      {:mvn/version "0.6.8"}
            mount/mount                           {:mvn/version "0.1.16"}
-           com.cognitect/transit-clj             {:mvn/version "1.0.329"}
-           ;; datomic-free deps causes piggieback not found error if cljs repl
-           ;; is started so just comment it for front end as for now
-           com.datomic/datomic-free              {:mvn/version "0.9.5697"}} 
+           com.cognitect/transit-clj             {:mvn/version "1.0.329"}} 
  :paths   ["src" "target" "resources"]
  :aliases
  {:dev
@@ -36,9 +33,4 @@
 
   :dev-server
   {:extra-paths ["src/clj/flybot"]
-   :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
-              "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
-  :uberjar
-  {:omit true
-   :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
-              "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}}}
+   :extra-deps {com.datomic/datomic-free {:mvn/version "0.9.5697"}}}}}

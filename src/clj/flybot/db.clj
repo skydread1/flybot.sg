@@ -159,16 +159,16 @@
   "Add `post` of `page` in the DB"
   [post page]
   (d/transact (conn) [{:page/title page
-                     :page/posts [post]}]))
+                       :page/posts [post]}]))
 
 ;; ---------- Read ----------
 
 (def page-pull-pattern
-  [{:page/posts [:post/title
-                 :post/order
-                 :post/md-content
-                 {:post/image-beside [:image/src :image/alt]}
-                 {:post/dk-images [:image/src]}]}])
+  [:page/title {:page/posts [:post/title
+                             :post/order
+                             :post/md-content
+                             {:post/image-beside [:image/src :image/alt]}
+                             {:post/dk-images [:image/src]}]}])
 
 (defn get-posts
   "Get all the posts of the given `page-name`."
@@ -180,5 +180,18 @@
         (d/db (conn))
         page-name
         page-pull-pattern)
-       ffirst
-       :page/posts))
+       ffirst))
+
+(defn get-all-posts
+  "Get all the posts of all the pages."
+  []
+  (->> (d/q
+        '[:find (pull ?page pull-pattern)
+          :in $ pull-pattern
+          :where [?page :page/title]]
+        (d/db (conn))
+        page-pull-pattern)))
+
+;;(map first)
+;;(map (fn [e] (d/entity (d/db (conn)) e)))
+;;(map d/touch)

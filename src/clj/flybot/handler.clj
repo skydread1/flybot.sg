@@ -11,30 +11,15 @@
 (defn index-handler [_]
   {:body (slurp (io/resource "public/index.html"))})
 
-(defn home-handler [_]
-  {:body    (db/get-posts "home")
-   :headers {"content-type" "application/edn"}})
-
-(defn apply-handler [_]
-  {:body    (db/get-posts "apply")
-   :headers {"content-type" "application/edn"}})
-
-(defn about-handler [_]
-  {:body    (db/get-posts "about")
-   :headers {"content-type" "application/edn"}})
-
-(defn blog-handler [_]
-  {:body    (db/get-posts "blog")
+(defn get-all-posts-handler [_]
+  {:body    (db/get-all-posts)
    :headers {"content-type" "application/edn"}})
 
 (def app-routes
   (reitit/ring-handler
    (reitit/router
-    [["/home"  {:get home-handler :middleware [:content :wrap-base]}]
-     ["/apply" {:get apply-handler :middleware [:content :wrap-base]}]
-     ["/about" {:get about-handler :middleware [:content :wrap-base]}]
-     ["/blog"  {:get blog-handler :middleware [:content :wrap-base]}] 
-     ["/*"     (reitit/create-resource-handler {:root "public"})]]
+    [["/all-posts"  {:get get-all-posts-handler :middleware [:content :wrap-base]}]
+     ["/*"          (reitit/create-resource-handler {:root "public"})]]
     {:conflicts            (constantly nil)
      ::middleware/registry {:content muuntaja/format-middleware
                             :wrap-base mw/wrap-base}
