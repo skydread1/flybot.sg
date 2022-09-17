@@ -15,7 +15,9 @@
   []
   (mount/stop))
 
-(defn -main [& _]
+(defn -main [& _] 
   (mount/start)
+  (println "server started")
   (db/add-schemas)
-  (db/add-pages))
+  (db/add-pages)
+  (println "Memory DB created and populated"))

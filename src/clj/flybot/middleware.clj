@@ -1,6 +1,6 @@
 (ns clj.flybot.middleware
-  
-  (:require [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
+  (:require
+   [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 
 (defn wrap-cors
   "Wrap the server response with new headers to allow Cross Origin."
@@ -14,7 +14,7 @@
 
 (defn wrap-base [handler]
   (-> handler
-      (wrap-cors) ; enable CORS
+      (wrap-cors)
       (wrap-defaults
        (-> site-defaults
            (assoc-in [:security :anti-forgery] false)))))

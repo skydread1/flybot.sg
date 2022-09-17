@@ -9,22 +9,23 @@
 .env.production.local
 
 ## Clojure
-.cpcache/
+.cpcache
 .lsp
 .nrepl*
-.target/
+.target
 .rebel*
 *.swp
 deps/
-build/
-.idea/
+build
+.idea
 *.iml
 .calva
+.vscode
 .clj-kondo
 .nrepl-port
 
 ## reagent/figwheel
-target/
+target
 index.html
 
 

@@ -1,5 +1,6 @@
 (ns clj.flybot.db
   (:require [mount.core :refer [defstate]]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [datomic.api :as d]))
 
@@ -70,12 +71,11 @@
 
 ;; ---------- Assertions ----------
 
-(def directory "./src/clj/flybot/content/")
-
 (defn slurp-md
   "Slurp the md file but only returns the md content without the config."
   [page-name file-name]
-  (-> (slurp (str directory page-name "/" file-name))
+  (-> (io/resource (str "flybot/content/" page-name "/" file-name))
+      slurp
       (str/split #"\+\+\+")
       reverse
       first))
@@ -191,7 +191,3 @@
           :where [?page :page/title]]
         (d/db (conn))
         page-pull-pattern)))
-
-;;(map first)
-;;(map (fn [e] (d/entity (d/db (conn)) e)))
-;;(map d/touch)

@@ -29,7 +29,7 @@
 (defn get-all-posts
   "Get all posts of all pages."
   []
-  (GET "http://localhost:8123/all-posts"
+  (GET "/all-posts" ;; use http://localhost:8123/all-posts for dev with figwheel
     {:handler content-handler
      :headers {"Accept" "application/edn"}
      :error-handler error-handler}))

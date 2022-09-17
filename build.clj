@@ -20,10 +20,12 @@
   "- Compiles the sources cljs to a single prod-main.js
    - Moves the prod-main.js from target/public to resources/public."
   [_]
+  (println "[START] -> Client : Generate js bundle")
   (clean nil)
   (b/process {:command-args ["clojure" "-M:prod"]})
   (move-js nil)
-  (clean nil))
+  (clean nil)
+  (println "[END] -> Client : Generate js bundle"))
 
 ;; ---------- Deploy Server ----------
 
@@ -38,8 +40,9 @@
   "Creates the uberjar in target.
    Assumes the client main.js has been created an placed in the resource."
   [_]
+  (println "[START] -> Server : Generate uberjar")
   (clean nil)
-  (b/copy-dir {:src-dirs   ["src" "resources"]
+  (b/copy-dir {:src-dirs   ["src/clj" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis     basis
                   :src-dirs  ["src/clj"]
@@ -47,16 +50,19 @@
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis     basis
-           :main      'clj.flybot.core}))
+           :main      'clj.flybot.core})
+  (println "[END] -> Server : Generate uberjar"))
 
 ;; ---------- Deploy Client+Server----------
 
-(defn deploy [_]
-  (deploy-client nil)
+(defn deploy [_] 
+  (deploy-client nil) 
   (uber nil))
 
 ;; run the jar:
 ;; java -jar target/flybot.sg-1.2.68-standalone.jar
+
+
 
 
 
