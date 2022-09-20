@@ -8,7 +8,7 @@
 (declare http-server)
 
 (mount/defstate ^{:on-reload :noop} http-server
-  :start (http/start-server (handler/app) {:port 8123})
+  :start (http/start-server handler/app {:port 8123})
   :stop  (.close http-server))
 
 (defn stop-server

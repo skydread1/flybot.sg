@@ -1,0 +1,1 @@
+{:ring-handler clj.flybot.handler/app-dev}

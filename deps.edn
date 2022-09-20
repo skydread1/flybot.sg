@@ -13,25 +13,21 @@
            metosin/muuntaja                      {:mvn/version "0.6.8"}
 
            ;; back-end
-           aleph/aleph                           {:mvn/version "0.5.0"} 
-           mount/mount                           {:mvn/version "0.1.16"}
-           com.cognitect/transit-clj             {:mvn/version "1.0.329"}}
- :paths   ["src" "target" "resources"]
+           aleph/aleph                           {:mvn/version "0.5.0"}
+           mount/mount                           {:mvn/version "0.1.16"} 
+           com.datomic/datomic-free              {:mvn/version "0.9.5697"}
+
+           ;; work around to resolve the dep conflict introduced by datomic
+           com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
+ :paths   ["src" "src/clj" "src/cljs" "target" "resources"]
  :aliases
  {:dev
-  {:extra-paths ["src/cljs"] 
-   :main-opts ["--main"  "figwheel.main"
+  {:main-opts ["--main"  "figwheel.main"
                "--build" "dev"
                "--repl"]}
   :prod
-  {:extra-paths ["src/cljs"]
-   :main-opts ["--main"       "figwheel.main"
+  {:main-opts ["--main"       "figwheel.main"
                "--build-once" "prod"]}
   :build
   {:deps {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
-   :ns-default build}
-
-  :dev-server
-  {:extra-paths ["src/clj"]
-   :extra-deps {com.datomic/datomic-free {:mvn/version "0.9.5697"}
-                com.google.guava/guava {:mvn/version "31.0.1-jre"}}}}}
+   :ns-default build}}}

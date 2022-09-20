@@ -31,6 +31,6 @@
      (for [post ordered-posts
            :let [card (card post)]]
        (if (= :dark (:theme @app-db))
-         (img/toggle-image-mode card (:post/dk-images post))
+         (img/toggle-image-mode card (map :image/src (:post/dk-images post)))
          card)))))
 

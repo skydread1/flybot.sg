@@ -29,5 +29,8 @@
       :method-not-allowed (constantly {:status 405, :body "Not allowed"})
       :not-acceptable     (constantly {:status 406, :body "Not acceptable"})})))
 
-(defn app []
+(def app
   (mw/wrap-base #'app-routes))
+
+(def app-dev
+  (mw/wrap-mem-db (mw/wrap-base #'app-routes)))

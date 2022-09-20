@@ -8,9 +8,9 @@
 
 (def db-uri "datomic:mem://website")
 
-(declare ^:dynamic *db*)
+(declare db)
 
-(defstate ^:dynamic *db*
+(defstate ^{:on-reload :noop} db
   :start (d/create-database db-uri)
   :stop  (d/delete-database db-uri))
 
@@ -18,8 +18,12 @@
   []
   (d/connect db-uri))
 
-(defn delete-db
+(defn create-db
   []
+  (d/create-database db-uri))
+
+(defn delete-db
+  [] 
   (d/delete-database db-uri))
 
 ;; ---------- Schemas ----------
@@ -172,7 +176,7 @@
 
 (defn get-posts
   "Get all the posts of the given `page-name`."
-  [page-name] 
+  [page-name]
   (->> (d/q
         '[:find (pull ?page pull-pattern)
           :in $ ?page-name pull-pattern
