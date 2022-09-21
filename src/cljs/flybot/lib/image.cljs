@@ -9,10 +9,9 @@
    It assumes the image has a dark-mode source equivalent ending with '-dark-mode'
    in the same folder has the regular image."
   [hiccup img-src]
-  (let [src (str "assets/" img-src)
-        src-dark (->> (str/split src ".")
+  (let [src-dark (->> (str/split img-src ".")
                       (str/join "-dark-mode."))]
-    (postwalk-replace {src src-dark} hiccup)))
+    (postwalk-replace {img-src src-dark} hiccup)))
 
 (defn toggle-image-mode
   "Replaces all the given `images` sources by their dark mode sources.
@@ -21,5 +20,5 @@
   [hiccup images]
   (let [[i & r] images]
     (if i
-       (recur (dark-image hiccup i) r)
-       hiccup)))
+      (recur (dark-image hiccup i) r)
+      hiccup)))

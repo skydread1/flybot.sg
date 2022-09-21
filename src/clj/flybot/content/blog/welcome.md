@@ -1,7 +1,3 @@
-{:order 0
- :title "welcome"}
-+++
-
 # Welcome to our new site
 
 ## About the Implementation

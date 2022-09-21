@@ -1,7 +1,3 @@
-{:order 0
- :title "description"}
-+++
-
 # Job Description
 
 As an software engineer (full-time or intern) at Flybot, you will:

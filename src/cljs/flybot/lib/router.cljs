@@ -8,7 +8,8 @@
             [cljs.flybot.pages.home :refer [home-page]]
             [cljs.flybot.pages.apply :refer [apply-page]]
             [cljs.flybot.pages.about :refer [about-page]]
-            [cljs.flybot.pages.blog :refer [blog-page]]))
+            [cljs.flybot.pages.blog :refer [blog-page]]
+            [flybot.pages.create-post :refer [create-post-page]]))
 
 (def routes
   [["/"
@@ -26,6 +27,10 @@
    ["/blog"
     {:name :flybot/blog
      :view blog-page}]
+   
+   ["/create-post"
+    {:name :flybot/create-post
+     :view create-post-page}]
 
    ["#footer-contact"
     {:name :flybot/contact}]])

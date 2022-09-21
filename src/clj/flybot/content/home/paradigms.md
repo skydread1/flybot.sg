@@ -1,9 +1,3 @@
-{:order         1
- :title         "paradigms"
- :image-beside  {:file "lambda-logo.svg" :alt "Lambda Logo"}
- :dark-mode-img ["lambda-logo.svg"]}
-+++
-
 # Functional Programming
 
 We use the Data Oriented Programming (DOP) and functional programming (FP) paradigms to implement our diverse projects.

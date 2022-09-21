@@ -1,8 +1,3 @@
-{:order        0
- :title        "company"
- :image-beside {:file "flybot-logo.png" :alt "Flybot Logo"}}
-+++
-
 # The company
 
 Flybot Pte Ltd was established in 2015 in Singapore.

@@ -1,9 +1,3 @@
-{:order         3
- :title         "magic"
- :image-beside  {:file "binary.svg" :alt "Love word written in base 2"}
- :dark-mode-img ["binary.svg"]}
-+++
-
 # R&D project: Clojure in Unity
 
 Clojure can run on different platform:

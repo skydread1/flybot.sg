@@ -5,19 +5,19 @@
 
 (defn card
   "Returns a card (post) using the hiccup `content` and `config`."
-  [{:post/keys [title image-beside hiccup-content]}]
+  [{:post/keys [id css-class image-beside hiccup-content]}] 
   (let [{:image/keys [src alt]} image-beside]
-    (if image-beside
+    (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns
       [:div.card
-       {:key title}
+       {:key id :class css-class}
        [:div.image
-        [:img {:src (str "assets/" src) :alt alt}]]
+        [:img {:src src :alt alt}]]
        [:div.text
         hiccup-content]]
     ;; returns 1 hiccup div
       [:div.card
-       {:key title}
+       {:key id :class css-class}
        [:div.textonly
         hiccup-content]])))
 
@@ -26,7 +26,7 @@
   [posts]
   (let [ordered-posts (->> posts
                            (map h/add-hiccup)
-                           (sort-by :post/order))]
+                           (sort-by :post/creation-date))]
     (doall
      (for [post ordered-posts
            :let [card (card post)]]

@@ -1,7 +1,3 @@
-{:order 2
- :title "goal"}
-+++
-
 # Job Goal 
 
 If you are an intern, we hope you will carry on with us for a full-time position in the future (depending on candidate performance and motivation).

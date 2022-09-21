@@ -1,7 +1,3 @@
-{:order 1
- :title "qualifications"}
-+++
-
 # Job Qualifications
 
 What we look for in Flybot applicants:

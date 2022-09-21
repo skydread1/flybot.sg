@@ -1,8 +1,3 @@
-{:order         1
- :title         "team"
- :dark-mode-img ["github-mark-logo.png"]}
-+++
-
 # The Team
 <div class="members">
 <div>

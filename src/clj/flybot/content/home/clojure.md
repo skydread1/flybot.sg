@@ -1,9 +1,3 @@
-{:order         0
- :title         "clojure"
- :image-beside  {:file "clojure-logo.svg" :alt "Clojure Logo"}
- :dark-mode-img ["clojure-logo.svg"]}
-+++
-
 # Our-language: Clojure
 
 We use [Clojure](https://clojure.org/) as our main programming language for development.

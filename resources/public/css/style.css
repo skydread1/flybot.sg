@@ -173,6 +173,52 @@ svg {
     }
 }
 
+/* Form */
+
+form {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+}
+
+@media (max-width: 1024px) {
+    form {
+        display: block;
+    }
+}
+
+form fieldset {
+    width: 100%;
+    border: none;
+}
+
+form legend {
+    font-size: 1.3rem;
+    color: var(--text-primary-color);
+}
+
+form input, textarea {
+    min-width: 30%;
+    margin: 1rem 0.5rem;
+    color: var(--text-secondary-color);
+    background-color: var(--bg-secondary-color);
+    padding: 0.3rem;
+}
+
+form textarea {
+    margin: 1rem 0rem;
+    width: 100%;
+    min-height: 100rem;
+}
+
+input[type=button] {
+    padding: 0.5rem;
+    color: var(--link-primary-color);
+    text-transform: uppercase;
+}
+
 /* Animation */
 
 @keyframes pulse {
@@ -413,12 +459,13 @@ section .image>img {
     animation: var(--pulse-animation);
 }
 
-section a.button {
+section .button  {
     text-align: center;
+    cursor: pointer;
     text-decoration: none;
     border-radius: 0.3rem;
     margin-top: 0.5rem;
-    padding: 1rem 2rem;
+    padding: 1rem;
     border-style: solid;
     border-width: 2px;
     border-color: var(--border-primary-color);
@@ -460,4 +507,18 @@ section .team img {
 
 section.blog h1 {
     text-transform: uppercase;
+}
+
+/* Create Post page */
+
+section.create-post .button {
+    min-width: 30%;
+    padding: 0.5rem;
+}
+
+@media (min-width: 1024px) {
+    section.create-post .button {
+        min-width: 20%;
+        padding: 1rem;
+    }
 }
