@@ -15,11 +15,23 @@
   {:body    (db/get-all-posts)
    :headers {"content-type" "application/edn"}})
 
+(defn create-post [{:keys [body-params]}]
+  (try
+    (db/add-post body-params)
+    {:body    body-params
+     :headers {"content-type" "application/edn"}}
+    (catch Exception e
+      {:body    {:status 406
+                 :error "Post not added"
+                 :params body-params}
+       :headers {"content-type" "application/edn"}})))
+
 (def app-routes
   (reitit/ring-handler
    (reitit/router
-    [["/all-posts"  {:get get-all-posts-handler :middleware [:content :wrap-base]}]
-     ["/*"          (reitit/create-resource-handler {:root "public"})]]
+    [["/create-post" {:post create-post :middleware [:content :wrap-base]}]
+     ["/all-posts"   {:get get-all-posts-handler :middleware [:content :wrap-base]}]
+     ["/*"           (reitit/create-resource-handler {:root "public"})]]
     {:conflicts            (constantly nil)
      ::middleware/registry {:content muuntaja/format-middleware
                             :wrap-base mw/wrap-base}

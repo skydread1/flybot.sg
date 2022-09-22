@@ -1,15 +1,21 @@
 (ns flybot.pages.create-post
   (:require [cljs.flybot.components.section :as section]
             [cljs.flybot.lib.hiccup :as h]
-            [reagent.core :as r]))
+            [reagent.core :as r]
+            [cljs.flybot.db :as db]))
 
-(defonce create-post (r/atom {}))
+(defonce fields (r/atom {}))
 
-(defn toggle-preview
+(defn toggle-preview-handler
   []
-  (if (= :preview (:post/mode @create-post))
-    (swap! create-post assoc :post/mode :edit)
-    (swap! create-post assoc :post/mode :preview)))
+  (if (= :preview (:post/mode @fields))
+    (swap! fields assoc :post/mode :edit)
+    (swap! fields assoc :post/mode :preview)))
+
+(defn error-component
+  []
+  (when (:post/error @fields)
+    [:div.card "Error: invalid post submission - please retry"]))
 
 (defn buttons
   []
@@ -17,14 +23,14 @@
    [:form
     [:input.button
      {:type "button"
-      :value (if (= :preview (:post/mode @create-post)) "Edit" "Preview")
+      :value (if (= :preview (:post/mode @fields)) "Edit" "Preview")
       :on-change "ReadOnly"
-      :on-click toggle-preview}]
+      :on-click toggle-preview-handler}]
     [:input.button
      {:type "button"
       :value "Submit Post"
       :on-change "ReadOnly"
-      :on-click (constantly nil)}]]])
+      :on-click #(db/create-post fields)}]]])
 
 (defn edit-post
   []
@@ -39,8 +45,8 @@
       {:type "text"
        :name "css-class"
        :placeholder "my-post-1"
-       :value (-> @create-post :post/css-class)
-       :on-change #(swap! create-post assoc :post/css-class
+       :value (-> @fields :post/css-class)
+       :on-change #(swap! fields assoc :post/css-class
                           (-> % .-target .-value))}]
      [:br]
      [:label {:for "img-src" :required "required"} "Side Image source:"]
@@ -49,8 +55,8 @@
       {:type "url"
        :name "img-src"
        :placeholder "https://my.image.com/photo-1"
-       :value (-> @create-post :post/image-beside :image/src)
-       :on-change #(swap! create-post assoc-in [:post/image-beside :image/src]
+       :value (-> @fields :post/image-beside :image/src)
+       :on-change #(swap! fields assoc-in [:post/image-beside :image/src]
                           (-> % .-target .-value))}]
      [:br]
      [:label {:for "img-alt"} "Side Image description:"]
@@ -59,8 +65,8 @@
       {:type "text"
        :name "img-alt"
        :placeholder "Coffee on table"
-       :value (-> @create-post :post/image-beside :image/alt)
-       :on-change #(swap! create-post assoc-in [:post/image-beside :image/alt]
+       :value (-> @fields :post/image-beside :image/alt)
+       :on-change #(swap! fields assoc-in [:post/image-beside :image/alt]
                           (-> % .-target .-value))}]]
     [:br]
     [:fieldset
@@ -72,17 +78,18 @@
       {:name "md-content"
        :required "required"
        :placeholder "# My Post Title\n## Part 1\n Some content of part 1\n..."
-       :value (-> @create-post :post/md-content)
-       :on-change #(swap! create-post assoc :post/md-content
+       :value (-> @fields :post/md-content)
+       :on-change #(swap! fields assoc :post/md-content
                           (-> % .-target .-value))}]]]])
 
 (defn preview-post
   []
-  (-> @create-post h/add-hiccup section/card))
+  (-> @fields h/add-hiccup section/card))
 
 (defn create-post-page []
   [:section.container.create-post
    [buttons]
-   (if (= :preview (:post/mode @create-post))
+   [error-component]
+   (if (= :preview (:post/mode @fields))
      [preview-post]
      [edit-post])])

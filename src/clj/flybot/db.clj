@@ -174,8 +174,8 @@
 
 (defn add-post
   "Add `post` of `page` in the DB"
-  [post page]
-  (d/transact (conn) [{:page/title page
+  [post]
+  (d/transact (conn) [{:page/title "blog"
                        :page/posts [post]}]))
 
 ;; ---------- Read ----------
