@@ -1,3 +1,4 @@
-^{:css-dirs ["resources/public/css"]}
-{:main flybot.core
+^{:watch-dirs ["src/cljs" "src/cljc"]
+  :css-dirs   ["resources/public/css"]}
+{:main cljs.flybot.core
  :optimizations :none}

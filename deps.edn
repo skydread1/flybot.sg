@@ -1,14 +1,25 @@
-{:deps    {com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
-           org.clojure/clojurescript             {:mvn/version "1.11.57"}
+{:deps    {;; front-end
+           com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
+           org.clojure/clojurescript             {:mvn/version "1.11.60"}
            reagent/reagent                       {:mvn/version "1.1.1"}
-           metosin/malli                         {:mvn/version "0.8.4"}
+           cljsjs/react                          {:mvn/version "18.2.0-0"}
+           cljsjs/react-dom                      {:mvn/version "18.2.0-0"}
+           markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
+           cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}
+
+           ;; both fron-end and back-end
+           metosin/malli                         {:mvn/version "0.8.9"}
            metosin/reitit                        {:mvn/version "0.5.18"}
-           cljsjs/react                          {:mvn/version "18.0.0-rc.0-0"}
-           cljsjs/react-dom                      {:mvn/version "18.0.0-rc.0-0"}
-           markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}}
- ;; setup some development paths
- :paths   ["src" "target" "resources"]
- ;; setup a helpful alias to start the build
+           metosin/muuntaja                      {:mvn/version "0.6.8"}
+
+           ;; back-end
+           aleph/aleph                           {:mvn/version "0.5.0"}
+           mount/mount                           {:mvn/version "0.1.16"} 
+           com.datomic/datomic-free              {:mvn/version "0.9.5697"}
+
+           ;; work around to resolve the dep conflict introduced by datomic
+           com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
+ :paths   ["src" "src/clj" "src/cljc" "src/cljs" "target" "resources"]
  :aliases
  {:dev
   {:main-opts ["--main"  "figwheel.main"
@@ -18,5 +29,5 @@
   {:main-opts ["--main"       "figwheel.main"
                "--build-once" "prod"]}
   :build
-  {:deps {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}}
+  {:deps {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
    :ns-default build}}}

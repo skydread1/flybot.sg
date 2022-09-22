@@ -25,7 +25,7 @@ jobs:
           cli: latest
 
       - name: Compile the ClojureScript code to the js bundle
-        run: clojure -T:build deploy
+        run: clojure -T:build deploy-client
 
       - uses: EndBug/add-and-commit@v9
         with:
