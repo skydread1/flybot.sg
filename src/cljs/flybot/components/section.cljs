@@ -1,7 +1,7 @@
 (ns cljs.flybot.components.section
-  (:require [cljs.flybot.db :refer [app-db]]
-            [cljs.flybot.lib.image :as img]
-            [cljs.flybot.lib.hiccup :as h]))
+  (:require [cljs.flybot.lib.image :as img]
+            [cljs.flybot.lib.hiccup :as h]
+            [re-frame.core :as rf]))
 
 (defn card
   "Returns a card (post) using the hiccup `content` and `config`."
@@ -30,7 +30,7 @@
     (doall
      (for [post ordered-posts
            :let [card (card post)]]
-       (if (= :dark (:theme @app-db))
+       (if (= :dark @(rf/subscribe [:subs.app/theme]))
          (img/toggle-image-mode card (map :image/src (:post/dk-images post)))
          card)))))
 

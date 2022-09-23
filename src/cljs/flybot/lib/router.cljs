@@ -1,15 +1,15 @@
 (ns cljs.flybot.lib.router
   
-  (:require [reitit.frontend :as rf]
+  (:require [reitit.frontend :as rei]
             [reitit.frontend.easy :as rfe]
             [reitit.frontend.history :as rfh]
+            [re-frame.core :as rf]
             [goog.object :as gobj]
-            [cljs.flybot.db :refer [app-db]]
             [cljs.flybot.pages.home :refer [home-page]]
             [cljs.flybot.pages.apply :refer [apply-page]]
             [cljs.flybot.pages.about :refer [about-page]]
             [cljs.flybot.pages.blog :refer [blog-page]]
-            [flybot.pages.create-post :refer [create-post-page]]))
+            [cljs.flybot.pages.create-post :refer [create-post-page]]))
 
 (def routes
   [["/"
@@ -36,11 +36,11 @@
     {:name :flybot/contact}]])
 
 (def router
-  (rf/router routes))
+  (rei/router routes))
 
 (defn on-navigate [new-match]
   (when new-match
-    (swap! app-db assoc :current-view new-match)))
+    (rf/dispatch [:evt.app/set-current-view new-match])))
 
 (defn ignore-anchor-click?
   "Function provided by reitit doc to ignore reitit routing on anchor link."

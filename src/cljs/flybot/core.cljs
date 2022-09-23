@@ -1,14 +1,15 @@
 (ns cljs.flybot.core
-  (:require [cljs.flybot.components.footer :refer [footer-comp]]
+  (:require [cljs.flybot.ajax :as ajax]
+            [cljs.flybot.components.footer :refer [footer-comp]]
             [cljs.flybot.components.header :refer [header-comp]]
-            [cljs.flybot.db :as db :refer [app-db]]
-            [cljs.flybot.lib.localstorage :as l-storage]
+            [cljs.flybot.db]
             [cljs.flybot.lib.router :as router]
             [cljs.flybot.pages.home :refer [home-page]]
-            [reagent.dom :as rdom]))
+            [reagent.dom :as rdom]
+            [re-frame.core :as rf]))
 
 (defn current-section []
-  (if-let [view (-> @app-db :current-view :data :view)]
+  (if-let [view (:view @(rf/subscribe [:subs.app/current-view]))]
     (view)
     (home-page)))
 
@@ -23,9 +24,9 @@
 ;; Initialization
 
 (defn start-app! []
+  (rf/dispatch [:evt.app/initialize])
+  (ajax/get-pages)
   (router/init-routes!)
-  (l-storage/init-theme!)
-  (db/get-all-posts)
   (rdom/render [app] (. js/document (getElementById "app"))))
 
 (start-app!)

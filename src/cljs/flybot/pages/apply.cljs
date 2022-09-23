@@ -1,7 +1,7 @@
 (ns cljs.flybot.pages.apply
   (:require [cljs.flybot.components.section :refer [section]] 
-            [cljs.flybot.db :refer [app-db]]))
+            [re-frame.core :as rf]))
 
 (defn apply-page []
   [:section.container.apply
-   (section (-> @app-db :posts :apply))])
+   (section @(rf/subscribe [:subs.post/page-posts :apply]))])
