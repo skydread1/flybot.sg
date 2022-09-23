@@ -1,6 +1,6 @@
 (ns cljs.flybot.lib.image
-  (:require [clojure.walk :refer [postwalk-replace]]
-            [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.walk :refer [postwalk-replace]]))
 
 ;; ---------- Dark mode support ----------
 

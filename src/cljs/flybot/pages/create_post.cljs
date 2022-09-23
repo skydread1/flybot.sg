@@ -1,8 +1,8 @@
-(ns flybot.pages.create-post
-  (:require [cljs.flybot.components.section :as section]
+(ns cljs.flybot.pages.create-post
+  (:require [cljs.flybot.ajax :as ajax]
+            [cljs.flybot.components.section :as section]
             [cljs.flybot.lib.hiccup :as h]
-            [reagent.core :as r]
-            [cljs.flybot.db :as db]))
+            [reagent.core :as r]))
 
 (defonce fields (r/atom {}))
 
@@ -30,7 +30,7 @@
      {:type "button"
       :value "Submit Post"
       :on-change "ReadOnly"
-      :on-click #(db/create-post fields)}]]])
+      :on-click #(ajax/create-post fields)}]]])
 
 (defn edit-post
   []

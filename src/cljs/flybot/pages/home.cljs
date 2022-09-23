@@ -1,7 +1,7 @@
 (ns cljs.flybot.pages.home
   (:require [cljs.flybot.components.section :refer [section]] 
-            [cljs.flybot.db :refer [app-db]]))
+            [re-frame.core :as rf]))
 
 (defn home-page []
   [:section.container.home
-   (section (-> @app-db :posts :home))])
+   (section @(rf/subscribe [:subs.post/page-posts :home]))])
