@@ -1,21 +1,11 @@
 (ns cljs.flybot.pages.create-post
-  (:require [cljs.flybot.ajax :as ajax]
-            [cljs.flybot.components.section :as section]
+  (:require [cljs.flybot.components.section :as section]
             [cljs.flybot.lib.hiccup :as h]
-            [reagent.core :as r]))
+            [re-frame.core :as rf]))
 
-(defonce fields (r/atom {}))
-
-(defn toggle-preview-handler
-  []
-  (if (= :preview (:post/mode @fields))
-    (swap! fields assoc :post/mode :edit)
-    (swap! fields assoc :post/mode :preview)))
-
-(defn error-component
-  []
-  (when (:post/error @fields)
-    [:div.card "Error: invalid post submission - please retry"]))
+(defn errors-component [id]
+  (when-let [error @(rf/subscribe [:subs.form/error id])]
+    [:div.card.error error]))
 
 (defn buttons
   []
@@ -23,14 +13,16 @@
    [:form
     [:input.button
      {:type "button"
-      :value (if (= :preview (:post/mode @fields)) "Edit" "Preview")
+      :value (if (= :preview @(rf/subscribe [:subs.form/field :post/mode]))
+               "Edit"
+               "Preview")
       :on-change "ReadOnly"
-      :on-click toggle-preview-handler}]
+      :on-click #(rf/dispatch [:evt.form/toggle-preview])}]
     [:input.button
      {:type "button"
       :value "Submit Post"
       :on-change "ReadOnly"
-      :on-click #(ajax/create-post fields)}]]])
+      :on-click #(rf/dispatch [:evt.form/send-post!])}]]])
 
 (defn edit-post
   []
@@ -45,9 +37,10 @@
       {:type "text"
        :name "css-class"
        :placeholder "my-post-1"
-       :value (-> @fields :post/css-class)
-       :on-change #(swap! fields assoc :post/css-class
-                          (-> % .-target .-value))}]
+       :value @(rf/subscribe [:subs.form/field :post/css-class])
+       :on-change #(rf/dispatch [:evt.form/set-field
+                                 :post/css-class
+                                 (.. % -target -value)])}]
      [:br]
      [:label {:for "img-src" :required "required"} "Side Image source:"]
      [:br]
@@ -55,9 +48,10 @@
       {:type "url"
        :name "img-src"
        :placeholder "https://my.image.com/photo-1"
-       :value (-> @fields :post/image-beside :image/src)
-       :on-change #(swap! fields assoc-in [:post/image-beside :image/src]
-                          (-> % .-target .-value))}]
+       :value @(rf/subscribe [:subs.image/field :image/src])
+       :on-change #(rf/dispatch [:evt.image/set-field
+                                 :image/src
+                                 (.. % -target -value)])}]
      [:br]
      [:label {:for "img-alt"} "Side Image description:"]
      [:br]
@@ -65,9 +59,10 @@
       {:type "text"
        :name "img-alt"
        :placeholder "Coffee on table"
-       :value (-> @fields :post/image-beside :image/alt)
-       :on-change #(swap! fields assoc-in [:post/image-beside :image/alt]
-                          (-> % .-target .-value))}]]
+       :value @(rf/subscribe [:subs.image/field :image/alt])
+       :on-change #(rf/dispatch [:evt.image/set-field
+                                 :image/alt
+                                 (.. % -target -value)])}]]
     [:br]
     [:fieldset
      [:legend "Post Content (Required)"]
@@ -77,19 +72,23 @@
      [:textarea
       {:name "md-content"
        :required "required"
-       :placeholder "# My Post Title\n## Part 1\n Some content of part 1\n..."
-       :value (-> @fields :post/md-content)
-       :on-change #(swap! fields assoc :post/md-content
-                          (-> % .-target .-value))}]]]])
+       :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
+       :value @(rf/subscribe [:subs.form/field :post/md-content])
+       :on-change #(rf/dispatch [:evt.form/set-field
+                                 :post/md-content
+                                 (.. % -target -value)])}]]]])
 
 (defn preview-post
   []
-  (-> @fields h/add-hiccup section/card))
+  (-> @(rf/subscribe [:subs.form/fields])
+      h/add-hiccup
+      section/card))
 
 (defn create-post-page []
   [:section.container.create-post
    [buttons]
-   [error-component]
-   (if (= :preview (:post/mode @fields))
+   [errors-component :error/validation-errors]
+   [errors-component :error/server-errors]
+   (if (= :preview @(rf/subscribe [:subs.form/field :post/mode]))
      [preview-post]
      [edit-post])])

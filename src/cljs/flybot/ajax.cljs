@@ -2,10 +2,18 @@
   "Ajax Requests"
   (:require [ajax.core :refer [GET POST]]
             [clojure.edn :as edn]
-            [cljc.flybot.validation :as v]
             [re-frame.core :as rf]))
 
-(defn get-pages-handler [response]
+(defn error-handler [{:keys [status status-text]}]
+  (rf/dispatch
+   [:evt.form/set-server-errors
+    (str "SERVER ERROR: " status " " status-text)])
+  (.log js/console (str "something bad happened: " status " " status-text)))
+
+;;---------- Get All Posts ----------
+
+(defn get-pages-handler
+  [response]
   (.log js/console "Got all the posts.")
   (doall
    (->> response
@@ -13,9 +21,6 @@
         (map first)
         (map (fn [page]
                (rf/dispatch [:evt.post/add-posts page]))))))
-
-(defn error-handler [{:keys [status status-text]}]
-  (.log js/console (str "something bad happened: " status " " status-text)))
 
 (defn get-pages
   "Get all posts of all pages."
@@ -25,25 +30,27 @@
      :headers {"Accept" "application/edn"}
      :error-handler error-handler}))
 
+;;---------- Send Post ----------
+
 (defn prepare-post
   [fields]
   (-> fields
       (dissoc :post/mode)
       (assoc :post/id (str (random-uuid))
-             :post/creation-date (js/Date.))
-      (v/validate v/post-schema)))
+             :post/creation-date (js/Date.))))
+
+(defn send-post-handler
+  [response]
+  (let [resp (edn/read-string response)]
+    (.log js/console (str "Post " (:post/id resp) " created."))
+    (rf/dispatch [:evt.post/add-post resp])
+    (rf/dispatch [:evt.form/clear-form])))
 
 (defn create-post
-  "Get all posts of all pages."
-  [a-fields]
-  (swap! a-fields dissoc :post/error)
-  (let [post (prepare-post @a-fields)]
-    (when-not (:post/error post)
-      (POST "/create-post"
-        {:params post
-         :headers {"Accept" "application/edn"}
-         :handler (fn [response]
-                    (.log js/console (str "Post " (-> response edn/read-string :post/id) " created."))
-                    (rf/dispatch [:evt.post/add-post post])
-                    (reset! a-fields {}))
-         :error-handler error-handler}))))
+  [post]
+  (POST "/create-post"
+    {:params post
+     :headers {"Accept" "application/edn"}
+     :handler send-post-handler
+     :error-handler error-handler}))
+
