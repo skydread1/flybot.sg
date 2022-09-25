@@ -7,8 +7,10 @@
    :domain/key-id for db keys
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
-  (:require [cljs.flybot.lib.localstorage :as l-storage]
+  (:require [cljc.flybot.validation :as v]
+            [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
+            [cljs.flybot.ajax :as ajax]
             [clojure.edn :as edn]
             [re-frame.core :as rf]))
 
@@ -38,12 +40,6 @@
                :app/posts        {}
                :app/theme        local-store-theme)
     :fx [[:fx.app/update-html-class local-store-theme]]}))
-
-(rf/reg-event-db
- :evt.app/set-theme
- (fn [db [_ theme]]
-   (-> db
-       (assoc :app/theme theme))))
 
 (rf/reg-sub
  :subs.app/theme
@@ -120,3 +116,103 @@
  :subs.post/page-posts
  (fn [db [_ page]]
    (-> db :app/posts page)))
+
+;; ---------- Create post form ----------
+
+;; Buttons
+
+(rf/reg-event-db
+ :evt.form/toggle-preview
+ [(rf/path :form/fields)]
+ (fn [fields _]
+   (if (= :preview (:post/mode fields))
+     (assoc fields :post/mode :edit)
+     (assoc fields :post/mode :preview))))
+
+(rf/reg-event-db
+ :evt.form/send-post!
+ [(rf/path :form/fields)]
+ (fn [fields _]
+   (let [post (-> fields
+                  ajax/prepare-post
+                  (v/validate v/post-schema))]
+     (if (:errors post)
+       (rf/dispatch [:evt.form/set-validation-errors (v/error-msg post)])
+       (do (rf/dispatch [:evt.form/clear-error :error/validation-errors])
+           (ajax/create-post post))))
+   fields))
+
+;; Form Fields
+
+(rf/reg-event-db
+ :evt.form/set-field
+ [(rf/path :form/fields)]
+ (fn [fields [_ id value]]
+   (assoc fields id value)))
+
+(rf/reg-event-db
+ :evt.image/set-field
+ [(rf/path :form/fields :post/image-beside)]
+ (fn [fields [_ id value]]
+   (assoc fields id value)))
+
+(rf/reg-event-db
+ :evt.form/clear-form
+ (fn [db _]
+   (dissoc db :form/fields :form/errors)))
+
+(rf/reg-sub
+ :subs.form/fields
+ (fn [db _]
+   (:form/fields db)))
+
+(rf/reg-sub
+ :subs.image/fields
+ :<- [:subs.form/fields]
+ (fn [fields _]
+   (:post/image-beside fields)))
+
+(rf/reg-sub
+ :subs.form/field
+ :<- [:subs.form/fields]
+ (fn [fields [_ id]]
+   (get fields id)))
+
+(rf/reg-sub
+ :subs.image/field
+ :<- [:subs.image/fields]
+ (fn [image-fields [_ id]]
+   (get image-fields id)))
+
+;; Server errors
+
+(rf/reg-event-db
+ :evt.form/set-server-errors
+ [(rf/path :form/errors)]
+ (fn [all-errors [_ errors]]
+   (assoc all-errors :error/server-errors errors)))
+
+;; Validation errors
+
+(rf/reg-event-db
+ :evt.form/set-validation-errors
+ [(rf/path :form/errors)]
+ (fn [all-errors [_ errors]]
+   (assoc all-errors :error/validation-errors errors)))
+
+(rf/reg-sub
+ :subs.form/errors
+ (fn [db _]
+   (-> db :form/errors)))
+
+(rf/reg-sub
+ :subs.form/error
+ :<- [:subs.form/errors]
+ (fn [errors [_ id]]
+   (get errors id)))
+
+(rf/reg-event-db
+ :evt.form/clear-error
+ [(rf/path :form/errors)]
+ (fn [errors [_ id]]
+   (dissoc errors id)))

@@ -28,6 +28,12 @@
   (let [validator (m/validator schema)]
     (if (validator data)
       data
-      (let [err (mu/explain-data schema data)]
-        (assoc data :post/error err)))))
+      (mu/explain-data schema data))))
+
+(defn error-msg
+  [errors]
+  (->> errors
+       :errors
+       (map #(select-keys % [:path :type]))
+       (str "FORM VALIDATION ERROR: ")))
 
