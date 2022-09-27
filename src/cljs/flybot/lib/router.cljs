@@ -1,36 +1,31 @@
 (ns cljs.flybot.lib.router
-  
   (:require [reitit.frontend :as rei]
             [reitit.frontend.easy :as rfe]
             [reitit.frontend.history :as rfh]
             [re-frame.core :as rf]
             [goog.object :as gobj]
-            [cljs.flybot.pages.home :refer [home-page]]
-            [cljs.flybot.pages.apply :refer [apply-page]]
-            [cljs.flybot.pages.about :refer [about-page]]
-            [cljs.flybot.pages.blog :refer [blog-page]]
-            [cljs.flybot.pages.create-post :refer [create-post-page]]))
+            [cljs.flybot.components.page :refer [page]]))
 
 (def routes
   [["/"
     {:name :flybot/home
-     :view home-page}]
+     :page-name :home
+     :view #(page :home)}]
 
    ["/apply"
     {:name :flybot/apply
-     :view apply-page}]
+     :page-name :apply
+     :view #(page :apply)}]
 
    ["/about"
     {:name :flybot/about
-     :view about-page}]
+     :page-name :about
+     :view #(page :about)}]
    
    ["/blog"
     {:name :flybot/blog
-     :view blog-page}]
-   
-   ["/create-post"
-    {:name :flybot/create-post
-     :view create-post-page}]
+     :page-name :blog
+     :view #(page :blog)}] 
 
    ["#footer-contact"
     {:name :flybot/contact}]])

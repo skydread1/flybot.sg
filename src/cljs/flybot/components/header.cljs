@@ -21,7 +21,6 @@
    (internal-link :flybot/apply "Apply")
    (internal-link :flybot/about "About Us")
    (internal-link :flybot/blog "Blog")
-   (internal-link :flybot/create-post "Create Post")
    (internal-link :flybot/contact "Contact" false)
    [:p "]"]])
 

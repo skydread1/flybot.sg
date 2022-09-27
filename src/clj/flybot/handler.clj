@@ -11,6 +11,10 @@
 (defn index-handler [_]
   {:body (slurp (io/resource "public/index.html"))})
 
+(defn get-post [{:keys [params]}]
+  {:body    (db/get-post (:post-id params))
+   :headers {"content-type" "application/edn"}})
+
 (defn get-all-posts-handler [_]
   {:body    (db/get-all-posts)
    :headers {"content-type" "application/edn"}})
@@ -30,6 +34,7 @@
   (reitit/ring-handler
    (reitit/router
     [["/create-post" {:post create-post :middleware [:content :wrap-base]}]
+     ["/post"        {:get get-post :middleware [:content :wrap-base]}]
      ["/all-posts"   {:get get-all-posts-handler :middleware [:content :wrap-base]}]
      ["/*"           (reitit/create-resource-handler {:root "public"})]]
     {:conflicts            (constantly nil)
