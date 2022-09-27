@@ -5,8 +5,10 @@
 (def post-schema
   [:map {:closed true}
    [:post/id :string]
+   [:post/page :keyword]
    [:post/css-class {:optional true} :string]
    [:post/creation-date inst?]
+   [:post/last-edit-date {:optional true} inst?]
    [:post/md-content :string] 
    [:post/image-beside
     {:optional true}
