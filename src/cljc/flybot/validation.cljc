@@ -14,6 +14,7 @@
     {:optional true}
     [:map
      [:image/src :string]
+     [:image/src-dark :string]
      [:image/alt :string]]]
    [:post/dk-images
     {:description "image srcs that supports dark-mode in the md file."
