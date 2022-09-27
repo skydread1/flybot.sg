@@ -55,8 +55,10 @@
   [fields page-name]
   (if (:post/id fields)
     (-> fields
+        (dissoc :post/view)
         (assoc :post/last-edit-date (js/Date.)))
     (-> fields
+        (dissoc :post/view)
         (assoc :post/id (str (random-uuid))
                :post/page page-name
                :post/creation-date (js/Date.)))))

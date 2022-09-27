@@ -4,41 +4,32 @@
             [cljs.flybot.components.post :as post]
             [re-frame.core :as rf]))
 
-(defn post-edit-mode
-  [posts]
-  (if (= :edit @(rf/subscribe [:subs.app/mode]))
-    (let [post-id @(rf/subscribe [:subs.form/field :post/id])]
-      (map (fn [post]
-             (if (= post-id (-> post second :id))
-               [:div
-                {:key "edit-post-form" :id "edit-post-form"}
-                [post/post-form post-id]]
-               post))
-           posts))
-    posts))
-
-(defn new-post
-  []
-  (when-not (= :edit @(rf/subscribe [:subs.app/mode]))
-    [:div
-     {:key "new-post-form" :id "new-post-form"}
-     [post/post-form nil]]))
+(defn post-container
+  [post]
+  (let [mode           @(rf/subscribe [:subs.app/mode])
+        edited-post-id @(rf/subscribe [:subs.form/field :post/id])]
+    (cond (and (= :edit mode) (= edited-post-id (:post/id post)))
+          (post/post-edit edited-post-id)
+          (and (not= :read mode) (not= edited-post-id (:post/id post)) (not= {} post))
+          (post/post-read-only post)
+          (and (= :create mode) (= {} post))
+          (post/post-create "empty-post-id")
+          :else
+          (post/post-read post))))
 
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
   (let [ordered-posts (->> @(rf/subscribe [:subs.post/page-posts page-name])
                            (map h/add-hiccup)
-                           (sort-by :post/creation-date))]
+                           (sort-by :post/creation-date))
+        empty-post    {}]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
-     (-> (for [post ordered-posts
-               :let [hiccup (post/post-container post)]]
+     (-> (for [post (conj ordered-posts empty-post)
+               :let [hiccup (post-container post)]]
            (if (= :dark @(rf/subscribe [:subs.app/theme]))
              (img/toggle-image-mode hiccup (map :image/src (:post/dk-images post)))
              hiccup))
-         post-edit-mode
-         (conj (new-post))
          doall)]))
-

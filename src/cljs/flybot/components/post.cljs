@@ -2,20 +2,19 @@
   (:require [cljs.flybot.lib.hiccup :as h]
             [re-frame.core :as rf]))
 
-;;---------- Container ----------
+;;---------- Errors ----------
 
 (defn error-component [id]
   (when-let [error @(rf/subscribe [:subs.form/error id])]
-    [:div.error
-     {:key id}
-     error]))
+    [:div.error error]))
 
 (defn errors
-  [post-id]
+  []
   [:div.errors
-   {:key (str "error-of-" post-id)}
    [error-component :error/validation-errors]
    [error-component :error/server-errors]])
+
+;;---------- Buttons ----------
 
 (defn preview-button
   []
@@ -55,139 +54,135 @@
     :on-change "ReadOnly"
     :on-click #(rf/dispatch [:evt.app/toggle-create-mode])}])
 
-(defn post-header
-  [post-id]
-  [:div.post-header
-   {:key (str "header-" post-id)
-    :id  (str "header-" post-id)}
-   (let [mode @(rf/subscribe [:subs.app/mode])
-         current-post @(rf/subscribe [:subs.form/field :post/id])]
-     (cond (and (= :read mode) post-id)
-           [:div
-            [:form
-             [edit-button post-id]]
-            [errors]]
-
-           (and (= :read mode) (not post-id))
-           [:div
-            [:form
-             [create-button post-id]]
-            [errors]]
-
-           (and (= :edit mode) (= post-id current-post))
-           [:div
-            [:form
-             [preview-button]
-             [submit-button]
-             [edit-button post-id]]
-            [errors post-id]]
-
-           (and (= :create mode) (not post-id))
-           [:div
-            [:form
-             [preview-button]
-             [submit-button]
-             [create-button post-id]]
-            [errors post-id]]
-
-           :else
-           nil))])
-
-(defn post-container
-  "Returns a post-container using the post properties."
-  [{:post/keys [id css-class image-beside hiccup-content]}]
-  (let [{:image/keys [src alt]} image-beside]
-    [:div.post-container
-     {:key id
-      :id id}
-     [post-header id]
-     (if (seq src)
-    ;; returns 2 hiccup divs to be displayed in 2 columns
-       [:div.post-body
-        {:key (str "post-body-" id) :class css-class}
-        [:div.image
-         [:img {:src src :alt alt}]]
-        [:div.text
-         hiccup-content]]
-    ;; returns 1 hiccup div
-       [:div.post-body
-        {:key (str "post-body-" id) :class css-class}
-        [:div.textonly
-         hiccup-content]])]))
-
-;;---------- Create Post ----------
-
-(defn edit-post
-  [post-id]
-  [:div.post-container
-   {:key post-id
-    :id  post-id}
-   [post-header post-id]
-   [:div.post-body
-    [:form
-     [:fieldset
-      [:legend "Post Properties (Optional)"]
-      [:br]
-      [:label {:for "css-class"} "Optional css class:"]
-      [:br]
-      [:input
-       {:type "text"
-        :name "css-class"
-        :placeholder "my-post-1"
-        :value @(rf/subscribe [:subs.form/field :post/css-class])
-        :on-change #(rf/dispatch [:evt.form/set-field
-                                  :post/css-class
-                                  (.. % -target -value)])}]
-      [:br]
-      [:label {:for "img-src" :required "required"} "Side Image source:"]
-      [:br]
-      [:input
-       {:type "url"
-        :name "img-src"
-        :placeholder "https://my.image.com/photo-1"
-        :value @(rf/subscribe [:subs.image/field :image/src])
-        :on-change #(rf/dispatch [:evt.image/set-field
-                                  :image/src
-                                  (.. % -target -value)])}]
-      [:br]
-      [:label {:for "img-alt"} "Side Image description:"]
-      [:br]
-      [:input
-       {:type "text"
-        :name "img-alt"
-        :placeholder "Coffee on table"
-        :value @(rf/subscribe [:subs.image/field :image/alt])
-        :on-change #(rf/dispatch [:evt.image/set-field
-                                  :image/alt
-                                  (.. % -target -value)])}]]
-     [:br]
-     [:fieldset
-      [:legend "Post Content (Required)"]
-      [:br]
-      [:label {:for "md-content"} "Write your Markdown:"]
-      [:br]
-      [:textarea
-       {:name "md-content"
-        :required "required"
-        :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
-        :value @(rf/subscribe [:subs.form/field :post/md-content])
-        :on-change #(rf/dispatch [:evt.form/set-field
-                                  :post/md-content
-                                  (.. % -target -value)])}]]]]])
-
-(defn preview-post
-  []
-  (-> @(rf/subscribe [:subs.form/fields])
-      h/add-hiccup
-      post-container))
+;;---------- Form ----------
 
 (defn post-form
+  []
+  [:div.post-body
+   [:form
+    [:fieldset
+     [:legend "Post Properties (Optional)"]
+     [:br]
+     [:label {:for "css-class"} "Optional css class:"]
+     [:br]
+     [:input
+      {:type "text"
+       :name "css-class"
+       :placeholder "my-post-1"
+       :value @(rf/subscribe [:subs.form/field :post/css-class])
+       :on-change #(rf/dispatch [:evt.form/set-field
+                                 :post/css-class
+                                 (.. % -target -value)])}]
+     [:br]
+     [:label {:for "img-src" :required "required"} "Side Image source:"]
+     [:br]
+     [:input
+      {:type "url"
+       :name "img-src"
+       :placeholder "https://my.image.com/photo-1"
+       :value @(rf/subscribe [:subs.image/field :image/src])
+       :on-change #(rf/dispatch [:evt.image/set-field
+                                 :image/src
+                                 (.. % -target -value)])}]
+     [:br]
+     [:label {:for "img-alt"} "Side Image description:"]
+     [:br]
+     [:input
+      {:type "text"
+       :name "img-alt"
+       :placeholder "Coffee on table"
+       :value @(rf/subscribe [:subs.image/field :image/alt])
+       :on-change #(rf/dispatch [:evt.image/set-field
+                                 :image/alt
+                                 (.. % -target -value)])}]]
+    [:br]
+    [:fieldset
+     [:legend "Post Content (Required)"]
+     [:br]
+     [:label {:for "md-content"} "Write your Markdown:"]
+     [:br]
+     [:textarea
+      {:name "md-content"
+       :required "required"
+       :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
+       :value @(rf/subscribe [:subs.form/field :post/md-content])
+       :on-change #(rf/dispatch [:evt.form/set-field
+                                 :post/md-content
+                                 (.. % -target -value)])}]]]])
+
+;;---------- (pre)View ----------
+
+(defn post-view
+  [{:post/keys [id css-class image-beside hiccup-content]}]
+  (let [{:image/keys [src alt]} image-beside]
+    (if (seq src)
+    ;; returns 2 hiccup divs to be displayed in 2 columns
+      [:div.post-body
+       {:class css-class}
+       [:div.image
+        [:img {:src src :alt alt}]]
+       [:div.text
+        hiccup-content]]
+    ;; returns 1 hiccup div
+      [:div.post-body
+       {:class css-class}
+       [:div.textonly
+        hiccup-content]])))
+
+;;---------- Containers ----------
+
+(defn post-read-only
+  "Post without any possible interaction."
+  [{:post/keys [id]
+    :as post}]
+  [:div.post-container
+   {:key (or id "empty-read-only-id")
+    :id (or id "empty-read-only-id")}
+   [post-view post]])
+
+(defn post-read
+  "Post with a button to create/edit."
+  [{:post/keys [id]
+    :as post}]
+  [:div.post-container
+   {:key (or id "empty-read-id")
+    :id (or id "empty-read-id")}
+   [:div.post-header
+    [:form
+     (if id [edit-button id] [create-button "temp-id-btn"])]
+    [errors]]
+   [post-view post]])
+
+(defn post-create
+  "Create Post Form with preview feature."
   [post-id]
-  (if-not (= :read @(rf/subscribe [:subs.app/mode]))
-    (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
-      [preview-post]
-      [edit-post post-id])
-    [:div.post-container
-     {:key post-id
-      :id  post-id}
-     [post-header post-id]]))
+  [:div.post-container
+   {:key (or post-id "empty-create-id")
+    :id  (or post-id "empty-create-id")}
+   [:div.post-header
+    [:form
+     [preview-button]
+     [submit-button]
+     [create-button post-id]]
+    [errors]]
+   (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
+     [post-view
+      (h/add-hiccup @(rf/subscribe [:subs.form/fields]))]
+     [post-form post-id])])
+
+(defn post-edit
+  "Edit Post Form with preview feature."
+  [post-id]
+  [:div.post-container
+   {:key (or post-id "empty-edit-id")
+    :id  (or post-id "empty-edit-id")}
+   [:div.post-header
+    [:form
+     [preview-button]
+     [submit-button]
+     [edit-button]]
+    [errors]]
+   (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
+     [post-view
+      (h/add-hiccup @(rf/subscribe [:subs.form/fields]))]
+     [post-form])])
