@@ -33,6 +33,9 @@
   [{:db/ident :image/src
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}
+   {:db/ident :image/src-dark
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}
    {:db/ident :image/alt
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}])
@@ -104,13 +107,13 @@
      :post/creation-date (java.util.Date.)
      :post/md-content (slurp-md "about" "company.md")
      :post/image-beside {:image/src "assets/flybot-logo.png"
+                         :image/src-dark "assets/flybot-logo-dark-mode.png"
                          :image/alt "Flybot Logo"}}
     {:post/id (uuid)
      :post/page :about
      :post/css-class "team"
      :post/creation-date (java.util.Date.)
-     :post/md-content (slurp-md "about" "team.md")
-     :post/dk-images [{:image/src "assets/github-mark-logo.png"}]}]})
+     :post/md-content (slurp-md "about" "team.md")}]})
 
 (def apply-page
   {:page/title :apply
@@ -154,32 +157,32 @@
      :post/creation-date (java.util.Date.)
      :post/md-content (slurp-md "home" "clojure.md")
      :post/image-beside {:image/src "assets/clojure-logo.svg"
-                         :image/alt "Clojure Logo"}
-     :post/dk-images [{:image/src "assets/clojure-logo.svg"}]}
+                         :image/src-dark "assets/clojure-logo-dark-mode.svg"
+                         :image/alt "Clojure Logo"}}
     {:post/id (uuid)
      :post/page :home
      :post/css-class "paradigms"
      :post/creation-date (java.util.Date.)
      :post/md-content (slurp-md "home" "paradigms.md")
      :post/image-beside {:image/src "assets/lambda-logo.svg"
-                         :image/alt "Lambda Logo"}
-     :post/dk-images [{:image/src "assets/lambda-logo.svg"}]}
+                         :image/src-dark "assets/lambda-logo-dark-mode.svg"
+                         :image/alt "Lambda Logo"}}
     {:post/id (uuid)
      :post/page :home
      :post/css-class "golden-island"
      :post/creation-date (java.util.Date.)
      :post/md-content (slurp-md "home" "golden-island.md")
      :post/image-beside {:image/src "assets/4suits.svg"
-                         :image/alt "4 suits of a deck"}
-     :post/dk-images [{:image/src "assets/4suits.svg"}]}
+                         :image/src-dark "assets/4suits-dark-mode.svg"
+                         :image/alt "4 suits of a deck"}}
     {:post/id (uuid)
      :post/page :home
      :post/css-class "magic"
      :post/creation-date (java.util.Date.)
      :post/md-content (slurp-md "home" "magic.md")
      :post/image-beside {:image/src "assets/binary.svg"
-                         :image/alt "Love word written in base 2"}
-     :post/dk-images [{:image/src "assets/binary.svg"}]}]})
+                         :image/src-dark "assets/binary-dark-mode.svg"
+                         :image/alt "Love word written in base 2"}}]})
 
 (defn add-pages
   "Add all pre-defined pages in the DB"
@@ -204,7 +207,7 @@
    :post/creation-date
    :post/last-edit-date
    :post/md-content
-   {:post/image-beside [:image/src :image/alt]}
+   {:post/image-beside [:image/src :image/src-dark :image/alt]}
    {:post/dk-images [:image/src]}])
 
 (def page-pull-pattern

@@ -1,6 +1,5 @@
 (ns cljs.flybot.components.page
-  (:require [cljs.flybot.lib.image :as img]
-            [cljs.flybot.lib.hiccup :as h]
+  (:require [cljs.flybot.lib.hiccup :as h]
             [cljs.flybot.components.post :as post]
             [re-frame.core :as rf]))
 
@@ -27,9 +26,6 @@
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
-     (-> (for [post (conj ordered-posts empty-post)
-               :let [hiccup (post-container post)]]
-           (if (= :dark @(rf/subscribe [:subs.app/theme]))
-             (img/toggle-image-mode hiccup (map :image/src (:post/dk-images post)))
-             hiccup))
+     (-> (for [post (conj ordered-posts empty-post)]
+           (post-container post))
          doall)]))

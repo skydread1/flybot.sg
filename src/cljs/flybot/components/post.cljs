@@ -1,5 +1,6 @@
 (ns cljs.flybot.components.post
   (:require [cljs.flybot.lib.hiccup :as h]
+            [cljs.flybot.components.header :refer [theme-logo]]
             [re-frame.core :as rf]))
 
 ;;---------- Errors ----------
@@ -74,7 +75,7 @@
                                  :post/css-class
                                  (.. % -target -value)])}]
      [:br]
-     [:label {:for "img-src" :required "required"} "Side Image source:"]
+     [:label {:for "img-src" :required "required"} "Side Image source for LIGHT mode:"]
      [:br]
      [:input
       {:type "url"
@@ -83,6 +84,17 @@
        :value @(rf/subscribe [:subs.image/field :image/src])
        :on-change #(rf/dispatch [:evt.image/set-field
                                  :image/src
+                                 (.. % -target -value)])}]
+     [:br]
+     [:label {:for "img-src-dark" :required "required"} "Side Image source for DARK mode:"]
+     [:br]
+     [:input
+      {:type "url"
+       :name "img-src-dark"
+       :placeholder "https://my.image.com/photo-1"
+       :value @(rf/subscribe [:subs.image/field :image/src-dark])
+       :on-change #(rf/dispatch [:evt.image/set-field
+                                 :image/src-dark
                                  (.. % -target -value)])}]
      [:br]
      [:label {:for "img-alt"} "Side Image description:"]
@@ -94,7 +106,9 @@
        :value @(rf/subscribe [:subs.image/field :image/alt])
        :on-change #(rf/dispatch [:evt.image/set-field
                                  :image/alt
-                                 (.. % -target -value)])}]]
+                                 (.. % -target -value)])}]
+     [:br]
+     [theme-logo]]
     [:br]
     [:fieldset
      [:legend "Post Content (Required)"]
@@ -113,8 +127,10 @@
 ;;---------- (pre)View ----------
 
 (defn post-view
-  [{:post/keys [id css-class image-beside hiccup-content]}]
-  (let [{:image/keys [src alt]} image-beside]
+  [{:post/keys [css-class image-beside hiccup-content]}]
+  (let [{:image/keys [src src-dark alt]} image-beside
+        src (if (= :dark @(rf/subscribe [:subs.app/theme]))
+              src-dark src)]
     (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns
       [:div.post-body
