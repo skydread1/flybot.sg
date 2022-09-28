@@ -7,14 +7,59 @@
    :domain/key-id for db keys
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
-  (:require [cljc.flybot.validation :as v]
+  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
+            [cljc.flybot.validation :as v]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
-            [cljs.flybot.ajax :as ajax]
             [clojure.edn :as edn]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [day8.re-frame.http-fx]
+            [reitit.frontend.easy :as rfe]))
+
+;; ---------- Logging ----------
+
+(rf/reg-fx
+ :fx.log/message
+ (fn [messages]
+   (.log js/console (apply str messages))))
+
+;; ---------- http ----------
+
+(rf/reg-event-db
+ :fx.http/failure
+ (fn [db [_ result]]
+    ;; result is a map containing details of the failure
+   (assoc db :failure-http-result result)))
+
+(rf/reg-event-fx
+ :fx.http/all-posts-success
+ (fn [{:keys [db]} [_ result]]
+   (let [pages (->> result
+                    (map first)
+                    (reduce (fn [acc {:page/keys [title posts]}]
+                              (assoc acc title posts))
+                            {}))]
+     {:db (assoc db :app/posts pages)
+      :fx [[:fx.log/message "Got all the posts."]]})))
+
+(rf/reg-event-fx
+ :fx.http/post-success
+ (fn [{:keys [db]} [_ result]]
+   {:db (assoc db :form/fields result)
+    :fx [[:fx.log/message ["Got the post " (:post/id result)]]]}))
+
+(rf/reg-event-fx
+ :fx.http/create-post-success
+ (fn [_ [_ page-name result]]
+   {:fx [[:dispatch [:evt.page/delete-post (:post/id result) page-name]]
+         [:dispatch [:evt.page/add-post result page-name]]
+         [:dispatch [:evt.form/clear-form]]
+         [:dispatch [:evt.app/set-mode :read]]
+         [:fx.log/message ["Post " (:post/id result) " created/edited."]]]}))
 
 ;; ---------- App ----------
+
+;; Initialization
 
 (rf/reg-cofx
  :cofx.app/local-store-theme
@@ -30,39 +75,30 @@
     (. js/document -documentElement)
     app-theme)))
 
-(rf/reg-fx
- :fx.app/all-posts
- (fn [_]
-   (ajax/get-pages)))
-
 (rf/reg-event-fx
  :evt.app/initialize
  [(rf/inject-cofx :cofx.app/local-store-theme :theme)]
  (fn [{:keys [db local-store-theme]} _]
-   {:db (assoc db
-               :app/current-view nil
-               :nav/navbar-open? false
-               :app/posts        {}
-               :app/theme        local-store-theme
-               :app/mode         :read)
-    :fx [[:fx.app/update-html-class local-store-theme]
-         [:fx.app/all-posts nil]]}))
+   {:db         (assoc
+                 db
+                 :app/current-view (rfe/push-state :flybot/home)
+                 :nav/navbar-open? false
+                 :app/posts        {}
+                 :app/theme        local-store-theme
+                 :app/mode         :read)
+    :http-xhrio {:method          :get
+                 :uri             "/all-posts"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/all-posts-success]
+                 :on-failure      [:fx.http/failure]}
+    :fx         [[:fx.app/update-html-class local-store-theme]]}))
+
+;; Initialization
 
 (rf/reg-sub
  :subs.app/theme
  (fn [db _]
    (:app/theme db)))
-
-(rf/reg-sub
- :subs.app/mode
- (fn [db _]
-   (:app/mode db)))
-
-(rf/reg-event-db
- :evt.app/set-mode
- (fn [db [_ mode]]
-   (-> db
-       (assoc :app/mode mode))))
 
 (rf/reg-fx
  :fx.app/set-theme-local-store
@@ -86,16 +122,34 @@
       :fx [[:fx.app/set-theme-local-store next-theme]
            [:fx.app/toggle-css-class [cur-theme next-theme]]]})))
 
-(rf/reg-event-db
- :evt.app/set-current-view
- (fn [db [_ new-match]]
-   (-> db
-       (assoc :app/current-view new-match))))
+;; mode
 
 (rf/reg-sub
- :subs.app/current-view
+ :subs.app/mode
  (fn [db _]
-   (-> db :app/current-view :data)))
+   (:app/mode db)))
+
+(rf/reg-event-db
+ :evt.app/set-mode
+ (fn [db [_ mode]]
+   (-> db
+       (assoc :app/mode mode))))
+
+(rf/reg-event-db
+ :evt.app/toggle-create-mode
+ (fn [db _]
+   (rf/dispatch [:evt.form/clear-form])
+   (if (= :create (:app/mode db))
+     (assoc db :app/mode :read)
+     (assoc db :app/mode :create))))
+
+(rf/reg-event-fx
+ :evt.app/toggle-edit-mode
+ (fn [{:keys [db]} [_ post-id]]
+   (if (= :edit (:app/mode db))
+     {:db (assoc db :app/mode :read)}
+     {:db (assoc db :app/mode :edit)
+      :fx [[:dispatch [:evt.form/autofill post-id]]]})))
 
 ;; ---------- Navbar ----------
 
@@ -116,16 +170,27 @@
    (-> db
        (assoc :nav/navbar-open? false))))
 
-;; ---------- Post ----------
+;;---------- Page ----------
+
+(rf/reg-event-db
+ :evt.page/set-current-view
+ (fn [db [_ new-match]]
+   (-> db
+       (assoc :app/current-view new-match))))
+
+(rf/reg-sub
+ :subs.page/current-view
+ (fn [db _]
+   (-> db :app/current-view :data)))
 
 (rf/reg-event-fx
- :evt.post/add-post
+ :evt.page/add-post
  (fn [{:keys [db]} [_ post page-name]]
    {:db (-> db
             (update-in [:app/posts page-name] #(conj % post)))}))
 
 (rf/reg-event-db
- :evt.post/delete-post
+ :evt.page/delete-post
  [(rf/path :app/posts)]
  (fn [all-posts [_ post-id page]]
    (let [updated-posts (filter
@@ -133,20 +198,14 @@
                         (get all-posts page))]
      (assoc all-posts page updated-posts))))
 
-(rf/reg-event-db
- :evt.post/add-posts
- (fn [db [_ {:page/keys [posts title]}]]
-   (-> db
-       (assoc-in [:app/posts title] posts))))
-
 (rf/reg-sub
- :subs.post/page-posts
+ :subs.page/posts
  (fn [db [_ page]]
    (-> db :app/posts page)))
 
-;; ---------- Create post form ----------
+;; ---------- Post Form ----------
 
-;; Buttons
+;; Form header
 
 (rf/reg-event-db
  :evt.form/toggle-preview
@@ -156,43 +215,61 @@
      (assoc fields :post/view :edit)
      (assoc fields :post/view :preview))))
 
-(rf/reg-event-db
- :evt.form/send-post!
- (fn [db _]
+(rf/reg-event-fx
+ :evt.form/send-post
+ (fn [{:keys [db]} _]
    (let [current-page (-> db :app/current-view :data :page-name)
          post         (-> (:form/fields db)
-                          (ajax/prepare-post current-page)
+                          (v/prepare-post current-page)
                           (v/validate v/post-schema))]
      (if (:errors post)
-       (rf/dispatch [:evt.form/set-validation-errors (v/error-msg post)])
-       (do (rf/dispatch [:evt.form/clear-error :error/validation-errors])
-           (rf/dispatch [:evt.app/set-mode :read])
-           (ajax/create-post post current-page))))
-   db))
+       {:fx [[:dispatch [:evt.form/set-validation-errors (v/error-msg post)]]]}
+       {:http-xhrio {:method          :post
+                     :params          post
+                     :uri             "/create-post"
+                     :format          (edn-request-format {:keywords? true})
+                     :response-format (edn-response-format {:keywords? true})
+                     :on-success      [:fx.http/create-post-success current-page]
+                     :on-failure      [:fx.http/failure]}}))))
+
+;; Form server errors
 
 (rf/reg-event-db
- :evt.app/toggle-create-mode
+ :evt.form/set-server-errors
+ [(rf/path :form/errors)]
+ (fn [all-errors [_ errors]]
+   (assoc all-errors :error/server-errors errors)))
+
+;; Form validation errors
+
+(rf/reg-event-db
+ :evt.form/set-validation-errors
+ [(rf/path :form/errors)]
+ (fn [all-errors [_ errors]]
+   (assoc all-errors :error/validation-errors errors)))
+
+(rf/reg-sub
+ :subs.form/errors
  (fn [db _]
-   (rf/dispatch [:evt.form/clear-form])
-   (if (= :create (:app/mode db))
-     (assoc db :app/mode :read)
-     (assoc db :app/mode :create))))
+   (-> db :form/errors)))
 
-(rf/reg-event-db
- :evt.app/toggle-edit-mode
- (fn [db [_ post-id]]
-   (if (= :edit (:app/mode db))
-     (assoc db :app/mode :read)
-     (do (rf/dispatch [:evt.form/prefill-fields post-id])
-         (assoc db :app/mode :edit)))))
+(rf/reg-sub
+ :subs.form/error
+ :<- [:subs.form/errors]
+ (fn [errors [_ id]]
+   (get errors id)))
 
-;; Form Fields
+;; Form body
 
-(rf/reg-event-db
- :evt.form/prefill-fields
- (fn [db [_ post-id]]
-   (ajax/get-post post-id)
-   db))
+(rf/reg-event-fx
+ :evt.form/autofill
+ (fn [_ [_ post-id]]
+   {:http-xhrio {:method          :get
+                 :params          {:post-id post-id}
+                 :uri             "/post"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/post-success]
+                 :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-db
  :evt.form/set-field
@@ -233,36 +310,3 @@
  :<- [:subs.image/fields]
  (fn [image-fields [_ id]]
    (get image-fields id)))
-
-;; Server errors
-
-(rf/reg-event-db
- :evt.form/set-server-errors
- [(rf/path :form/errors)]
- (fn [all-errors [_ errors]]
-   (assoc all-errors :error/server-errors errors)))
-
-;; Validation errors
-
-(rf/reg-event-db
- :evt.form/set-validation-errors
- [(rf/path :form/errors)]
- (fn [all-errors [_ errors]]
-   (assoc all-errors :error/validation-errors errors)))
-
-(rf/reg-sub
- :subs.form/errors
- (fn [db _]
-   (-> db :form/errors)))
-
-(rf/reg-sub
- :subs.form/error
- :<- [:subs.form/errors]
- (fn [errors [_ id]]
-   (get errors id)))
-
-(rf/reg-event-db
- :evt.form/clear-error
- [(rf/path :form/errors)]
- (fn [errors [_ id]]
-   (dissoc errors id)))

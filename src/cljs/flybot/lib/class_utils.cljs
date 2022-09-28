@@ -1,5 +1,4 @@
 (ns cljs.flybot.lib.class-utils
-
   (:require [clojure.string :as string]))
 
 (defn classes-of

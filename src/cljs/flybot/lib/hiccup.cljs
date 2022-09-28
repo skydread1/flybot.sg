@@ -1,7 +1,7 @@
 (ns cljs.flybot.lib.hiccup
   (:require [clojure.walk :refer [postwalk]]
-            [re-frame.core :as rf]
-            [markdown-to-hiccup.core :as mth]))
+            [markdown-to-hiccup.core :as mth]
+            [re-frame.core :as rf]))
 
 ;; ---------- Post hiccup conversion logic ----------
 
