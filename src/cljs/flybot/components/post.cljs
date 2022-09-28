@@ -33,7 +33,7 @@
    {:type "button"
     :value "Submit Post"
     :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.form/send-post!])}])
+    :on-click #(rf/dispatch [:evt.form/send-post])}])
 
 (defn edit-button
   [post-id]

@@ -1,10 +1,10 @@
 (ns cljs.flybot.lib.router
-  (:require [reitit.frontend :as rei]
+  (:require [cljs.flybot.components.page :refer [page]] 
+            [goog.object :as gobj]
+            [reitit.frontend :as rei]
             [reitit.frontend.easy :as rfe]
             [reitit.frontend.history :as rfh]
-            [re-frame.core :as rf]
-            [goog.object :as gobj]
-            [cljs.flybot.components.page :refer [page]]))
+            [re-frame.core :as rf]))
 
 (def routes
   [["/"
@@ -35,7 +35,7 @@
 
 (defn on-navigate [new-match]
   (when new-match
-    (rf/dispatch [:evt.app/set-current-view new-match])))
+    (rf/dispatch [:evt.page/set-current-view new-match])))
 
 (defn ignore-anchor-click?
   "Function provided by reitit doc to ignore reitit routing on anchor link."

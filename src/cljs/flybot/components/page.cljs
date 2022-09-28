@@ -19,7 +19,7 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [ordered-posts (->> @(rf/subscribe [:subs.post/page-posts page-name])
+  (let [ordered-posts (->> @(rf/subscribe [:subs.page/posts page-name])
                            (map h/add-hiccup)
                            (sort-by :post/creation-date))
         empty-post    {}]

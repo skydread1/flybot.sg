@@ -8,7 +8,7 @@
   ([page-name text]
    (internal-link page-name text true))
   ([page-name text reitit?]
-   (let [current-page (:name @(rf/subscribe [:subs.app/current-view]))]
+   (let [current-page (:name @(rf/subscribe [:subs.page/current-view]))]
      [:a {:href                     (rfe/href page-name)
           :on-click                 #(rf/dispatch [:evt.nav/close-navbar])
           :class                    (when (= page-name current-page) "active")
