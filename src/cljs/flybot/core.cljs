@@ -4,7 +4,7 @@
             [cljs.flybot.components.footer :refer [footer-comp]]
             [cljs.flybot.db]
             [cljs.flybot.lib.router :as router]
-            
+
             [reagent.dom :as rdom]
             [re-frame.core :as rf]))
 
@@ -24,8 +24,8 @@
 ;; Initialization
 
 (defn start-app! []
-  (rf/dispatch [:evt.app/initialize])
   (router/init-routes!)
+  (rf/dispatch [:evt.app/initialize])
   (rdom/render [app] (. js/document (getElementById "app"))))
 
 (start-app!)

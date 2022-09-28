@@ -8,15 +8,13 @@
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-
             [cljc.flybot.validation :as v]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
-
             [clojure.edn :as edn]
-
             [re-frame.core :as rf]
-            [day8.re-frame.http-fx]))
+            [day8.re-frame.http-fx]
+            [reitit.frontend.easy :as rfe]))
 
 ;; ---------- Logging ----------
 
@@ -83,7 +81,7 @@
  (fn [{:keys [db local-store-theme]} _]
    {:db         (assoc
                  db
-                 :app/current-view nil
+                 :app/current-view (rfe/push-state :flybot/home)
                  :nav/navbar-open? false
                  :app/posts        {}
                  :app/theme        local-store-theme
@@ -100,7 +98,7 @@
 (rf/reg-sub
  :subs.app/theme
  (fn [db _]
-   (:app/theme db))) 
+   (:app/theme db)))
 
 (rf/reg-fx
  :fx.app/set-theme-local-store

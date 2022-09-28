@@ -1,6 +1,5 @@
 (ns build
-  (:require [clojure.pprint :refer [pprint]]
-            [clojure.tools.build.api :as b]))
+  (:require [clojure.tools.build.api :as b]))
 
 ;; ---------- Deploy Client ----------
 
@@ -42,10 +41,10 @@
   [_]
   (println "[START] -> Server : Generate uberjar")
   (clean nil)
-  (b/copy-dir {:src-dirs   ["src/clj" "resources"]
+  (b/copy-dir {:src-dirs   ["src/clj" "src/cljc" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis     basis
-                  :src-dirs  ["src/clj"]
+                  :src-dirs  ["src/clj" "src/cljc"]
                   :class-dir class-dir})
   (b/uber {:class-dir class-dir
            :uber-file uber-file
