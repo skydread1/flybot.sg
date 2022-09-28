@@ -8,15 +8,22 @@
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-            
+
             [cljc.flybot.validation :as v]
             [cljs.flybot.lib.localstorage :as l-storage]
-            [cljs.flybot.lib.class-utils :as cu] 
+            [cljs.flybot.lib.class-utils :as cu]
 
             [clojure.edn :as edn]
-            
+
             [re-frame.core :as rf]
             [day8.re-frame.http-fx]))
+
+;; ---------- Logging ----------
+
+(rf/reg-fx
+ :fx.log/message
+ (fn [messages]
+   (.log js/console (apply str messages))))
 
 ;; ---------- http ----------
 
@@ -26,31 +33,31 @@
     ;; result is a map containing details of the failure
    (assoc db :failure-http-result result)))
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :fx.http/all-posts-success
- (fn [db [_ result]]
-   (.log js/console "Got all the posts.")
+ (fn [{:keys [db]} [_ result]]
    (let [pages (->> result
                     (map first)
                     (reduce (fn [acc {:page/keys [title posts]}]
                               (assoc acc title posts))
                             {}))]
-     (assoc db :app/posts pages))))
+     {:db (assoc db :app/posts pages)
+      :fx [[:fx.log/message "Got all the posts."]]})))
 
 (rf/reg-event-fx
  :fx.http/post-success
  (fn [{:keys [db]} [_ result]]
-   (.log js/console (str "Got the post " (:post/id result)))
-   {:db (assoc db :form/fields result)}))
+   {:db (assoc db :form/fields result)
+    :fx [[:fx.log/message ["Got the post " (:post/id result)]]]}))
 
 (rf/reg-event-fx
  :fx.http/create-post-success
  (fn [_ [_ page-name result]]
-   (.log js/console (str "Post " (:post/id result) " created/edited."))
    {:fx [[:dispatch [:evt.page/delete-post (:post/id result) page-name]]
          [:dispatch [:evt.page/add-post result page-name]]
          [:dispatch [:evt.form/clear-form]]
-         [:dispatch [:evt.app/set-mode :read]]]}))
+         [:dispatch [:evt.app/set-mode :read]]
+         [:fx.log/message ["Post " (:post/id result) " created/edited."]]]}))
 
 ;; ---------- App ----------
 
@@ -93,7 +100,7 @@
 (rf/reg-sub
  :subs.app/theme
  (fn [db _]
-   (:app/theme db)))
+   (:app/theme db))) 
 
 (rf/reg-fx
  :fx.app/set-theme-local-store
