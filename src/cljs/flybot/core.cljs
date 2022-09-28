@@ -1,6 +1,5 @@
 (ns cljs.flybot.core
-  (:require [cljs.flybot.ajax :as ajax]
-            [cljs.flybot.components.footer :refer [footer-comp]]
+  (:require [cljs.flybot.components.footer :refer [footer-comp]]
             [cljs.flybot.components.header :refer [header-comp]]
             [cljs.flybot.components.page :refer [page]]
             [cljs.flybot.db]

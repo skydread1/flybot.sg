@@ -9,7 +9,7 @@
    [:post/css-class {:optional true} :string]
    [:post/creation-date inst?]
    [:post/last-edit-date {:optional true} inst?]
-   [:post/md-content :string] 
+   [:post/md-content :string]
    [:post/image-beside
     {:optional true}
     [:map
@@ -39,4 +39,19 @@
        :errors
        (map #(select-keys % [:path :type]))
        (str "FORM VALIDATION ERROR: ")))
+
+#?(:cljs
+   (defn prepare-post
+     "Given the `fields` of a post form and the current `page-name`,
+      returns a post map matching server format requirements."
+     [fields page-name]
+     (if (:post/id fields)
+       (-> fields
+           (dissoc :post/view)
+           (assoc :post/last-edit-date (js/Date.)))
+       (-> fields
+           (dissoc :post/view)
+           (assoc :post/id (str (random-uuid))
+                  :post/page page-name
+                  :post/creation-date (js/Date.))))))
 

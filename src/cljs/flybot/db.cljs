@@ -10,9 +10,10 @@
   (:require [cljc.flybot.validation :as v]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
-            [cljs.flybot.ajax :as ajax]
+            [ajax.edn :refer [edn-request-format edn-response-format]]
             [clojure.edn :as edn]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [day8.re-frame.http-fx]))
 
 ;; ---------- App ----------
 
@@ -30,23 +31,40 @@
     (. js/document -documentElement)
     app-theme)))
 
-(rf/reg-fx
- :fx.app/all-posts
- (fn [_]
-   (ajax/get-pages)))
+(rf/reg-event-db
+ :fx.http/all-posts-success
+ (fn [db [_ result]]
+   (.log js/console "Got all the posts.")
+   (let [pages (->> result
+                    (map first)
+                    (reduce (fn [acc {:page/keys [title posts]}]
+                              (assoc acc title posts))
+                            {}))]
+     (assoc db :app/posts pages))))
+
+(rf/reg-event-db
+ :fx.http/failure
+ (fn [db [_ result]]
+    ;; result is a map containing details of the failure
+   (assoc db :failure-http-result result)))
 
 (rf/reg-event-fx
  :evt.app/initialize
  [(rf/inject-cofx :cofx.app/local-store-theme :theme)]
  (fn [{:keys [db local-store-theme]} _]
-   {:db (assoc db
-               :app/current-view nil
-               :nav/navbar-open? false
-               :app/posts        {}
-               :app/theme        local-store-theme
-               :app/mode         :read)
-    :fx [[:fx.app/update-html-class local-store-theme]
-         [:fx.app/all-posts nil]]}))
+   {:db         (assoc
+                 db
+                 :app/current-view nil
+                 :nav/navbar-open? false
+                 :app/posts        {}
+                 :app/theme        local-store-theme
+                 :app/mode         :read)
+    :http-xhrio {:method          :get
+                 :uri             "/all-posts"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/all-posts-success]
+                 :on-failure      [:fx.http/failure]}
+    :fx         [[:fx.app/update-html-class local-store-theme]]}))
 
 (rf/reg-sub
  :subs.app/theme
@@ -133,18 +151,12 @@
                         (get all-posts page))]
      (assoc all-posts page updated-posts))))
 
-(rf/reg-event-db
- :evt.post/add-posts
- (fn [db [_ {:page/keys [posts title]}]]
-   (-> db
-       (assoc-in [:app/posts title] posts))))
-
 (rf/reg-sub
  :subs.post/page-posts
  (fn [db [_ page]]
    (-> db :app/posts page)))
 
-;; ---------- Create post form ----------
+;; ---------- Post header ----------
 
 ;; Buttons
 
@@ -156,19 +168,31 @@
      (assoc fields :post/view :edit)
      (assoc fields :post/view :preview))))
 
-(rf/reg-event-db
+(rf/reg-event-fx
+ :fx.http/create-post-success
+ (fn [_ [_ page-name result]]
+   (.log js/console (str "Post " (:post/id result) " created/edited."))
+   {:fx [[:dispatch [:evt.post/delete-post (:post/id result) page-name]]
+         [:dispatch [:evt.post/add-post result page-name]]
+         [:dispatch [:evt.form/clear-form]]
+         [:dispatch [:evt.app/set-mode :read]]]}))
+
+(rf/reg-event-fx
  :evt.form/send-post!
- (fn [db _]
+ (fn [{:keys [db]} _]
    (let [current-page (-> db :app/current-view :data :page-name)
          post         (-> (:form/fields db)
-                          (ajax/prepare-post current-page)
+                          (v/prepare-post current-page)
                           (v/validate v/post-schema))]
      (if (:errors post)
-       (rf/dispatch [:evt.form/set-validation-errors (v/error-msg post)])
-       (do (rf/dispatch [:evt.form/clear-error :error/validation-errors])
-           (rf/dispatch [:evt.app/set-mode :read])
-           (ajax/create-post post current-page))))
-   db))
+       {:fx [[:dispatch [:evt.form/set-validation-errors (v/error-msg post)]]]}
+       {:http-xhrio {:method          :post
+                     :params          post
+                     :uri             "/create-post"
+                     :format          (edn-request-format {:keywords? true})
+                     :response-format (edn-response-format {:keywords? true})
+                     :on-success      [:fx.http/create-post-success current-page]
+                     :on-failure      [:fx.http/failure]}}))))
 
 (rf/reg-event-db
  :evt.app/toggle-create-mode
@@ -178,21 +202,31 @@
      (assoc db :app/mode :read)
      (assoc db :app/mode :create))))
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :evt.app/toggle-edit-mode
- (fn [db [_ post-id]]
+ (fn [{:keys [db]} [_ post-id]]
    (if (= :edit (:app/mode db))
-     (assoc db :app/mode :read)
-     (do (rf/dispatch [:evt.form/prefill-fields post-id])
-         (assoc db :app/mode :edit)))))
+     {:db (assoc db :app/mode :read)}
+     {:db (assoc db :app/mode :edit)
+      :fx [[:dispatch [:evt.form/prefill-fields post-id]]]})))
 
 ;; Form Fields
 
-(rf/reg-event-db
+(rf/reg-event-fx
+ :fx.http/post-success
+ (fn [{:keys [db]} [_ result]]
+   (.log js/console (str "Got the post " (:post/id result)))
+   {:db (assoc db :form/fields result)}))
+
+(rf/reg-event-fx
  :evt.form/prefill-fields
- (fn [db [_ post-id]]
-   (ajax/get-post post-id)
-   db))
+ (fn [_ [_ post-id]]
+   {:http-xhrio {:method          :get
+                 :params          {:post-id post-id}
+                 :uri             "/post"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/post-success]
+                 :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-db
  :evt.form/set-field
@@ -260,9 +294,3 @@
  :<- [:subs.form/errors]
  (fn [errors [_ id]]
    (get errors id)))
-
-(rf/reg-event-db
- :evt.form/clear-error
- [(rf/path :form/errors)]
- (fn [errors [_ id]]
-   (dissoc errors id)))

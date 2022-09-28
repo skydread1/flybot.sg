@@ -107,7 +107,7 @@
      :post/creation-date (java.util.Date.)
      :post/md-content (slurp-md "about" "company.md")
      :post/image-beside {:image/src "assets/flybot-logo.png"
-                         :image/src-dark "assets/flybot-logo-dark-mode.png"
+                         :image/src-dark "assets/flybot-logo.png"
                          :image/alt "Flybot Logo"}}
     {:post/id (uuid)
      :post/page :about
