@@ -15,8 +15,23 @@
   {:body    (db/get-post (:post-id params))
    :headers {"content-type" "application/edn"}})
 
-(defn get-all-posts-handler [_]
+(defn get-page [{:keys [params]}]
+  {:body    (db/get-page (:page-name params))
+   :headers {"content-type" "application/edn"}})
+
+(defn get-all-posts [_]
   {:body    (db/get-all-posts)
+   :headers {"content-type" "application/edn"}})
+
+(defn get-all-pages [_]
+  {:body    (db/get-all-pages)
+   :headers {"content-type" "application/edn"}})
+
+(defn get-all
+  "Get all pages info and all posts."
+  [_]
+  {:body    {:app/pages (db/get-all-pages)
+             :app/posts (db/get-all-posts)}
    :headers {"content-type" "application/edn"}})
 
 (defn create-post [{:keys [body-params]}]
@@ -41,13 +56,30 @@
                  :params body-params}
        :headers {"content-type" "application/edn"}})))
 
+(defn create-page [{:keys [body-params]}]
+  (try
+    (db/add-page body-params)
+    {:body    body-params
+     :headers {"content-type" "application/edn"}}
+    (catch Exception e
+      {:body    {:status 406
+                 :error "Page not added"
+                 :params body-params}
+       :headers {"content-type" "application/edn"}})))
+
 (def app-routes
   (reitit/ring-handler
    (reitit/router
-    [["/create-post" {:post create-post :middleware [:content :wrap-base]}]
-     ["/delete-post" {:post delete-post :middleware [:content :wrap-base]}]
-     ["/post"        {:get get-post :middleware [:content :wrap-base]}]
-     ["/all-posts"   {:get get-all-posts-handler :middleware [:content :wrap-base]}]
+    [["/all"         {:get get-all :middleware [:content :wrap-base]}]
+     ["/post"        {:middleware [:content :wrap-base]}
+      ["/create-post" {:post create-post}]
+      ["/delete-post" {:post delete-post}]
+      ["/post"        {:get get-post}]
+      ["/all-posts"   {:get get-all-posts}]]
+     ["/page"        {:middleware [:content :wrap-base]}
+      ["/create-page" {:post create-page}]
+      ["/page"        {:get get-page}]
+      ["/all-pages"   {:get get-all-pages}]]
      ["/*"           (reitit/create-resource-handler {:root "public"})]]
     {:conflicts            (constantly nil)
      ::middleware/registry {:content muuntaja/format-middleware

@@ -9,6 +9,7 @@
    [:post/css-class {:optional true} :string]
    [:post/creation-date inst?]
    [:post/last-edit-date {:optional true} inst?]
+   [:post/show-dates? {:optional true} :boolean]
    [:post/md-content :string]
    [:post/image-beside
     {:optional true}
