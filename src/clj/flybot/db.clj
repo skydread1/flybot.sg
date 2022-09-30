@@ -198,6 +198,11 @@
   (d/transact (conn) [{:page/title (:post/page post)
                        :page/posts [post]}]))
 
+(defn delete-post
+  "Delete (retract) post in the DB."
+  [post-id]
+  (d/transact (conn) [[:db/retractEntity [:post/id post-id]]]))
+
 ;; ---------- Read ----------
 
 (def post-pull-pattern

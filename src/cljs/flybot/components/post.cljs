@@ -6,14 +6,14 @@
 ;;---------- Errors ----------
 
 (defn error-component [id]
-  (when-let [error @(rf/subscribe [:subs.form/error id])]
+  (when-let [error @(rf/subscribe [:subs.app/error id])]
     [:div.error error]))
 
 (defn errors
   []
   [:div.errors
-   [error-component :error/validation-errors]
-   [error-component :error/server-errors]])
+   [error-component :validation-errors]
+   [error-component :failure-http-result]])
 
 ;;---------- Buttons ----------
 
@@ -54,6 +54,14 @@
              "Create Post")
     :on-change "ReadOnly"
     :on-click #(rf/dispatch [:evt.app/toggle-create-mode])}])
+
+(defn delete-button
+  [post-id]
+  [:input.button
+   {:type "button"
+    :value "Delete Post"
+    :on-change "ReadOnly"
+    :on-click #(rf/dispatch [:evt.page/remove-post post-id])}])
 
 ;;---------- Form ----------
 
@@ -164,8 +172,12 @@
    {:key (or id "empty-read-id")
     :id (or id "empty-read-id")}
    [:div.post-header
-    [:form
-     (if id [edit-button id] [create-button "temp-id-btn"])]
+    (if id
+      [:form
+       [edit-button id]
+       [delete-button id]]
+      [:form
+       [create-button "temp-id-btn"]])
     [errors]]
    [post-view post]])
 
@@ -196,7 +208,8 @@
     [:form
      [preview-button]
      [submit-button]
-     [edit-button]]
+     [edit-button]
+     [delete-button post-id]]
     [errors]]
    (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
      [post-view
