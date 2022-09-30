@@ -33,15 +33,10 @@
    (assoc errors :failure-http-result result)))
 
 (rf/reg-event-fx
- :fx.http/all-posts-success
+ :fx.http/all-success
  (fn [{:keys [db]} [_ result]]
-   (let [pages (->> result
-                    (map first)
-                    (reduce (fn [acc {:page/keys [title posts]}]
-                              (assoc acc title posts))
-                            {}))]
-     {:db (assoc db :app/posts pages)
-      :fx [[:fx.log/message "Got all the posts."]]})))
+   {:db (merge db result)
+    :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]]}))
 
 (rf/reg-event-fx
  :fx.http/post-success
@@ -53,23 +48,28 @@
  :fx.http/send-post-success
  (fn [{:keys [db]} [_ page-name result]]
    (if (= :edit (:app/mode db))
-     {:fx [[:dispatch [:evt.page/delete-post (:post/id result) page-name]]
-           [:dispatch [:evt.page/add-post result page-name]]
+     {:fx [[:dispatch [:evt.post/delete-post (:post/id result) page-name]]
+           [:dispatch [:evt.post/add-post result page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
            [:dispatch [:evt.app/set-mode :read]]
            [:fx.log/message ["Post " (:post/id result) " edited."]]]}
-     {:fx [[:dispatch [:evt.page/add-post result page-name]]
+     {:fx [[:dispatch [:evt.post/add-post result page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
            [:dispatch [:evt.app/set-mode :read]]
            [:fx.log/message ["Post " (:post/id result) " created."]]]})))
 
 (rf/reg-event-fx
+ :fx.http/send-page-success
+ (fn [_ [_ result]]
+   {:fx [[:fx.log/message ["Page " (:page/name result) " updated."]]]}))
+
+(rf/reg-event-fx
  :fx.http/delete-post-success
  (fn [{:keys [db]} [_ result]]
    (let [page-name (-> db :app/current-view :data :page-name)]
-     {:fx [[:dispatch [:evt.page/delete-post (:post/id result) page-name]]
+     {:fx [[:dispatch [:evt.post/delete-post (:post/id result) page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
            [:dispatch [:evt.app/set-mode :read]]
@@ -100,14 +100,16 @@
    {:db         (assoc
                  db
                  :app/current-view (rfe/push-state :flybot/home)
-                 :nav/navbar-open? false
                  :app/posts        {}
                  :app/theme        local-store-theme
-                 :app/mode         :read)
+                 :app/mode         :read
+                 :user/mode        :reader
+                 :nav/navbar-open? false)
     :http-xhrio {:method          :get
-                 :uri             "/all-posts"
+                 :uri             "/all"
+                 :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/all-posts-success]
+                 :on-success      [:fx.http/all-success]
                  :on-failure      [:fx.http/failure]}
     :fx         [[:fx.app/update-html-class local-store-theme]]}))
 
@@ -188,7 +190,27 @@
    (-> db
        (assoc :nav/navbar-open? false))))
 
-;;---------- Page ----------
+;; ---------- User ----------
+
+(rf/reg-sub
+ :subs.user/mode
+ (fn [db _]
+   (:user/mode db)))
+
+(rf/reg-event-db
+ :evt.user/set-mode
+ (fn [db [_ mode]]
+   (-> db
+       (assoc :user/mode mode))))
+
+(rf/reg-event-db
+ :evt.user/toggle-mode
+ (fn [db _]
+   (if (= :editor (:user/mode db))
+     (assoc db :user/mode :reader)
+     (assoc db :user/mode :editor))))
+
+;; ---------- Page ----------
 
 (rf/reg-event-db
  :evt.page/set-current-view
@@ -202,32 +224,65 @@
    (-> db :app/current-view :data)))
 
 (rf/reg-event-db
- :evt.page/add-post
- [(rf/path :app/posts)]
- (fn [all-posts [_ post page-name]]
-   (-> all-posts
-       (update page-name #(conj % post)))))
-
-(rf/reg-event-db
- :evt.page/delete-post
- [(rf/path :app/posts)]
- (fn [all-posts [_ post-id page]]
-   (let [updated-posts (filter
-                        (fn [post] (not= post-id (:post/id post)))
-                        (get all-posts page))]
-     (assoc all-posts page updated-posts))))
-
-(rf/reg-sub
- :subs.page/posts
- (fn [db [_ page]]
-   (-> db :app/posts page)))
+ :evt.page/set-sorting-method
+ [(rf/path :app/pages)]
+ (fn [pages [_ page method]]
+   (->> pages
+        (map (fn [p]
+               (if (= page (:page/name p))
+                 (assoc p :page/sorting-method (edn/read-string method))
+                 p))))))
 
 (rf/reg-event-fx
- :evt.page/remove-post
+ :evt.page/send-page
+ (fn [{:keys [db]} [_ page-name]]
+   (let [page (->> db :app/pages (filter #(= page-name (:page/name %))) first)]
+     {:http-xhrio {:method          :post
+                   :params          page
+                   :uri             "/page/create-page"
+                   :format          (edn-request-format {:keywords? true})
+                   :response-format (edn-response-format {:keywords? true})
+                   :on-success      [:fx.http/send-page-success]
+                   :on-failure      [:fx.http/failure]}})))
+
+(rf/reg-sub
+ :subs.page/sorting-method
+ (fn [db [_ page]]
+   (->> db
+        :app/pages
+        (filter #(= page (:page/name %)))
+        first
+        :page/sorting-method)))
+
+;; ---------- Post ----------
+
+(rf/reg-event-db
+ :evt.post/add-post
+ [(rf/path :app/posts)]
+ (fn [all-posts [_ post]]
+   (-> all-posts
+       (conj post))))
+
+(rf/reg-event-db
+ :evt.post/delete-post
+ [(rf/path :app/posts)]
+ (fn [all-posts [_ post-id]]
+   (let [updated-posts (filter
+                        (fn [post] (not= post-id (:post/id post)))
+                        all-posts)]
+     updated-posts)))
+
+(rf/reg-sub
+ :subs.post/posts
+ (fn [db [_ page]]
+   (->> db :app/posts (filter #(= page (:post/page %))))))
+
+(rf/reg-event-fx
+ :evt.post/remove-post
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :params          post-id
-                 :uri             "/delete-post"
+                 :uri             "/post/delete-post"
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/delete-post-success]
@@ -256,7 +311,7 @@
        {:fx [[:dispatch [:evt.app/set-validation-errors (v/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :params          post
-                     :uri             "/create-post"
+                     :uri             "/post/create-post"
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/send-post-success current-page]
@@ -293,7 +348,7 @@
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :get
                  :params          {:post-id post-id}
-                 :uri             "/post"
+                 :uri             "/post/post"
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/post-success]
                  :on-failure      [:fx.http/failure]}}))

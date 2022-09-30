@@ -61,7 +61,7 @@
    {:type "button"
     :value "Delete Post"
     :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.page/remove-post post-id])}])
+    :on-click #(rf/dispatch [:evt.post/remove-post post-id])}])
 
 ;;---------- Form ----------
 
@@ -116,6 +116,16 @@
                                  :image/alt
                                  (.. % -target -value)])}]
      [:br]
+     [:label {:for "show-dates"} "Show Dates:"]
+     [:br]
+     [:input
+      {:type "checkbox"
+       :name "show-dates"
+       :default-checked (when @(rf/subscribe [:subs.form/field :post/show-dates?]) "checked")
+       :on-click #(rf/dispatch [:evt.form/set-field
+                                :post/show-dates?
+                                (.. % -target -checked)])}]
+     [:br]
      [theme-logo]]
     [:br]
     [:fieldset
@@ -134,8 +144,15 @@
 
 ;;---------- (pre)View ----------
 
+(defn post-dates
+  [{:post/keys [creation-date last-edit-date :post/show-dates?]}]
+  (when show-dates?
+    [:div.post-dates
+     (when creation-date [:p (str "Created on: " creation-date)])
+     (when last-edit-date [:p (str "Last edited on: " last-edit-date)])]))
+
 (defn post-view
-  [{:post/keys [css-class image-beside hiccup-content]}]
+  [{:post/keys [css-class image-beside hiccup-content] :as post}]
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs.app/theme]))
               src-dark src)]
@@ -146,11 +163,13 @@
        [:div.image
         [:img {:src src :alt alt}]]
        [:div.text
+        [post-dates post]
         hiccup-content]]
     ;; returns 1 hiccup div
       [:div.post-body
        {:class css-class}
        [:div.textonly
+        [post-dates post]
         hiccup-content]])))
 
 ;;---------- Containers ----------

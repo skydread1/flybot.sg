@@ -14,6 +14,5 @@
   "Create and populate Datomic in-mem DB"
   [handler]
   (db/create-db)
-  (db/add-schemas)
-  (db/add-pages)
+  (db/initialize-db)
   handler)
