@@ -30,10 +30,22 @@
                  :params body-params}
        :headers {"content-type" "application/edn"}})))
 
+(defn delete-post [{:keys [body-params]}]
+  (try
+    (db/delete-post body-params)
+    {:body    {:post/id body-params}
+     :headers {"content-type" "application/edn"}}
+    (catch Exception e
+      {:body    {:status 406
+                 :error "Post not deleted"
+                 :params body-params}
+       :headers {"content-type" "application/edn"}})))
+
 (def app-routes
   (reitit/ring-handler
    (reitit/router
     [["/create-post" {:post create-post :middleware [:content :wrap-base]}]
+     ["/delete-post" {:post delete-post :middleware [:content :wrap-base]}]
      ["/post"        {:get get-post :middleware [:content :wrap-base]}]
      ["/all-posts"   {:get get-all-posts-handler :middleware [:content :wrap-base]}]
      ["/*"           (reitit/create-resource-handler {:root "public"})]]

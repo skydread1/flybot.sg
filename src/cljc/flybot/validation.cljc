@@ -37,8 +37,7 @@
   [errors]
   (->> errors
        :errors
-       (map #(select-keys % [:path :type]))
-       (str "FORM VALIDATION ERROR: ")))
+       (map #(select-keys % [:path :type]))))
 
 #?(:cljs
    (defn prepare-post
