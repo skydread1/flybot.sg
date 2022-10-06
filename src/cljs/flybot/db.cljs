@@ -105,8 +105,9 @@
                  :app/mode         :read
                  :user/mode        :reader
                  :nav/navbar-open? false)
-    :http-xhrio {:method          :get
+    :http-xhrio {:method          :post
                  :uri             "/all"
+                 :params          {:op-name :get-all}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/all-success]
@@ -238,8 +239,9 @@
  (fn [{:keys [db]} [_ page-name]]
    (let [page (->> db :app/pages (filter #(= page-name (:page/name %))) first)]
      {:http-xhrio {:method          :post
-                   :params          page
-                   :uri             "/page/create-page"
+                   :uri             "/all"
+                   :params          {:op-name :create-page
+                                     :data    page}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/send-page-success]
@@ -281,8 +283,9 @@
  :evt.post/remove-post
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
-                 :params          post-id
-                 :uri             "/post/delete-post"
+                 :uri             "/all"
+                 :params          {:op-name :delete-post
+                                   :data    post-id}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/delete-post-success]
@@ -310,8 +313,9 @@
      (if (:errors post)
        {:fx [[:dispatch [:evt.app/set-validation-errors (v/error-msg post)]]]}
        {:http-xhrio {:method          :post
-                     :params          post
-                     :uri             "/post/create-post"
+                     :uri             "/all"
+                     :params          {:op-name :create-post
+                                       :data    post}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/send-post-success current-page]
@@ -346,9 +350,11 @@
 (rf/reg-event-fx
  :evt.form/autofill
  (fn [_ [_ post-id]]
-   {:http-xhrio {:method          :get
-                 :params          {:post-id post-id}
-                 :uri             "/post/post"
+   {:http-xhrio {:method          :post
+                 :uri             "/all"
+                 :params          {:op-name :get-post
+                                   :data    post-id}
+                 :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/post-success]
                  :on-failure      [:fx.http/failure]}}))

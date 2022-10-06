@@ -1,22 +1,33 @@
-(ns clj.flybot.core 
-  (:require [aleph.http :as http] 
-            [mount.core :as mount]
+(ns clj.flybot.core
+  (:require [aleph.http :as http]
+            [robertluo.fun-map :refer [fnk life-cycle-map closeable touch halt!]]
             [clj.flybot.handler :as handler]
-            [clj.flybot.db :as db])
+            [clj.flybot.db :as db]
+            [clj.flybot.operation :as op])
   (:gen-class))
 
-(declare http-server)
+(def system
+  (merge db/system
+         (life-cycle-map
+          {:port         8123
+           :http-server (fnk [port conn]
+                             (http/start-server
+                              (handler/app-routes {:conn conn} op/ops)
+                              {:port port}))
+           :stop-server (fnk [http-server]
+                             (closeable
+                              nil
+                              #(.close http-server)))})))
 
-(mount/defstate ^{:on-reload :noop} http-server
-  :start (http/start-server handler/app {:port 8123})
-  :stop  (.close http-server))
-
-(defn stop-server
-  []
-  (mount/stop))
-
-(defn -main [& _] 
-  (mount/start)
+(defn -main [& _]
+  (touch system)
   (println "server started")
-  (db/initialize-db)
   (println "Memory DB created and populated"))
+
+(def figwheel-handler
+  (handler/app-routes (touch db/system) op/ops))
+
+(comment
+  (touch system)
+  (halt! system)
+  )

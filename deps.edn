@@ -16,7 +16,7 @@
 
            ;; back-end
            aleph/aleph                           {:mvn/version "0.5.0"}
-           mount/mount                           {:mvn/version "0.1.16"} 
+           robertluo/fun-map                     {:mvn/version "0.4.5"} 
            com.datomic/datomic-free              {:mvn/version "0.9.5697"}
 
            ;; work around to resolve the dep conflict introduced by datomic

@@ -1,29 +1,7 @@
 (ns clj.flybot.db
-  (:require [mount.core :refer [defstate]]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
+            [robertluo.fun-map :as fm :refer [fnk life-cycle-map closeable]]
             [datomic.api :as d]))
-
-;; ---------- DB connection in mem (datomic-free) ----------
-
-(def db-uri "datomic:mem://website")
-
-(declare db)
-
-(defstate ^{:on-reload :noop} db
-  :start (d/create-database db-uri)
-  :stop  (d/delete-database db-uri))
-
-(defn conn
-  []
-  (d/connect db-uri))
-
-(defn create-db
-  []
-  (d/create-database db-uri))
-
-(defn delete-db
-  [] 
-  (d/delete-database db-uri))
 
 ;; ---------- Schemas ----------
 
@@ -89,14 +67,6 @@
     :db/valueType :db.type/ref
     :db/isComponent true
     :db/cardinality :db.cardinality/one}])
-
-
-(defn add-schemas
-  []
-  (d/transact (conn) image-schema)
-  (d/transact (conn) sort-config-schema)
-  (d/transact (conn) post-schema)
-  (d/transact (conn) page-schema))
 
 ;; ---------- Initial Data ----------
 
@@ -200,36 +170,16 @@
     :page/sorting-method {:sort/type :post/creation-date
                           :sort/direction :ascending}}])
 
-(defn add-posts
-  "Add all pre-defined pages in the DB"
-  []
-  (d/transact
-   (conn)
-   (concat home-posts apply-posts about-posts blog-posts)))
-
-(defn add-pages
-  "Add all pre-defined pages in the DB"
-  []
-  (d/transact
-   (conn)
-   pages))
-
-(defn initialize-db
-  []
-  (add-schemas)
-  (add-posts)
-  (add-pages))
-
 ;;---------- Post ----------
 
 (defn add-post
   "Add `post` in the DB"
-  [post]
+  [conn post]
   (d/transact (conn) [post]))
 
 (defn delete-post
   "Delete (retract) post in the DB."
-  [post-id]
+  [conn post-id]
   (d/transact (conn) [[:db/retractEntity [:post/id post-id]]]))
 
 (def post-pull-pattern
@@ -245,7 +195,7 @@
 
 (defn get-post
   "Get the post with the given `id`."
-  [id]
+  [conn id]
   (->> (d/q
         '[:find (pull ?posts pull-pattern)
           :in $ ?id pull-pattern
@@ -258,7 +208,7 @@
 
 (defn get-all-posts
   "Get all posts"
-  []
+  [conn]
   (->> (d/q
         '[:find (pull ?posts pull-pattern)
           :in $ pull-pattern
@@ -275,7 +225,7 @@
    {:page/sorting-method [:sort/type :sort/direction]}])
 
 (defn get-page
-  [page-name]
+  [conn page-name]
   (->> (d/q
         '[:find (pull ?page pull-pattern)
           :in $ ?page-name pull-pattern
@@ -286,7 +236,7 @@
        ffirst))
 
 (defn get-all-pages
-  []
+  [conn]
   (->> (d/q
         '[:find (pull ?page pull-pattern)
           :in $ pull-pattern
@@ -298,5 +248,33 @@
 
 (defn add-page
   "Add `page` in the DB"
-  [page]
+  [conn page]
   (d/transact (conn) [page]))
+
+;;---------- System ----------
+
+(def system
+  (life-cycle-map
+   {:db-uri          "datomic:mem://website"
+    :db              (fnk [db-uri]
+                          (closeable
+                           (d/create-database db-uri)
+                           #(do (println "db deleted")
+                                (d/delete-database db-uri))))
+    :conn            (fnk [db-uri] #(d/connect db-uri))
+    :initialize-db   (fnk [conn]
+                          (closeable
+                           (do (d/transact (conn)
+                                           (concat image-schema
+                                                   sort-config-schema
+                                                   post-schema
+                                                   page-schema))
+                               (d/transact (conn)
+                                           (concat home-posts
+                                                   apply-posts
+                                                   about-posts
+                                                   blog-posts
+                                                   pages))
+                               :db-populated)
+                           #(println "db closing")))}))
+
