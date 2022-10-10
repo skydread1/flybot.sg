@@ -47,23 +47,24 @@
 (rf/reg-event-fx
  :fx.http/send-post-success
  (fn [{:keys [db]} [_ page-name {:op/keys [create-post]}]]
-   (if (= :edit (:app/mode db))
+   (if (= :edit (:post/mode db))
      {:fx [[:dispatch [:evt.post/delete-post (:post/id create-post) page-name]]
            [:dispatch [:evt.post/add-post create-post page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
-           [:dispatch [:evt.app/set-mode :read]]
+           [:dispatch [:evt.post/set-mode :read]]
            [:fx.log/message ["Post " (:post/id create-post) " edited."]]]}
      {:fx [[:dispatch [:evt.post/add-post create-post page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
-           [:dispatch [:evt.app/set-mode :read]]
+           [:dispatch [:evt.post/set-mode :read]]
            [:fx.log/message ["Post " (:post/id create-post) " created."]]]})))
 
 (rf/reg-event-fx
  :fx.http/send-page-success
  (fn [_ [_ {:op/keys [:create-page]}]]
-   {:fx [[:fx.log/message ["Page " (:page/name create-page) " updated."]]]}))
+   {:fx [[:dispatch [:evt.page/toggle-edit-mode]]
+         [:fx.log/message ["Page " (:page/name create-page) " updated."]]]}))
 
 (rf/reg-event-fx
  :fx.http/delete-post-success
@@ -72,7 +73,7 @@
      {:fx [[:dispatch [:evt.post/delete-post (:post/id delete-post) page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
-           [:dispatch [:evt.app/set-mode :read]]
+           [:dispatch [:evt.post/set-mode :read]]
            [:fx.log/message ["Post " (:post/id delete-post) " deleted."]]]})))
 
 ;; ---------- App ----------
@@ -100,9 +101,9 @@
    {:db         (assoc
                  db
                  :app/current-view (rfe/push-state :flybot/home)
-                 :app/posts        {}
                  :app/theme        local-store-theme
-                 :app/mode         :read
+                 :post/mode        :read
+                 :page/mode        :read
                  :user/mode        :reader
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
@@ -156,35 +157,6 @@
       :fx [[:fx.app/set-theme-local-store next-theme]
            [:fx.app/toggle-css-class [cur-theme next-theme]]]})))
 
-;; mode
-
-(rf/reg-sub
- :subs.app/mode
- (fn [db _]
-   (:app/mode db)))
-
-(rf/reg-event-db
- :evt.app/set-mode
- (fn [db [_ mode]]
-   (-> db
-       (assoc :app/mode mode))))
-
-(rf/reg-event-db
- :evt.app/toggle-create-mode
- (fn [db _]
-   (rf/dispatch [:evt.form/clear-form])
-   (if (= :create (:app/mode db))
-     (assoc db :app/mode :read)
-     (assoc db :app/mode :create))))
-
-(rf/reg-event-fx
- :evt.app/toggle-edit-mode
- (fn [{:keys [db]} [_ post-id]]
-   (if (= :edit (:app/mode db))
-     {:db (assoc db :app/mode :read)}
-     {:db (assoc db :app/mode :edit)
-      :fx [[:dispatch [:evt.form/autofill post-id]]]})))
-
 ;; ---------- Navbar ----------
 
 (rf/reg-event-db
@@ -212,12 +184,6 @@
    (:user/mode db)))
 
 (rf/reg-event-db
- :evt.user/set-mode
- (fn [db [_ mode]]
-   (-> db
-       (assoc :user/mode mode))))
-
-(rf/reg-event-db
  :evt.user/toggle-mode
  (fn [db _]
    (if (= :editor (:user/mode db))
@@ -225,6 +191,21 @@
      (assoc db :user/mode :editor))))
 
 ;; ---------- Page ----------
+
+;; mode
+
+(rf/reg-sub
+ :subs.page/mode
+ (fn [db _]
+   (:page/mode db)))
+
+(rf/reg-event-fx
+ :evt.page/toggle-edit-mode
+ (fn [{:keys [db]} _]
+   (if (= :edit (:page/mode db))
+     {:db (assoc db :page/mode :read)}
+     {:db (assoc db :page/mode :edit)
+      :fx [[:dispatch [:evt.post/set-mode :read]]]})))
 
 (rf/reg-event-db
  :evt.page/set-current-view
@@ -270,6 +251,35 @@
         :page/sorting-method)))
 
 ;; ---------- Post ----------
+
+;; mode
+
+(rf/reg-sub
+ :subs.post/mode
+ (fn [db _]
+   (:post/mode db)))
+
+(rf/reg-event-db
+ :evt.post/set-mode
+ (fn [db [_ mode]]
+   (-> db
+       (assoc :post/mode mode))))
+
+(rf/reg-event-db
+ :evt.post/toggle-create-mode
+ (fn [db _]
+   (rf/dispatch [:evt.form/clear-form])
+   (if (= :create (:post/mode db))
+     (assoc db :post/mode :read)
+     (assoc db :post/mode :create))))
+
+(rf/reg-event-fx
+ :evt.post/toggle-edit-mode
+ (fn [{:keys [db]} [_ post-id]]
+   (if (= :edit (:post/mode db))
+     {:db (assoc db :post/mode :read)}
+     {:db (assoc db :post/mode :edit)
+      :fx [[:dispatch [:evt.form/autofill post-id]]]})))
 
 (rf/reg-event-db
  :evt.post/add-post

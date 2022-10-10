@@ -1,6 +1,5 @@
 (ns clj.flybot.operation
-  (:require [clj.flybot.db :as db]
-            [cljc.flybot.validation :as v]))
+  (:require [clj.flybot.db :as db]))
 
 ;;---------- No Effect Ops ----------
 
@@ -69,14 +68,3 @@
    :op/create-post   (fn [params] (:response (create-post (assoc sys :params params))))
    :op/delete-post   (fn [params] (:response (delete-post (assoc sys :params params))))
    :op/create-page   (fn [params] (:response (create-page (assoc sys :params params))))})
-
-(def ops-sch
-  [:map
-   [:op/get-post {:optional true} v/post-schema]
-   [:op/get-page {:optional true} v/page-schema]
-   [:op/get-all-posts {:optional true} [:vector v/post-schema]]
-   [:op/get-all-pages {:optional true} [:vector v/page-schema]]
-   [:op/get-all {:optional true} v/all-schema]
-   [:op/create-post {:optional true} v/post-schema]
-   [:op/delete-post {:optional true} v/post-schema]
-   [:op/create-page {:optional true} v/page-schema]])

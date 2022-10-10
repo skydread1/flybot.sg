@@ -39,21 +39,21 @@
   [post-id]
   [:input.button
    {:type "button"
-    :value (if (= :edit @(rf/subscribe [:subs.app/mode]))
+    :value (if (= :edit @(rf/subscribe [:subs.post/mode]))
              "Cancel"
              "Edit Post")
     :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.app/toggle-edit-mode post-id])}])
+    :on-click #(rf/dispatch [:evt.post/toggle-edit-mode post-id])}])
 
 (defn create-button
   []
   [:input.button
    {:type "button"
-    :value (if (= :create @(rf/subscribe [:subs.app/mode]))
+    :value (if (= :create @(rf/subscribe [:subs.post/mode]))
              "Cancel"
              "Create Post")
     :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.app/toggle-create-mode])}])
+    :on-click #(rf/dispatch [:evt.post/toggle-create-mode])}])
 
 (defn delete-button
   [post-id]
@@ -198,7 +198,8 @@
       [:form
        [create-button "temp-id-btn"]])
     [errors]]
-   [post-view post]])
+   (when id
+     [post-view post])])
 
 (defn post-create
   "Create Post Form with preview feature."

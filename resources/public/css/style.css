@@ -246,24 +246,9 @@ input[type=button] {
     }
 }
 
-.moonlogo {
-    fill: var(--text-primary-color);
+.header-logo {
     width: 32px;
     height: 32px;
-}
-
-.moonlogo:hover {
-    fill: yellow;
-}
-
-.sunlogo {
-    fill: var(--link-primary-color);
-    width: 32px;
-    height: 32px;
-}
-
-.sunlogo:hover {
-    fill: red;
 }
 
 .burger {
@@ -273,8 +258,12 @@ input[type=button] {
 }
 
 svg {
-    fill: var(--text-primary-color);
+    fill: var(--link-primary-color);
     width: 250px;
+}
+
+svg:hover {
+    fill: var(--text-secondary-color);
 }
 
 /* Header */
@@ -399,6 +388,12 @@ footer p {
 
 /* Page - all pages */
 
+section .page {
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--border-primary-color);
+}
+
 section .post-container {
     padding: 2.5rem;
     border-bottom-style: solid;
@@ -522,11 +517,11 @@ section.blog h1 {
 
 /* Post */
 
-.post-header {
+.post-header, .page-header {
     margin: 1rem;
 }
 
-.post-header .button {
+.post-header .button, .page-header .button {
     min-width: 30%;
     padding: 0.5rem;
 }
@@ -538,7 +533,7 @@ section.blog h1 {
 }
 
 @media (min-width: 1024px) {
-    .post-header .button {
+    .post-header .button, .page-header .button {
         min-width: 20%;
         padding: 1rem;
     }

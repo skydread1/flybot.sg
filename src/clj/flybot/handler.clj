@@ -2,7 +2,8 @@
   (:require [reitit.ring :as reitit]
             [reitit.middleware :as middleware]
             [reitit.ring.middleware.muuntaja :as muuntaja]
-            [muuntaja.core :as m] 
+            [muuntaja.core :as m]
+            [cljc.flybot.validation :as v]
             [clj.flybot.middleware :as mw]
             [sg.flybot.pullable :as pull]
             [clj.flybot.operation :as op]))
@@ -10,7 +11,7 @@
 (defn mk-req-handler
   [sys]
   (fn [{:keys [body-params]}]
-    (let [resp   (first (pull/run body-params op/ops-sch (op/ops-fn sys)))]
+    (let [resp   (first (pull/run body-params v/ops-schema (op/ops-fn sys)))]
       (if (:error resp)
         (reitit/create-default-handler
          {:not-acceptable     (constantly {:status 406, :body "Not acceptable"})})
