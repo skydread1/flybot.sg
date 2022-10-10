@@ -24,8 +24,11 @@
   (println "server started")
   (println "Memory DB created and populated"))
 
+(def dev-system
+  db/system)
+
 (def figwheel-handler
-  (handler/app-routes (touch db/system) op/ops))
+  (handler/app-routes (touch dev-system) op/ops))
 
 (comment
   (touch system)

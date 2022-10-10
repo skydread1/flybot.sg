@@ -1,20 +1,27 @@
 (ns clj.flybot.handler
-  
   (:require [reitit.ring :as reitit]
             [reitit.middleware :as middleware]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [muuntaja.core :as m] 
-            [clj.flybot.middleware :as mw]))
+            [clj.flybot.middleware :as mw]
+            [sg.flybot.pullable :as pull]))
+
 
 (defn mk-req-handler
-  [{:keys [conn]} ops]
+  [sys ops]
   (fn [{:keys [body-params]}]
-    (let [{:keys [op-name data]} body-params
-          f-op (-> ops (get op-name))]
-      {:body (:response (f-op (assoc {}
-                                     :conn conn
-                                     :params data)))
-       :headers {"content-type" "application/edn"}})))
+    (let [{:keys [op-name op-params pattern]} body-params
+          op-fn  (-> ops (get op-name) :op-fn)
+          op-sch (-> ops (get op-name) :op-schema)
+          resp   (->> (op-fn (assoc sys :params op-params))
+                      :response
+                      (pull/run pattern op-sch)
+                      first)]
+      (if (:error resp)
+        (reitit/create-default-handler
+         {:not-found          (constantly {:status 407, :body "Error in pull pattern"})})
+        {:body    resp
+         :headers {"content-type" "application/edn"}}))))
 
 (defn app-routes
   [sys ops]

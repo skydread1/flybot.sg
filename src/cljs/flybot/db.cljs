@@ -107,7 +107,21 @@
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name :get-all}
+                 :params          {:op-name :get-all
+                                   :op-params nil
+                                   :pattern '{:app/pages [{:page/name ?
+                                                           :page/sorting-method {:sort/type ?
+                                                                                 :sort/direction ?}}]
+                                              :app/posts [{:post/id ?
+                                                           :post/page ?
+                                                           :post/css-class ?
+                                                           :post/creation-date ?
+                                                           :post/last-edit-date ?
+                                                           :post/show-dates? ?
+                                                           :post/md-content ?
+                                                           :post/image-beside {:image/src ?
+                                                                               :image/src-dark ?
+                                                                               :image/alt ?}}]}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/all-success]
@@ -240,8 +254,9 @@
    (let [page (->> db :app/pages (filter #(= page-name (:page/name %))) first)]
      {:http-xhrio {:method          :post
                    :uri             "/all"
-                   :params          {:op-name :create-page
-                                     :data    page}
+                   :params          {:op-name   :create-page
+                                     :op-params page
+                                     :pattern   '{:page/name ?}}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/send-page-success]
@@ -284,8 +299,12 @@
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name :delete-post
-                                   :data    post-id}
+                 :params          {:op-name   :delete-post
+                                   :op-params post-id
+                                   :pattern   '{:post/id ?
+                                                :post/page ?
+                                                :post/creation-date ?
+                                                :post/md-content ?}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/delete-post-success]
@@ -314,8 +333,18 @@
        {:fx [[:dispatch [:evt.app/set-validation-errors (v/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             "/all"
-                     :params          {:op-name :create-post
-                                       :data    post}
+                     :params          {:op-name   :create-post
+                                       :op-params post
+                                       :pattern   '{:post/id ?
+                                                    :post/page ?
+                                                    :post/css-class ?
+                                                    :post/creation-date ?
+                                                    :post/last-edit-date ?
+                                                    :post/show-dates? ?
+                                                    :post/md-content ?
+                                                    :post/image-beside {:image/src ?
+                                                                        :image/src-dark ?
+                                                                        :image/alt ?}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/send-post-success current-page]
@@ -352,8 +381,18 @@
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name :get-post
-                                   :data    post-id}
+                 :params          {:op-name   :get-post
+                                   :op-params post-id
+                                   :pattern   '{:post/id ?
+                                                :post/page ?
+                                                :post/css-class ?
+                                                :post/creation-date ?
+                                                :post/last-edit-date ?
+                                                :post/show-dates? ?
+                                                :post/md-content ?
+                                                :post/image-beside {:image/src ?
+                                                                    :image/src-dark ?
+                                                                    :image/alt ?}}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/post-success]

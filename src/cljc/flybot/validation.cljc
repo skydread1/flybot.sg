@@ -16,13 +16,22 @@
     [:map
      [:image/src :string]
      [:image/src-dark :string]
-     [:image/alt :string]]]
-   [:post/dk-images
-    {:description "image srcs that supports dark-mode in the md file."
-     :optional true}
-    [:vector
-     [:map
-      [:image/src :string]]]]])
+     [:image/alt :string]]]])
+
+(def page-schema
+  [:map {:closed true}
+   [:page/name :keyword]
+   [:page/sorting-method
+    {:optional true}
+    [:map
+     [:sort/type :keyword]
+     [:sort/direction :keyword]]]])
+
+(def all-schema
+  [:map
+   {:closed true}
+   [:app/pages [:vector page-schema]]
+   [:app/posts [:vector post-schema]]])
 
 (defn validate
   "Validates the given `data` against the given `schema`.

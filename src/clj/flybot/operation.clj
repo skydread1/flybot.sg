@@ -1,5 +1,6 @@
 (ns clj.flybot.operation
-  (:require [clj.flybot.db :as db]))
+  (:require [clj.flybot.db :as db]
+            [cljc.flybot.validation :as v]))
 
 ;;---------- No Effect Ops ----------
 
@@ -43,7 +44,7 @@
     {:response {:post/id params}
      :effects  {:db (db/delete-post conn params)}}
     (catch Exception e
-      {:response {:post/id params}
+      {:response params
        :effects  e})))
 
 (defn create-page
@@ -59,11 +60,19 @@
 ;;---------- ops map ----------
 
 (def ops
-  {:get-post      clj.flybot.operation/get-post
-   :get-page      clj.flybot.operation/get-page
-   :get-all-posts clj.flybot.operation/get-all-posts
-   :get-all-pages clj.flybot.operation/get-all-pages
-   :get-all       clj.flybot.operation/get-all
-   :create-post   clj.flybot.operation/create-post
-   :delete-post   clj.flybot.operation/delete-post
-   :create-page   clj.flybot.operation/create-page})
+  {:get-post      {:op-fn     clj.flybot.operation/get-post
+                   :op-schema v/post-schema}
+   :get-page      {:op-fn     clj.flybot.operation/get-page
+                   :op-schema v/page-schema}
+   :get-all-posts {:op-fn     clj.flybot.operation/get-all-posts
+                   :op-schema [:vector v/post-schema]}
+   :get-all-pages {:op-fn     clj.flybot.operation/get-all-pages
+                   :op-schema [:vector v/page-schema]}
+   :get-all       {:op-fn     clj.flybot.operation/get-all
+                   :op-schema v/all-schema}
+   :create-post   {:op-fn     clj.flybot.operation/create-post
+                   :op-schema v/post-schema}
+   :delete-post   {:op-fn     clj.flybot.operation/delete-post
+                   :op-schema v/post-schema}
+   :create-page   {:op-fn     clj.flybot.operation/create-page
+                   :op-schema v/page-schema}})
