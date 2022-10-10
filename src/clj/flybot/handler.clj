@@ -4,30 +4,24 @@
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [muuntaja.core :as m] 
             [clj.flybot.middleware :as mw]
-            [sg.flybot.pullable :as pull]))
-
+            [sg.flybot.pullable :as pull]
+            [clj.flybot.operation :as op]))
 
 (defn mk-req-handler
-  [sys ops]
+  [sys]
   (fn [{:keys [body-params]}]
-    (let [{:keys [op-name op-params pattern]} body-params
-          op-fn  (-> ops (get op-name) :op-fn)
-          op-sch (-> ops (get op-name) :op-schema)
-          resp   (->> (op-fn (assoc sys :params op-params))
-                      :response
-                      (pull/run pattern op-sch)
-                      first)]
+    (let [resp   (first (pull/run body-params op/ops-sch (op/ops-fn sys)))]
       (if (:error resp)
         (reitit/create-default-handler
-         {:not-found          (constantly {:status 407, :body "Error in pull pattern"})})
+         {:not-acceptable     (constantly {:status 406, :body "Not acceptable"})})
         {:body    resp
          :headers {"content-type" "application/edn"}}))))
 
 (defn app-routes
-  [sys ops]
+  [sys]
   (reitit/ring-handler
    (reitit/router
-    [["/all" {:post (mk-req-handler sys ops) :middleware [:content :wrap-base]}]
+    [["/all" {:post (mk-req-handler sys) :middleware [:content :wrap-base]}]
      ["/*"   (reitit/create-resource-handler {:root "public"})]]
     {:conflicts            (constantly nil)
      ::middleware/registry {:content muuntaja/format-middleware

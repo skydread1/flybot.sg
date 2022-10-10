@@ -34,46 +34,46 @@
 
 (rf/reg-event-fx
  :fx.http/all-success
- (fn [{:keys [db]} [_ result]]
-   {:db (merge db result)
+ (fn [{:keys [db]} [_ {:op/keys [get-all]}]]
+   {:db (merge db get-all)
     :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]]}))
 
 (rf/reg-event-fx
  :fx.http/post-success
- (fn [{:keys [db]} [_ result]]
-   {:db (assoc db :form/fields result)
-    :fx [[:fx.log/message ["Got the post " (:post/id result)]]]}))
+ (fn [{:keys [db]} [_ {:op/keys [get-post]}]]
+   {:db (assoc db :form/fields get-post)
+    :fx [[:fx.log/message ["Got the post " (:post/id get-post)]]]}))
 
 (rf/reg-event-fx
  :fx.http/send-post-success
- (fn [{:keys [db]} [_ page-name result]]
+ (fn [{:keys [db]} [_ page-name {:op/keys [create-post]}]]
    (if (= :edit (:app/mode db))
-     {:fx [[:dispatch [:evt.post/delete-post (:post/id result) page-name]]
-           [:dispatch [:evt.post/add-post result page-name]]
+     {:fx [[:dispatch [:evt.post/delete-post (:post/id create-post) page-name]]
+           [:dispatch [:evt.post/add-post create-post page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
            [:dispatch [:evt.app/set-mode :read]]
-           [:fx.log/message ["Post " (:post/id result) " edited."]]]}
-     {:fx [[:dispatch [:evt.post/add-post result page-name]]
+           [:fx.log/message ["Post " (:post/id create-post) " edited."]]]}
+     {:fx [[:dispatch [:evt.post/add-post create-post page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
            [:dispatch [:evt.app/set-mode :read]]
-           [:fx.log/message ["Post " (:post/id result) " created."]]]})))
+           [:fx.log/message ["Post " (:post/id create-post) " created."]]]})))
 
 (rf/reg-event-fx
  :fx.http/send-page-success
- (fn [_ [_ result]]
-   {:fx [[:fx.log/message ["Page " (:page/name result) " updated."]]]}))
+ (fn [_ [_ {:op/keys [:create-page]}]]
+   {:fx [[:fx.log/message ["Page " (:page/name create-page) " updated."]]]}))
 
 (rf/reg-event-fx
  :fx.http/delete-post-success
- (fn [{:keys [db]} [_ result]]
+ (fn [{:keys [db]} [_ {:op/keys [delete-post]}]]
    (let [page-name (-> db :app/current-view :data :page-name)]
-     {:fx [[:dispatch [:evt.post/delete-post (:post/id result) page-name]]
+     {:fx [[:dispatch [:evt.post/delete-post (:post/id delete-post) page-name]]
            [:dispatch [:evt.form/clear-form]]
            [:dispatch [:evt.app/clear-errors]]
            [:dispatch [:evt.app/set-mode :read]]
-           [:fx.log/message ["Post " (:post/id result) " deleted."]]]})))
+           [:fx.log/message ["Post " (:post/id delete-post) " deleted."]]]})))
 
 ;; ---------- App ----------
 
@@ -107,21 +107,20 @@
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name :get-all
-                                   :op-params nil
-                                   :pattern '{:app/pages [{:page/name ?
-                                                           :page/sorting-method {:sort/type ?
-                                                                                 :sort/direction ?}}]
-                                              :app/posts [{:post/id ?
-                                                           :post/page ?
-                                                           :post/css-class ?
-                                                           :post/creation-date ?
-                                                           :post/last-edit-date ?
-                                                           :post/show-dates? ?
-                                                           :post/md-content ?
-                                                           :post/image-beside {:image/src ?
-                                                                               :image/src-dark ?
-                                                                               :image/alt ?}}]}}
+                 :params          {(list :op/get-all :with [_])
+                                   {:app/pages [{:page/name '?
+                                                 :page/sorting-method {:sort/type '?
+                                                                       :sort/direction '?}}]
+                                    :app/posts [{:post/id '?
+                                                 :post/page '?
+                                                 :post/css-class '?
+                                                 :post/creation-date '?
+                                                 :post/last-edit-date '?
+                                                 :post/show-dates? '?
+                                                 :post/md-content '?
+                                                 :post/image-beside {:image/src '?
+                                                                     :image/src-dark '?
+                                                                     :image/alt '?}}]}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/all-success]
@@ -254,9 +253,8 @@
    (let [page (->> db :app/pages (filter #(= page-name (:page/name %))) first)]
      {:http-xhrio {:method          :post
                    :uri             "/all"
-                   :params          {:op-name   :create-page
-                                     :op-params page
-                                     :pattern   '{:page/name ?}}
+                   :params          {(list :op/create-page :with [page])
+                                     {:page/name '?}}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/send-page-success]
@@ -299,12 +297,11 @@
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name   :delete-post
-                                   :op-params post-id
-                                   :pattern   '{:post/id ?
-                                                :post/page ?
-                                                :post/creation-date ?
-                                                :post/md-content ?}}
+                 :params          {(list :op/delete-post :with [post-id])
+                                   {:post/id '?
+                                    :post/page '?
+                                    :post/creation-date '?
+                                    :post/md-content '?}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/delete-post-success]
@@ -333,18 +330,17 @@
        {:fx [[:dispatch [:evt.app/set-validation-errors (v/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             "/all"
-                     :params          {:op-name   :create-post
-                                       :op-params post
-                                       :pattern   '{:post/id ?
-                                                    :post/page ?
-                                                    :post/css-class ?
-                                                    :post/creation-date ?
-                                                    :post/last-edit-date ?
-                                                    :post/show-dates? ?
-                                                    :post/md-content ?
-                                                    :post/image-beside {:image/src ?
-                                                                        :image/src-dark ?
-                                                                        :image/alt ?}}}
+                     :params          {(list :op/create-post :with [post])
+                                       {:post/id '?
+                                        :post/page '?
+                                        :post/css-class '?
+                                        :post/creation-date '?
+                                        :post/last-edit-date '?
+                                        :post/show-dates? '?
+                                        :post/md-content '?
+                                        :post/image-beside {:image/src '?
+                                                            :image/src-dark '?
+                                                            :image/alt '?}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/send-post-success current-page]
@@ -381,18 +377,17 @@
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name   :get-post
-                                   :op-params post-id
-                                   :pattern   '{:post/id ?
-                                                :post/page ?
-                                                :post/css-class ?
-                                                :post/creation-date ?
-                                                :post/last-edit-date ?
-                                                :post/show-dates? ?
-                                                :post/md-content ?
-                                                :post/image-beside {:image/src ?
-                                                                    :image/src-dark ?
-                                                                    :image/alt ?}}}
+                 :params          {(list :op/get-post :with [post-id])
+                                   {:post/id '?
+                                    :post/page '?
+                                    :post/css-class '?
+                                    :post/creation-date '?
+                                    :post/last-edit-date '?
+                                    :post/show-dates? '?
+                                    :post/md-content '?
+                                    :post/image-beside {:image/src '?
+                                                        :image/src-dark '?
+                                                        :image/alt '?}}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/post-success]

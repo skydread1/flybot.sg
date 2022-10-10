@@ -59,20 +59,24 @@
 
 ;;---------- ops map ----------
 
-(def ops
-  {:get-post      {:op-fn     clj.flybot.operation/get-post
-                   :op-schema v/post-schema}
-   :get-page      {:op-fn     clj.flybot.operation/get-page
-                   :op-schema v/page-schema}
-   :get-all-posts {:op-fn     clj.flybot.operation/get-all-posts
-                   :op-schema [:vector v/post-schema]}
-   :get-all-pages {:op-fn     clj.flybot.operation/get-all-pages
-                   :op-schema [:vector v/page-schema]}
-   :get-all       {:op-fn     clj.flybot.operation/get-all
-                   :op-schema v/all-schema}
-   :create-post   {:op-fn     clj.flybot.operation/create-post
-                   :op-schema v/post-schema}
-   :delete-post   {:op-fn     clj.flybot.operation/delete-post
-                   :op-schema v/post-schema}
-   :create-page   {:op-fn     clj.flybot.operation/create-page
-                   :op-schema v/page-schema}})
+(defn ops-fn
+  [sys]
+  {:op/get-post      (fn [params] (:response (get-post (assoc sys :params params))))
+   :op/get-page      (fn [params] (:response (get-page (assoc sys :params params))))
+   :op/get-all-posts (fn [params] (:response (get-all-posts (assoc sys :params params))))
+   :op/get-all-pages (fn [params] (:response (get-all-pages (assoc sys :params params))))
+   :op/get-all       (fn [params] (:response (get-all (assoc sys :params params))))
+   :op/create-post   (fn [params] (:response (create-post (assoc sys :params params))))
+   :op/delete-post   (fn [params] (:response (delete-post (assoc sys :params params))))
+   :op/create-page   (fn [params] (:response (create-page (assoc sys :params params))))})
+
+(def ops-sch
+  [:map
+   [:op/get-post {:optional true} v/post-schema]
+   [:op/get-page {:optional true} v/page-schema]
+   [:op/get-all-posts {:optional true} [:vector v/post-schema]]
+   [:op/get-all-pages {:optional true} [:vector v/page-schema]]
+   [:op/get-all {:optional true} v/all-schema]
+   [:op/create-post {:optional true} v/post-schema]
+   [:op/delete-post {:optional true} v/post-schema]
+   [:op/create-page {:optional true} v/page-schema]])

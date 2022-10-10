@@ -2,8 +2,7 @@
   (:require [aleph.http :as http]
             [robertluo.fun-map :refer [fnk life-cycle-map closeable touch halt!]]
             [clj.flybot.handler :as handler]
-            [clj.flybot.db :as db]
-            [clj.flybot.operation :as op])
+            [clj.flybot.db :as db])
   (:gen-class))
 
 (def system
@@ -12,7 +11,7 @@
           {:port         8123
            :http-server (fnk [port conn]
                              (http/start-server
-                              (handler/app-routes {:conn conn} op/ops)
+                              (handler/app-routes {:conn conn})
                               {:port port}))
            :stop-server (fnk [http-server]
                              (closeable
@@ -28,7 +27,7 @@
   db/system)
 
 (def figwheel-handler
-  (handler/app-routes (touch dev-system) op/ops))
+  (handler/app-routes (touch dev-system)))
 
 (comment
   (touch system)
