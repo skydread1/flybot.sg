@@ -1,6 +1,5 @@
 (ns clj.flybot.db
   (:require [clojure.java.io :as io]
-            [robertluo.fun-map :as fm :refer [fnk life-cycle-map closeable]]
             [datomic.api :as d]))
 
 ;; ---------- Schemas ----------
@@ -175,12 +174,12 @@
 (defn add-post
   "Add `post` in the DB"
   [conn post]
-  (d/transact (conn) [post]))
+  (d/transact conn [post]))
 
 (defn delete-post
   "Delete (retract) post in the DB."
   [conn post-id]
-  (d/transact (conn) [[:db/retractEntity [:post/id post-id]]]))
+  (d/transact conn [[:db/retractEntity [:post/id post-id]]]))
 
 (def post-pull-pattern
   [:post/id
@@ -195,25 +194,25 @@
 
 (defn get-post
   "Get the post with the given `id`."
-  [conn id]
+  [db id]
   (->> (d/q
         '[:find (pull ?posts pull-pattern)
           :in $ ?id pull-pattern
           :where
           [?posts :post/id ?id]]
-        (d/db (conn))
+        db
         id
         post-pull-pattern)
        ffirst))
 
 (defn get-all-posts
   "Get all posts"
-  [conn]
+  [db]
   (->> (d/q
         '[:find (pull ?posts pull-pattern)
           :in $ pull-pattern
           :where [?posts :post/id]]
-        (d/db (conn))
+        db
         post-pull-pattern)
        (map first)
        vec))
@@ -225,23 +224,23 @@
    {:page/sorting-method [:sort/type :sort/direction]}])
 
 (defn get-page
-  [conn page-name]
+  [db page-name]
   (->> (d/q
         '[:find (pull ?page pull-pattern)
           :in $ ?page-name pull-pattern
           :where [?page :page/name ?page-name]]
-        (d/db (conn))
+        db
         page-name
         page-pull-pattern)
        ffirst))
 
 (defn get-all-pages
-  [conn]
+  [db]
   (->> (d/q
         '[:find (pull ?page pull-pattern)
           :in $ pull-pattern
           :where [?page :page/name]]
-        (d/db (conn))
+        db
         page-pull-pattern)
        (map first)
        vec))
@@ -249,32 +248,22 @@
 (defn add-page
   "Add `page` in the DB"
   [conn page]
-  (d/transact (conn) [page]))
+  (d/transact conn [page]))
 
-;;---------- System ----------
+;;---------- Initialization ----------
 
-(def system
-  (life-cycle-map
-   {:db-uri          "datomic:mem://website"
-    :db              (fnk [db-uri]
-                          (closeable
-                           (d/create-database db-uri)
-                           #(do (println "db deleted")
-                                (d/delete-database db-uri))))
-    :conn            (fnk [db-uri] #(d/connect db-uri))
-    :initialize-db   (fnk [conn]
-                          (closeable
-                           (do (d/transact (conn)
-                                           (concat image-schema
-                                                   sort-config-schema
-                                                   post-schema
-                                                   page-schema))
-                               (d/transact (conn)
-                                           (concat home-posts
-                                                   apply-posts
-                                                   about-posts
-                                                   blog-posts
-                                                   pages))
-                               :db-populated)
-                           #(println "db closing")))}))
+(defn add-schemas
+  [conn]
+  (d/transact conn (concat image-schema
+                           sort-config-schema
+                           post-schema
+                           page-schema)))
+
+(defn add-initial-data
+  [conn]
+  (d/transact conn (concat home-posts
+                           apply-posts
+                           about-posts
+                           blog-posts
+                           pages)))
 

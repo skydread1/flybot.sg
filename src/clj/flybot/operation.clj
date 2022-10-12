@@ -1,70 +1,72 @@
 (ns clj.flybot.operation
-  (:require [clj.flybot.db :as db]))
+  (:require [clj.flybot.db :as db]
+            [cljc.flybot.validation :as v]))
 
 ;;---------- No Effect Ops ----------
 
 (defn get-post
-  [{:keys [conn params]}]
-  {:response (db/get-post conn params)})
+  [db post-id]
+  {:response (db/get-post db post-id)})
 
 (defn get-page
-  [{:keys [conn params]}]
-  {:response (db/get-page conn params)})
+  [db page-name]
+  {:response (db/get-page db page-name)})
 
 (defn get-all-posts
-  [{:keys [conn]}]
-  {:response (db/get-all-posts conn)})
+  [db]
+  {:response (db/get-all-posts db)})
 
 (defn get-all-pages
-  [{:keys [conn]}]
-  {:response (db/get-all-pages conn)})
+  [db]
+  {:response (db/get-all-pages db)})
 
 (defn get-all
   "Get all pages info and all posts."
-  [{:keys [conn]}]
-  {:response {:app/pages (db/get-all-pages conn)
-              :app/posts (db/get-all-posts conn)}})
+  [db]
+  {:response {:app/pages (db/get-all-pages db)
+              :app/posts (db/get-all-posts db)}})
 
 ;;---------- Ops with effects ----------
 
-(defn create-post
-  [{:keys [conn params]}]
-  (try
-    {:response params
-     :effects {:db (db/add-post conn params)}}
-    (catch Exception e
-      {:response params
-       :error e})))
+(defn add-post
+  [post]
+  {:response post
+   :effects  {:db (fn [conn]
+                    (db/add-post conn post))}})
 
 (defn delete-post
-  [{:keys [conn params]}]
-  (try
-    (db/delete-post conn params)
-    {:response {:post/id params}
-     :effects  {:db (db/delete-post conn params)}}
-    (catch Exception e
-      {:response params
-       :effects  e})))
+  [post-id]
+  {:response {:post/id post-id}
+   :effects  {:db (fn [conn]
+                    (db/delete-post conn post-id))}})
 
-(defn create-page
-  [{:keys [conn params]}]
-  (try
-    
-    {:response params
-     :effects {:db (db/add-page conn params)}}
-    (catch Exception e
-      {:response params
-       :effects  e})))
+(defn add-page
+  [page]
+  {:response page
+   :effects  {:db (fn [conn]
+                    (db/add-page conn page))}})
 
 ;;---------- ops map ----------
 
-(defn ops-fn
-  [sys]
-  {:op/get-post      (fn [params] (:response (get-post (assoc sys :params params))))
-   :op/get-page      (fn [params] (:response (get-page (assoc sys :params params))))
-   :op/get-all-posts (fn [params] (:response (get-all-posts (assoc sys :params params))))
-   :op/get-all-pages (fn [params] (:response (get-all-pages (assoc sys :params params))))
-   :op/get-all       (fn [params] (:response (get-all (assoc sys :params params))))
-   :op/create-post   (fn [params] (:response (create-post (assoc sys :params params))))
-   :op/delete-post   (fn [params] (:response (delete-post (assoc sys :params params))))
-   :op/create-page   (fn [params] (:response (create-page (assoc sys :params params))))})
+(defn ops
+  "Operations to be performed given the `context`.
+   Each op is a function that takes `params` as argument and return a
+   saturn response composed of the actual response data and a description of
+   the side effects to be performed in the executor."
+  [db]
+  {:op/get-post      {:op-fn       (fn [post-id] (get-post db post-id))
+                      :resp-schema v/post-schema}
+   :op/get-page      {:op-fn       (fn [page-name] (get-page db page-name))
+                      :resp-schema v/page-schema}
+   :op/get-all-posts {:op-fn       (fn [] (get-all-posts db))
+                      :resp-schema [:vector v/post-schema]}
+   :op/get-all-pages {:op-fn       (fn [] (get-all-pages db))
+                      :resp-schema [:vector v/page-schema]}
+   :op/get-all       {:op-fn       (fn [] (get-all db))
+                      :resp-schema v/all-schema}
+   :op/add-post      {:op-fn       (fn [post] (add-post post))
+                      :resp-schema v/post-schema}
+   :op/delete-post   {:op-fn       (fn [post-id] (delete-post post-id))
+                      :resp-schema v/post-schema}
+   :op/add-page      {:op-fn       (fn [page] (add-page page))
+                      :resp-schema v/page-schema}})

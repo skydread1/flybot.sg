@@ -35,18 +35,6 @@
    [:app/pages [:vector page-schema]]
    [:app/posts [:vector post-schema]]])
 
-(def ops-schema
-  "Schema of all the operations that can be performed in the server."
-  [:map
-   [:op/get-post {:optional true} post-schema]
-   [:op/get-page {:optional true} page-schema]
-   [:op/get-all-posts {:optional true} [:vector post-schema]]
-   [:op/get-all-pages {:optional true} [:vector page-schema]]
-   [:op/get-all {:optional true} all-schema]
-   [:op/create-post {:optional true} post-schema]
-   [:op/delete-post {:optional true} post-schema]
-   [:op/create-page {:optional true} page-schema]])
-
 ;;---------- Front-end validation ----------
 
 (defn validate

@@ -1,1 +1,1 @@
-{:ring-handler clj.flybot.core/figwheel-handler}
+{:ring-handler clj.flybot.figwheel/figwheel-handler}
