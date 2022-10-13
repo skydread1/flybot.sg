@@ -13,15 +13,17 @@
            metosin/malli                         {:mvn/version "0.8.9"}
            metosin/reitit                        {:mvn/version "0.5.18"}
            metosin/muuntaja                      {:mvn/version "0.6.8"}
+           flybot-sg/lasagna-pull                {:git/url "https://github.com/flybot-sg/lasagna-pull.git"
+                                                  :sha     "f94bb4b8f8ee1450f7b50d8c9473489a46d5868e"}
 
            ;; back-end
            aleph/aleph                           {:mvn/version "0.5.0"}
-           mount/mount                           {:mvn/version "0.1.16"} 
+           robertluo/fun-map                     {:mvn/version "0.4.5"} 
            com.datomic/datomic-free              {:mvn/version "0.9.5697"}
 
            ;; work around to resolve the dep conflict introduced by datomic
            com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
- :paths   ["src" "src/clj" "src/cljc" "src/cljs" "target" "resources"]
+ :paths   ["dev/src" "src" "src/clj" "src/cljc" "src/cljs" "target" "resources"]
  :aliases
  {:dev
   {:main-opts ["--main"  "figwheel.main"

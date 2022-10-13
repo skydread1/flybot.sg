@@ -1,22 +1,50 @@
-(ns clj.flybot.core 
-  (:require [aleph.http :as http] 
-            [mount.core :as mount]
+(ns clj.flybot.core
+  (:require [aleph.http :as http]
+            [robertluo.fun-map :refer [fnk life-cycle-map closeable touch halt!]]
             [clj.flybot.handler :as handler]
-            [clj.flybot.db :as db])
+            [clj.flybot.db :as db]
+            [datomic.api :as d])
   (:gen-class))
 
-(declare http-server)
+;;---------- System ----------
 
-(mount/defstate ^{:on-reload :noop} http-server
-  :start (http/start-server handler/app {:port 8123})
-  :stop  (.close http-server))
+(def system
+  (life-cycle-map
+   {:db-uri           "datomic:mem://website"
+    :db-conn          (fnk [db-uri]
+                           (d/create-database db-uri)
+                           (let [conn (d/connect db-uri)]
+                             (db/add-schemas conn)
+                             (db/add-initial-data conn)
+                             (closeable
+                              conn
+                              #(d/delete-database db-uri)))) 
+    :db-injector      (fnk [db-conn]
+                           (fn [] {:db (d/db db-conn)}))
+    :saturn-handler   handler/saturn-handler
+    :db-executor      (fnk [db-conn]
+                           (handler/mk-db-executor db-conn))
+    :saturn-puller    handler/puller
+    :ring-handler     (fnk [db-injector saturn-handler db-executor saturn-puller]
+                           (handler/mk-ring-handler db-injector
+                                                    saturn-handler
+                                                    db-executor
+                                                    saturn-puller))
+    :reitit-router    (fnk [ring-handler]
+                           (handler/app-routes ring-handler))
+    :http-port        8123
+    :http-server      (fnk [http-port reitit-router]
+                           (let [svr (http/start-server
+                                      reitit-router
+                                      {:port http-port})]
+                             (closeable
+                              svr
+                              #(.close svr))))}))
 
-(defn stop-server
-  []
-  (mount/stop))
+(defn -main [& _]
+  (touch system))
 
-(defn -main [& _] 
-  (mount/start)
-  (println "server started")
-  (db/initialize-db)
-  (println "Memory DB created and populated"))
+(comment
+  (touch system)
+  (halt! system)
+  )
