@@ -24,7 +24,7 @@
                               #(do (d/delete-database db-uri)
                                    (println "Db deleted")))))
     :db-injector      (fnk [db-conn]
-                           (fn [] {:conn db-conn}))
+                           (fn [] {:db (d/db db-conn)}))
     :saturn-handler   handler/saturn-handler
     :db-executor      (fnk [db-conn]
                            (handler/mk-db-executor db-conn))

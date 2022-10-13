@@ -1,6 +1,7 @@
 (ns clj.flybot.db
   (:require [clojure.java.io :as io]
-            [datomic.api :as d]))
+            [datomic.api :as d])
+  (:import [datomic Datom]))
 
 ;; ---------- Schemas ----------
 
@@ -171,16 +172,6 @@
 
 ;;---------- Post ----------
 
-(defn add-post
-  "Add `post` in the DB"
-  [conn post]
-  (d/transact conn [post]))
-
-(defn delete-post
-  "Delete (retract) post in the DB."
-  [conn post-id]
-  (d/transact conn [[:db/retractEntity [:post/id post-id]]]))
-
 (def post-pull-pattern
   [:post/id
    :post/page
@@ -245,10 +236,17 @@
        (map first)
        vec))
 
-(defn add-page
-  "Add `page` in the DB"
-  [conn page]
-  (d/transact conn [page]))
+;;---------- Effects ----------
+
+(defn transact-effect
+  [conn payload]
+  (let [{:keys [db-after tempids tx-data]} @(d/transact conn payload)]
+    {:db      db-after
+     :tempids tempids
+     :datoms  (map (fn [^Datom datom]
+                     (d/entity db-after (.e datom)))
+                   tx-data)})
+)
 
 ;;---------- Initialization ----------
 

@@ -31,28 +31,25 @@
 (defn add-post
   [post]
   {:response post
-   :effects  {:db (fn [conn]
-                    (db/add-post conn post))}})
+   :effects  {:db {:payload [post]}}})
 
 (defn delete-post
   [post-id]
   {:response {:post/id post-id}
-   :effects  {:db (fn [conn]
-                    (db/delete-post conn post-id))}})
+   :effects  {:db {:payload [[:db/retractEntity [:post/id post-id]]]}}})
 
 (defn add-page
   [page]
   {:response page
-   :effects  {:db (fn [conn]
-                    (db/add-page conn page))}})
+   :effects  {:db {:payload [page]}}})
 
 ;;---------- ops map ----------
 
 (defn ops
-  "Operations to be performed given the `context`.
-   Each op is a function that takes `params` as argument and return a
-   saturn response composed of the actual response data and a description of
-   the side effects to be performed in the executor."
+  "Operations to be performed.
+   Each operation has for value a map with
+   - `op-fn`      : a function that returns a saturn response.
+   - `resp-schema`: the schema of the response"
   [db]
   {:op/get-post      {:op-fn       (fn [post-id] (get-post db post-id))
                       :resp-schema v/post-schema}
