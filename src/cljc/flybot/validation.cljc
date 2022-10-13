@@ -6,7 +6,7 @@
 
 (def post-schema
   [:map {:closed true}
-   [:post/id :string]
+   [:post/id :uuid]
    [:post/page :keyword]
    [:post/css-class {:optional true} :string]
    [:post/creation-date inst?]
@@ -64,7 +64,7 @@
            (assoc :post/last-edit-date (js/Date.)))
        (-> fields
            (dissoc :post/view)
-           (assoc :post/id (str (random-uuid))
+           (assoc :post/id (random-uuid)
                   :post/page page-name
                   :post/creation-date (js/Date.))))))
 

@@ -13,16 +13,12 @@
    {:db-uri           "datomic:mem://website"
     :db-conn          (fnk [db-uri]
                            (d/create-database db-uri)
-                           (println "Db created")
                            (let [conn (d/connect db-uri)]
                              (db/add-schemas conn)
-                             (println "Schemas added to db")
                              (db/add-initial-data conn)
-                             (println "Initial data added to db")
                              (closeable
                               conn
-                              #(do (d/delete-database db-uri)
-                                   (println "Db deleted")))))
+                              #(d/delete-database db-uri)))) 
     :db-injector      (fnk [db-conn]
                            (fn [] {:db (d/db db-conn)}))
     :saturn-handler   handler/saturn-handler
@@ -43,8 +39,7 @@
                                       {:port http-port})]
                              (closeable
                               svr
-                              #(do (.close svr)
-                                   (println "Server closed")))))}))
+                              #(.close svr))))}))
 
 (defn -main [& _]
   (touch system))
