@@ -18,8 +18,8 @@
           (post/post-read-only post)
           (and (= :create post-mode) (= {} post))
           (post/post-create "empty-post-id")
-          (and (= :edit post-mode) (= edited-post-id (:post/id post)))
-          (post/post-edit (or edited-post-id "problem"))
+          (and (= :edit post-mode) (= edited-post-id (:post/id post)) (not= {} post))
+          (post/post-edit edited-post-id)
           (and (not= :read post-mode) (not= edited-post-id (:post/id post)) (not= {} post))
           (post/post-read-only post)
           :else
