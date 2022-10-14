@@ -14,7 +14,7 @@
    Only support db effects as for now.
    The db `effects` map contains:
    - :payload: to be given to the datomic transaction
-   - :add-to-resp: a fn to add the effects results to the pure `response`.
+   - :f-merge: a fn to add the effects results to the pure `response`.
    Returns a response with eventual effects results in it."
   [conn]
   (fn [{:keys [response effects]}]
