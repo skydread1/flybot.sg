@@ -33,34 +33,31 @@
 (use-fixtures :once my-test-fixture)
 
 (deftest executor
-  (with-redefs [db/transact-effect (constantly ::EFFECTS-RESPONSE)]
-    (let [executor (sut/mk-executor [::NOUSE])]
-      (testing "No effects."
-        (is (= ::RESPONSE
-               (executor {:response ::RESPONSE}))))
-      (testing "With effects that do not affect the response."
-        (is (= ::RESPONSE
-               (executor {:response ::RESPONSE
-                          :effects {:db {:payload ::PAYLOAD}}}))))
-      (testing "With effects that affect the response."
-        (is (= [::RESPONSE ::EFFECTS-RESPONSE]
-               (executor {:response ::RESPONSE
-                          :effects {:db {:payload ::PAYLOAD
-                                         :add-to-resp (fn [response effects-response]
-                                                        [response effects-response])}}})))))))
+  (let [executor (-> test-system :executors first)]
+    (testing "No effects."
+      (is (= ::POST
+             (executor {:response ::POST}))))
+    (testing "With effects that do not affect the response."
+      (is (= ::NEW-POST
+             (executor {:response ::NEW-POST
+                        :effects {:db {:payload [{:post/id (d/squuid)}]}}}))))
+    (testing "With effects that affect the response."
+      (is (= [::NEW-POST ::EFFECTS-RESPONSE]
+             (executor {:response ::NEW-POST
+                        :effects {:db {:payload [{:post/id (d/squuid)}]
+                                       :f-merge (fn [response _]
+                                                  [response ::EFFECTS-RESPONSE])}}}))))))
 
 (deftest ring-handler
   (testing "Returns the proper ring response"
     (let [ring-handler (:ring-handler test-system)]
-      (is (= 11
-             (-> (ring-handler {:body-params {:posts
+      (is (= [#:page{:name :home} #:page{:name :apply} #:page{:name :about} #:page{:name :blog}]
+             (-> (ring-handler {:body-params {:pages
                                               {(list :all :with [])
-                                               [{:post/id '?
-                                                 :post/page '?}]}}})
+                                               [{:page/name '?}]}}})
                  :body
-                 :posts
-                 :all
-                 count))))))
+                 :pages
+                 :all))))))
 
 ;; TODO: test for app routes
 
