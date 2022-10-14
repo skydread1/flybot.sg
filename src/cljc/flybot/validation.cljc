@@ -29,11 +29,21 @@
      [:sort/type :keyword]
      [:sort/direction :keyword]]]])
 
-(def all-schema
+(def api-schema
   [:map
-   {:closed true}
-   [:app/pages [:vector page-schema]]
-   [:app/posts [:vector post-schema]]])
+   [:posts
+    {:optional true}
+    [:map
+     [:post {:optional true} post-schema]
+     [:all {:optional true} [:vector post-schema]]
+     [:new-post {:optional true} post-schema]
+     [:removed-post {:optional true} post-schema]]]
+   [:pages
+    {:optional true}
+    [:map
+     [:page {:optional true} page-schema]
+     [:all {:optional true} [:vector page-schema]]
+     [:new-page {:optional true} page-schema]]]])
 
 ;;---------- Front-end validation ----------
 

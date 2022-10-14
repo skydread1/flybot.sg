@@ -1,6 +1,5 @@
 (ns clj.flybot.operation
-  (:require [clj.flybot.db :as db]
-            [cljc.flybot.validation :as v]))
+  (:require [clj.flybot.db :as db]))
 
 ;;---------- No Effect Ops ----------
 
@@ -20,12 +19,6 @@
   [db]
   {:response (db/get-all-pages db)})
 
-(defn get-all
-  "Get all pages info and all posts."
-  [db]
-  {:response {:app/pages (db/get-all-pages db)
-              :app/posts (db/get-all-posts db)}})
-
 ;;---------- Ops with effects ----------
 
 (defn add-post
@@ -43,27 +36,17 @@
   {:response page
    :effects  {:db {:payload [page]}}})
 
-;;---------- ops map ----------
+;;---------- Pullable data ----------
 
-(defn ops
-  "Operations to be performed.
-   Each operation has for value a map with
-   - `op-fn`      : a function that returns a saturn response.
-   - `resp-schema`: the schema of the response"
-  [db]
-  {:op/get-post      {:op-fn       (fn [post-id] (get-post db post-id))
-                      :resp-schema v/post-schema}
-   :op/get-page      {:op-fn       (fn [page-name] (get-page db page-name))
-                      :resp-schema v/page-schema}
-   :op/get-all-posts {:op-fn       (fn [] (get-all-posts db))
-                      :resp-schema [:vector v/post-schema]}
-   :op/get-all-pages {:op-fn       (fn [] (get-all-pages db))
-                      :resp-schema [:vector v/page-schema]}
-   :op/get-all       {:op-fn       (fn [] (get-all db))
-                      :resp-schema v/all-schema}
-   :op/add-post      {:op-fn       (fn [post] (add-post post))
-                      :resp-schema v/post-schema}
-   :op/delete-post   {:op-fn       (fn [post-id] (delete-post post-id))
-                      :resp-schema v/post-schema}
-   :op/add-page      {:op-fn       (fn [page] (add-page page))
-                      :resp-schema v/page-schema}})
+(defn pullable-data
+  "Path to be pulled with the pull-pattern.
+   The pull-pattern `:with` option will provide the params to execute the function
+   before pulling it."
+  [executor db]
+  {:posts {:all          (fn [] (executor (get-all-posts db)))
+           :post         (fn [post-id] (executor (get-post db post-id)))
+           :new-post     (fn [post] (executor (add-post post)))
+           :removed-post (fn [post-id] (executor (delete-post post-id)))}
+   :pages {:all          (fn [] (executor (get-all-pages db)))
+           :page         (fn [page-name] (executor (get-page db page-name)))
+           :new-page     (fn [page] (executor (add-page page)))}})

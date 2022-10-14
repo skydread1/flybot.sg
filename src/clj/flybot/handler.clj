@@ -1,59 +1,42 @@
 (ns clj.flybot.handler
   (:require [clj.flybot.middleware :as mw]
             [clj.flybot.operation :as op]
-            [clj.flybot.db :as db]
+            [cljc.flybot.validation :as v]
+            [datomic.api :as d]
             [muuntaja.core :as m]
             [reitit.middleware :as middleware]
             [reitit.ring :as reitit]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [sg.flybot.pullable :as pull]))
 
-(defn saturn-handler
-  "A saturn handler takes a ring request enhanced with additional keys form the injectors.
-   The saturn handler is purely functional so is the response.
-   The description of the side effects to be performed are returned and they will be executed later on in the executors."
-  [{:keys [body-params datomic]}]
-  (let [{:keys [op-name op-params pattern]} body-params
-        ops    (op/ops (:db datomic))
-        op-fn  (-> ops (get op-name) :op-fn)
-        op-sch (-> ops (get op-name) :resp-schema)]
-    (-> (apply op-fn op-params)
-        (merge {:pull {:schema  op-sch
-                       :pattern pattern}}))))
-
-(defn mk-db-executor
+(defn mk-executor
   "Makes a db executor given the db `conn`.
-   It returns a function that takes a saturn response, execute its effetcs,
-   and returns the whole saturn response."
+   Only support db effects as for now.
+   The db `effects` map contains:
+   - :payload: to be given to the datomic transaction
+   - :f-merge: a fn to add the effects results to the pure `response`.
+   Returns a response with eventual effects results in it."
   [conn]
-  (fn [{:keys [effects] :as saturn-resp}]
-    (let [effects-desc (:db effects)]
-      (when effects-desc
-        (db/transact-effect conn (:payload effects-desc))))
-    saturn-resp))
-
-(defn puller
-  "Given a saturn response, pull the data using the pattern and schema."
-  [{:keys [response pull]}]
-  (let [{:keys [pattern schema]} pull]
-    (->> response
-         (pull/run pattern schema)
-         first)))
+  (fn [{:keys [response effects]}]
+    (if-let [payload (-> effects :db :payload)]
+      (let [txn-result @(d/transact conn payload)]
+        (if-let [f-merge (-> effects :db :f-merge)]
+          (f-merge response txn-result)
+          response))
+      response)))
 
 (defn mk-ring-handler
-  "Takes:
-   - db-injector: fn that returns de db context to be used in the saturn-handler
-   - saturn-handler: purely functional handler that returns a response with eventual description
-   side effetcs and how to pull the result.
-   - db-executor: executes the side effects describe in the saturn-response
-   - puller: pull the data follwing the pattern from the ring request.
-   Returns a ring handler."
-  [db-injector saturn-handler db-executor puller]
-  (fn [req]
-    (let [req       (merge req {:datomic (db-injector)})
-          sat-resp  (saturn-handler req)
-          resp      (db-executor sat-resp)]
-      {:body    (puller resp)
+  "Takes a seq on `injectors` and a seq `executors`.
+   As for now, only supports db injector and db executor.
+   Returns a ring-handler."
+  [injectors executors]
+  (fn [{:keys [body-params]}]
+    (let [db      (:db ((first injectors)))
+          pattern body-params
+          resp    (pull/run pattern
+                            v/api-schema
+                            (op/pullable-data (first executors) db))]
+      {:body    (first resp)
        :headers {"content-type" "application/edn"}})))
 
 (defn app-routes

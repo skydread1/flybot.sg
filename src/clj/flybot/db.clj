@@ -234,17 +234,6 @@
        (map first)
        vec))
 
-;;---------- Effects ----------
-
-(defn transact-effect
-  [conn payload]
-  (let [{:keys [db-after tempids tx-data]} @(d/transact conn payload)]
-    {:db      db-after
-     :tempids tempids
-     :datoms  (map (fn [^Datom datom]
-                     (d/entity db-after (.e datom)))
-                   tx-data)}))
-
 ;;---------- Initialization ----------
 
 (defn add-schemas
