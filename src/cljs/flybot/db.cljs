@@ -34,45 +34,50 @@
 
 (rf/reg-event-fx
  :fx.http/all-success
- (fn [{:keys [db]} [_ result]]
-   {:db (merge db result)
+ (fn [{:keys [db]} [_ {:keys [pages posts]}]]
+   {:db (merge db {:app/pages (:all pages)
+                   :app/posts (:all posts)})
     :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]]}))
 
 (rf/reg-event-fx
  :fx.http/post-success
- (fn [{:keys [db]} [_ post]]
-   {:db (assoc db :form/fields post)
-    :fx [[:fx.log/message ["Got the post " (:post/id post)]]]}))
+ (fn [{:keys [db]} [_ {:keys [posts]}]]
+   (let [post (:post posts)]
+     {:db (assoc db :form/fields post)
+      :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
 
 (rf/reg-event-fx
  :fx.http/send-post-success
- (fn [{:keys [db]} [_ page-name post]]
-   (if (= :edit (:post/mode db))
-     {:fx [[:dispatch [:evt.post/delete-post (:post/id post) page-name]]
-           [:dispatch [:evt.post/add-post post page-name]]
-           [:dispatch [:evt.form/clear-form]]
-           [:dispatch [:evt.app/clear-errors]]
-           [:dispatch [:evt.post/set-mode :read]]
-           [:fx.log/message ["Post " (:post/id post) " edited."]]]}
-     {:fx [[:dispatch [:evt.post/add-post post page-name]]
-           [:dispatch [:evt.form/clear-form]]
-           [:dispatch [:evt.app/clear-errors]]
-           [:dispatch [:evt.post/set-mode :read]]
-           [:fx.log/message ["Post " (:post/id post) " created."]]]})))
+ (fn [{:keys [db]} [_ page-name {:keys [posts]}]]
+   (let [post (posts :new-post)]
+     (if (= :edit (:post/mode db))
+       {:fx [[:dispatch [:evt.post/delete-post (:post/id post) page-name]]
+             [:dispatch [:evt.post/add-post post page-name]]
+             [:dispatch [:evt.post.form/clear-form]]
+             [:dispatch [:evt.error/clear-errors]]
+             [:dispatch [:evt.post/set-mode :read]]
+             [:fx.log/message ["Post " (:post/id post) " edited."]]]}
+       {:fx [[:dispatch [:evt.post/add-post post page-name]]
+             [:dispatch [:evt.post.form/clear-form]]
+             [:dispatch [:evt.error/clear-errors]]
+             [:dispatch [:evt.post/set-mode :read]]
+             [:fx.log/message ["Post " (:post/id post) " created."]]]}))))
 
 (rf/reg-event-fx
  :fx.http/send-page-success
- (fn [_ [_ page]]
-   {:fx [[:dispatch [:evt.page/toggle-edit-mode]]
-         [:fx.log/message ["Page " (:page/name page) " updated."]]]}))
+ (fn [_ [_ {:keys [pages]}]]
+   (let [page (:new-page pages)]
+     {:fx [[:dispatch [:evt.page/toggle-edit-mode]]
+           [:fx.log/message ["Page " (:page/name page) " updated."]]]})))
 
 (rf/reg-event-fx
  :fx.http/delete-post-success
- (fn [{:keys [db]} [_ post]]
-   (let [page-name (-> db :app/current-view :data :page-name)]
+ (fn [{:keys [db]} [_ {:keys [posts]}]]
+   (let [post      (:removed-post posts)
+         page-name (-> db :app/current-view :data :page-name)]
      {:fx [[:dispatch [:evt.post/delete-post (:post/id post) page-name]]
-           [:dispatch [:evt.form/clear-form]]
-           [:dispatch [:evt.app/clear-errors]]
+           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-mode :read]]
            [:fx.log/message ["Post " (:post/id post) " deleted."]]]})))
 
@@ -108,28 +113,30 @@
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name   :op/get-all
-                                   :op-params []
-                                   :pattern   '{:app/pages [{:page/name ?
-                                                             :page/sorting-method {:sort/type ?
-                                                                                   :sort/direction ?}}]
-                                                :app/posts [{:post/id ?
-                                                             :post/page ?
-                                                             :post/css-class ?
-                                                             :post/creation-date ?
-                                                             :post/last-edit-date ?
-                                                             :post/show-dates? ?
-                                                             :post/md-content ?
-                                                             :post/image-beside {:image/src ?
-                                                                                 :image/src-dark ?
-                                                                                 :image/alt ?}}]}}
+                 :params {:pages
+                          {(list :all :with [])
+                           [{:page/name '?
+                             :page/sorting-method {:sort/type '?
+                                                   :sort/direction '?}}]}
+                          :posts
+                          {(list :all :with [])
+                           [{:post/id '?
+                             :post/page '?
+                             :post/css-class '?
+                             :post/creation-date '?
+                             :post/last-edit-date '?
+                             :post/show-dates? '?
+                             :post/md-content '?
+                             :post/image-beside {:image/src '?
+                                                 :image/src-dark '?
+                                                 :image/alt '?}}]}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/all-success]
                  :on-failure      [:fx.http/failure]}
     :fx         [[:fx.app/update-html-class local-store-theme]]}))
 
-;; Initialization
+;; Theme (dark/light)
 
 (rf/reg-sub
  :subs.app/theme
@@ -193,7 +200,7 @@
 
 ;; ---------- Page ----------
 
-;; mode
+;; Mode
 
 (rf/reg-sub
  :subs.page/mode
@@ -208,6 +215,8 @@
      {:db (assoc db :page/mode :edit)
       :fx [[:dispatch [:evt.post/set-mode :read]]]})))
 
+;; View
+
 (rf/reg-event-db
  :evt.page/set-current-view
  (fn [db [_ new-match]]
@@ -219,8 +228,10 @@
  (fn [db _]
    (-> db :app/current-view :data)))
 
+;; ---------- Page Header Form ----------
+
 (rf/reg-event-db
- :evt.page/set-sorting-method
+ :evt.page.form/set-sorting-method
  [(rf/path :app/pages)]
  (fn [pages [_ page method]]
    (->> pages
@@ -229,22 +240,8 @@
                  (assoc p :page/sorting-method (edn/read-string method))
                  p))))))
 
-(rf/reg-event-fx
- :evt.page/send-page
- (fn [{:keys [db]} [_ page-name]]
-   (let [page (->> db :app/pages (filter #(= page-name (:page/name %))) first)]
-     {:http-xhrio {:method          :post
-                   :uri             "/all"
-                   :params          {:op-name   :op/add-page
-                                     :op-params [page]
-                                     :pattern   '{:page/name ?}}
-                   :format          (edn-request-format {:keywords? true})
-                   :response-format (edn-response-format {:keywords? true})
-                   :on-success      [:fx.http/send-page-success]
-                   :on-failure      [:fx.http/failure]}})))
-
 (rf/reg-sub
- :subs.page/sorting-method
+ :subs.page.form/sorting-method
  (fn [db [_ page]]
    (->> db
         :app/pages
@@ -252,9 +249,26 @@
         first
         :page/sorting-method)))
 
+(rf/reg-event-fx
+ :evt.page.form/send-page
+ (fn [{:keys [db]} [_ page-name]]
+   (let [page (v/validate (->> db :app/pages (filter #(= page-name (:page/name %))) first)
+                          v/page-schema)]
+     (if (:errors page)
+       {:fx [[:dispatch [:evt.error/set-validation-errors (v/error-msg page)]]]}
+       {:http-xhrio {:method          :post
+                     :uri             "/all"
+                     :params          {:pages
+                                       {(list :new-page :with [page])
+                                        {:page/name '?}}}
+                     :format          (edn-request-format {:keywords? true})
+                     :response-format (edn-response-format {:keywords? true})
+                     :on-success      [:fx.http/send-page-success]
+                     :on-failure      [:fx.http/failure]}}))))
+
 ;; ---------- Post ----------
 
-;; mode
+;; Mode
 
 (rf/reg-sub
  :subs.post/mode
@@ -270,7 +284,7 @@
 (rf/reg-event-db
  :evt.post/toggle-create-mode
  (fn [db _]
-   (rf/dispatch [:evt.form/clear-form])
+   (rf/dispatch [:evt.post.form/clear-form])
    (if (= :create (:post/mode db))
      (assoc db :post/mode :read)
      (assoc db :post/mode :create))))
@@ -281,7 +295,7 @@
    (if (= :edit (:post/mode db))
      {:db (assoc db :post/mode :read)}
      {:db (assoc db :post/mode :edit)
-      :fx [[:dispatch [:evt.form/autofill post-id]]]})))
+      :fx [[:dispatch [:evt.post.form/autofill post-id]]]})))
 
 (rf/reg-event-db
  :evt.post/add-post
@@ -309,12 +323,12 @@
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name   :op/delete-post
-                                   :op-params [post-id]
-                                   :pattern   '{:post/id ?
-                                                :post/page ?
-                                                :post/creation-date ?
-                                                :post/md-content ?}}
+                 :params          {:posts
+                                   {(list :removed-post :with [post-id])
+                                    {:post/id '?
+                                     :post/page '?
+                                     :post/creation-date '?
+                                     :post/md-content '?}}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/delete-post-success]
@@ -325,7 +339,7 @@
 ;; Form header
 
 (rf/reg-event-db
- :evt.form/toggle-preview
+ :evt.post.form/toggle-preview
  [(rf/path :form/fields)]
  (fn [fields _]
    (if (= :preview (:post/view fields))
@@ -333,83 +347,59 @@
      (assoc fields :post/view :preview))))
 
 (rf/reg-event-fx
- :evt.form/send-post
+ :evt.post.form/send-post
  (fn [{:keys [db]} _]
    (let [current-page (-> db :app/current-view :data :page-name)
          post         (-> (:form/fields db)
                           (v/prepare-post current-page)
                           (v/validate v/post-schema))]
      (if (:errors post)
-       {:fx [[:dispatch [:evt.app/set-validation-errors (v/error-msg post)]]]}
+       {:fx [[:dispatch [:evt.error/set-validation-errors (v/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             "/all"
-                     :params          {:op-name   :op/add-post
-                                       :op-params [post]
-                                       :pattern   '{:post/id ?
-                                                    :post/page ?
-                                                    :post/css-class ?
-                                                    :post/creation-date ?
-                                                    :post/last-edit-date ?
-                                                    :post/show-dates? ?
-                                                    :post/md-content ?
-                                                    :post/image-beside {:image/src ?
-                                                                        :image/src-dark ?
-                                                                        :image/alt ?}}}
+                     :params          {:posts
+                                       {(list :new-post :with [post])
+                                        {:post/id '?
+                                         :post/page '?
+                                         :post/css-class '?
+                                         :post/creation-date '?
+                                         :post/last-edit-date '?
+                                         :post/show-dates? '?
+                                         :post/md-content '?
+                                         :post/image-beside {:image/src '?
+                                                             :image/src-dark '?
+                                                             :image/alt '?}}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/send-post-success current-page]
                      :on-failure      [:fx.http/failure]}}))))
 
-;; Form validation errors
-
-(rf/reg-event-db
- :evt.app/set-validation-errors
- [(rf/path :app/errors)]
- (fn [errors [_ validation-err]]
-   (assoc errors :validation-errors validation-err)))
-
-(rf/reg-sub
- :subs.app/errors
- (fn [db _]
-   (-> db :app/errors)))
-
-(rf/reg-sub
- :subs.app/error
- :<- [:subs.app/errors]
- (fn [errors [_ id]]
-   (str (get errors id))))
-
-(rf/reg-event-db
- :evt.app/clear-errors
- (fn [db _]
-   (dissoc db :app/errors)))
-
 ;; Form body
 
 (rf/reg-event-fx
- :evt.form/autofill
+ :evt.post.form/autofill
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
                  :uri             "/all"
-                 :params          {:op-name   :op/get-post
-                                   :op-params [post-id]
-                                   :pattern   '{:post/id ?
-                                                :post/page ?
-                                                :post/css-class ?
-                                                :post/creation-date ?
-                                                :post/last-edit-date ?
-                                                :post/show-dates? ?
-                                                :post/md-content ?
-                                                :post/image-beside {:image/src ?
-                                                                    :image/src-dark ?
-                                                                    :image/alt ?}}}
+                 :params          {:posts
+                                   {(list :post :with [post-id])
+                                    {:post/id '?
+                                     :post/page '?
+                                     :post/css-class '?
+                                     :post/creation-date '?
+                                     :post/last-edit-date '?
+                                     :post/show-dates? '?
+                                     :post/md-content '?
+                                     :post/image-beside {:image/src '?
+                                                         :image/src-dark '?
+                                                         :image/alt '?}}}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/post-success]
                  :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-db
- :evt.form/set-field
+ :evt.post.form/set-field
  [(rf/path :form/fields)]
  (fn [fields [_ id value]]
    (assoc fields id value)))
@@ -421,7 +411,7 @@
    (assoc fields id value)))
 
 (rf/reg-event-db
- :evt.form/clear-form
+ :evt.post.form/clear-form
  (fn [db _]
    (dissoc db :form/fields)))
 
@@ -447,3 +437,27 @@
  :<- [:subs.image/fields]
  (fn [image-fields [_ id]]
    (get image-fields id)))
+
+;; ---------- Errors ----------
+
+(rf/reg-event-db
+ :evt.error/set-validation-errors
+ [(rf/path :app/errors)]
+ (fn [errors [_ validation-err]]
+   (assoc errors :validation-errors validation-err)))
+
+(rf/reg-sub
+ :subs.error/errors
+ (fn [db _]
+   (-> db :app/errors)))
+
+(rf/reg-sub
+ :subs.error/error
+ :<- [:subs.error/errors]
+ (fn [errors [_ id]]
+   (str (get errors id))))
+
+(rf/reg-event-db
+ :evt.error/clear-errors
+ (fn [db _]
+   (dissoc db :app/errors)))
