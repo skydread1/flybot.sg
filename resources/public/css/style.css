@@ -388,44 +388,45 @@ footer p {
 
 /* Page - all pages */
 
-section .page {
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-bottom-color: var(--border-primary-color);
-}
-
-section .post-container {
+.page-header {
     padding: 2.5rem;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: var(--border-primary-color);
 }
 
-section .post-container:nth-of-type(odd) {
+section .post {
+    padding: 2.5rem;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--border-primary-color);
+}
+
+section .post:nth-of-type(odd) {
     background-color: var(--bg-secondary-color);
     border-right-width: 1px;
     border-right-color: var(--border-primary-color);
     border-right-style: solid;
 }
 
-section .post-container:nth-of-type(even) {
+section .post:nth-of-type(even) {
     background-color: var(--bg-primary-color);
     border-left-width: 1px;
     border-left-color: var(--border-primary-color);
     border-left-style: solid;
 }
 
-section .post-container .post-body {
+section .post .post-body {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
 }
 
-section .post-container:nth-of-type(odd)>.post-body {
+section .post:nth-of-type(odd)>.post-body {
     flex-direction: row;
 }
 
-section .post-container:nth-of-type(even)>.post-body {
+section .post:nth-of-type(even)>.post-body {
     flex-direction: row-reverse;
 }
 
@@ -450,11 +451,11 @@ section .image>img {
 }
 
 @media (max-width: 1024px) {
-    section .post-container .post-body {
+    section .post .post-body {
         padding: 0.5rem;
         display: block;
     }
-    section .post-container .post-body>.image, section .post-body>.text {
+    section .post .post-body>.image, section .post-body>.text {
         width: 100%;
         margin: auto;
         padding: 1.5rem;
@@ -517,7 +518,7 @@ section.blog h1 {
 
 /* Post */
 
-.post-header, .page-header {
+.post-header{
     margin: 1rem;
 }
 
