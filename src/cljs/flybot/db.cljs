@@ -32,11 +32,24 @@
     ;; result is a map containing details of the failure
    (assoc errors :failure-http-result result)))
 
+(defn to-indexed-maps
+  "Transforms a vector of maps `v` to a map of maps using the given key `k` as index.
+   i.e: [{:a :a1 :b :b1} {:a :a2 :b :b2}]
+   => {:a1 {:a :a1 :b :b1} :a2 {:a :a2 :b :b2}}"
+  [k v]
+  (into {} (map (juxt k identity) v)))
+
 (rf/reg-event-fx
  :fx.http/all-success
  (fn [{:keys [db]} [_ {:keys [pages posts]}]]
-   {:db (merge db {:app/pages (:all pages)
-                   :app/posts (:all posts)})
+   {:db (merge db {:app/pages (->> pages
+                                   :all
+                                   (map #(assoc % :page/mode :read))
+                                   (to-indexed-maps :page/name))
+                   :app/posts (->> posts
+                                   :all
+                                   (map #(assoc % :post/mode :read))
+                                   (to-indexed-maps :post/id))})
     :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]]}))
 
 (rf/reg-event-fx
@@ -48,38 +61,29 @@
 
 (rf/reg-event-fx
  :fx.http/send-post-success
- (fn [{:keys [db]} [_ page-name {:keys [posts]}]]
-   (let [post (posts :new-post)]
-     (if (= :edit (:post/mode db))
-       {:fx [[:dispatch [:evt.post/delete-post (:post/id post) page-name]]
-             [:dispatch [:evt.post/add-post post page-name]]
-             [:dispatch [:evt.post.form/clear-form]]
-             [:dispatch [:evt.error/clear-errors]]
-             [:dispatch [:evt.post/set-mode :read]]
-             [:fx.log/message ["Post " (:post/id post) " edited."]]]}
-       {:fx [[:dispatch [:evt.post/add-post post page-name]]
-             [:dispatch [:evt.post.form/clear-form]]
-             [:dispatch [:evt.error/clear-errors]]
-             [:dispatch [:evt.post/set-mode :read]]
-             [:fx.log/message ["Post " (:post/id post) " created."]]]}))))
+ (fn [_ [_ {:keys [posts]}]]
+   (let [{:post/keys [id] :as post} (:new-post posts)]
+     {:fx [[:dispatch [:evt.post/add-post post]]
+           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.error/clear-errors]]
+           [:dispatch [:evt.post/set-modes :read]]
+           [:fx.log/message ["Post " id " sent."]]]})))
 
 (rf/reg-event-fx
  :fx.http/send-page-success
  (fn [_ [_ {:keys [pages]}]]
-   (let [page (:new-page pages)]
-     {:fx [[:dispatch [:evt.page/toggle-edit-mode]]
-           [:fx.log/message ["Page " (:page/name page) " updated."]]]})))
+   (let [page-name (-> pages :new-page :page/name)]
+     {:fx [[:dispatch [:evt.page/toggle-edit-mode page-name]]
+           [:fx.log/message ["Page " page-name " updated."]]]})))
 
 (rf/reg-event-fx
  :fx.http/delete-post-success
- (fn [{:keys [db]} [_ {:keys [posts]}]]
-   (let [post      (:removed-post posts)
-         page-name (-> db :app/current-view :data :page-name)]
-     {:fx [[:dispatch [:evt.post/delete-post (:post/id post) page-name]]
+ (fn [_ [_ {:keys [posts]}]]
+   (let [post-id (-> posts :removed-post :post/id)]
+     {:fx [[:dispatch [:evt.post/delete-post post-id]]
            [:dispatch [:evt.post.form/clear-form]]
            [:dispatch [:evt.error/clear-errors]]
-           [:dispatch [:evt.post/set-mode :read]]
-           [:fx.log/message ["Post " (:post/id post) " deleted."]]]})))
+           [:fx.log/message ["Post " post-id " deleted."]]]})))
 
 ;; ---------- App ----------
 
@@ -107,8 +111,6 @@
                  db
                  :app/current-view (rfe/push-state :flybot/home)
                  :app/theme        local-store-theme
-                 :post/mode        :read
-                 :page/mode        :read
                  :user/mode        :reader
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
@@ -204,16 +206,17 @@
 
 (rf/reg-sub
  :subs.page/mode
- (fn [db _]
-   (:page/mode db)))
+ (fn [db [_ page-name]]
+   (-> db :app/pages page-name :page/mode)))
 
-(rf/reg-event-fx
+(rf/reg-event-db
  :evt.page/toggle-edit-mode
- (fn [{:keys [db]} _]
-   (if (= :edit (:page/mode db))
-     {:db (assoc db :page/mode :read)}
-     {:db (assoc db :page/mode :edit)
-      :fx [[:dispatch [:evt.post/set-mode :read]]]})))
+ [(rf/path :app/pages)]
+ (fn [pages [_ page-name]]
+   (let [mode (-> pages page-name :page/mode)]
+     (if (= :edit mode)
+       (assoc-in pages [page-name :page/mode] :read)
+       (assoc-in pages [page-name :page/mode] :edit)))))
 
 ;; View
 
@@ -233,27 +236,18 @@
 (rf/reg-event-db
  :evt.page.form/set-sorting-method
  [(rf/path :app/pages)]
- (fn [pages [_ page method]]
-   (->> pages
-        (map (fn [p]
-               (if (= page (:page/name p))
-                 (assoc p :page/sorting-method (edn/read-string method))
-                 p))))))
+ (fn [pages [_ page-name method]]
+   (assoc-in pages [page-name :page/sorting-method] (edn/read-string method))))
 
 (rf/reg-sub
  :subs.page.form/sorting-method
- (fn [db [_ page]]
-   (->> db
-        :app/pages
-        (filter #(= page (:page/name %)))
-        first
-        :page/sorting-method)))
+ (fn [db [_ page-name]]
+   (-> db :app/pages page-name :page/sorting-method)))
 
 (rf/reg-event-fx
  :evt.page.form/send-page
  (fn [{:keys [db]} [_ page-name]]
-   (let [page (v/validate (->> db :app/pages (filter #(= page-name (:page/name %))) first)
-                          v/page-schema)]
+   (let [page (-> db :app/pages page-name v/prepare-page (v/validate v/page-schema))]
      (if (:errors page)
        {:fx [[:dispatch [:evt.error/set-validation-errors (v/error-msg page)]]]}
        {:http-xhrio {:method          :post
@@ -272,51 +266,50 @@
 
 (rf/reg-sub
  :subs.post/mode
- (fn [db _]
-   (:post/mode db)))
+ (fn [db [_ post-id]]
+   (-> db :app/posts (get post-id) :post/mode)))
 
 (rf/reg-event-db
- :evt.post/set-mode
- (fn [db [_ mode]]
-   (-> db
-       (assoc :post/mode mode))))
-
-(rf/reg-event-db
- :evt.post/toggle-create-mode
- (fn [db _]
-   (rf/dispatch [:evt.post.form/clear-form])
-   (if (= :create (:post/mode db))
-     (assoc db :post/mode :read)
-     (assoc db :post/mode :create))))
+ :evt.post/set-modes
+ [(rf/path :app/posts)]
+ (fn [posts [_ mode]]
+   (loop [all-posts posts
+          post-ids  (keys posts)]
+     (if (seq post-ids)
+       (recur (assoc-in all-posts [(first post-ids) :post/mode] mode)
+              (rest post-ids))
+       all-posts))))
 
 (rf/reg-event-fx
  :evt.post/toggle-edit-mode
  (fn [{:keys [db]} [_ post-id]]
-   (if (= :edit (:post/mode db))
-     {:db (assoc db :post/mode :read)}
-     {:db (assoc db :post/mode :edit)
-      :fx [[:dispatch [:evt.post.form/autofill post-id]]]})))
+   (let [post (-> db :app/posts (get post-id))]
+     (if (= :edit (:post/mode post))
+       {:db (assoc-in db [:app/posts post-id :post/mode] :read)
+        :fx [[:dispatch [:evt.post.form/clear-form]]]}
+       {:db (assoc-in db [:app/posts post-id :post/mode] :edit)
+        :fx [[:dispatch [:evt.post.form/autofill post-id]]]}))))
 
 (rf/reg-event-db
  :evt.post/add-post
  [(rf/path :app/posts)]
- (fn [all-posts [_ post]]
-   (-> all-posts
-       (conj post))))
+ (fn [posts [_ {:post/keys [id] :as post}]]
+   (assoc posts id post)))
 
 (rf/reg-event-db
  :evt.post/delete-post
  [(rf/path :app/posts)]
- (fn [all-posts [_ post-id]]
-   (let [updated-posts (filter
-                        (fn [post] (not= post-id (:post/id post)))
-                        all-posts)]
-     updated-posts)))
+ (fn [posts [_ post-id]]
+   (dissoc posts post-id)))
 
 (rf/reg-sub
  :subs.post/posts
  (fn [db [_ page]]
-   (->> db :app/posts (filter #(= page (:post/page %))))))
+   (->> db
+        :app/posts
+        vals
+        (filter #(= page (:post/page %)))
+        vec)))
 
 (rf/reg-event-fx
  :evt.post/remove-post
@@ -349,10 +342,7 @@
 (rf/reg-event-fx
  :evt.post.form/send-post
  (fn [{:keys [db]} _]
-   (let [current-page (-> db :app/current-view :data :page-name)
-         post         (-> (:form/fields db)
-                          (v/prepare-post current-page)
-                          (v/validate v/post-schema))]
+   (let [post (-> db :form/fields v/prepare-post (v/validate v/post-schema))]
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (v/error-msg post)]]]}
        {:http-xhrio {:method          :post
@@ -371,32 +361,37 @@
                                                              :image/alt '?}}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/send-post-success current-page]
+                     :on-success      [:fx.http/send-post-success]
                      :on-failure      [:fx.http/failure]}}))))
 
 ;; Form body
 
 (rf/reg-event-fx
  :evt.post.form/autofill
- (fn [_ [_ post-id]]
-   {:http-xhrio {:method          :post
-                 :uri             "/all"
-                 :params          {:posts
-                                   {(list :post :with [post-id])
-                                    {:post/id '?
-                                     :post/page '?
-                                     :post/css-class '?
-                                     :post/creation-date '?
-                                     :post/last-edit-date '?
-                                     :post/show-dates? '?
-                                     :post/md-content '?
-                                     :post/image-beside {:image/src '?
-                                                         :image/src-dark '?
-                                                         :image/alt '?}}}}
-                 :format          (edn-request-format {:keywords? true})
-                 :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/post-success]
-                 :on-failure      [:fx.http/failure]}}))
+ (fn [{:keys [db]} [_ post-id]]
+   (if (= "new-post-temp-id" post-id)
+     {:db         (assoc db :form/fields
+                         {:post/id   post-id
+                          :post/page (-> db :app/current-view :data :page-name)
+                          :post/mode :read})}
+     {:http-xhrio {:method          :post
+                   :uri             "/all"
+                   :params          {:posts
+                                     {(list :post :with [post-id])
+                                      {:post/id '?
+                                       :post/page '?
+                                       :post/css-class '?
+                                       :post/creation-date '?
+                                       :post/last-edit-date '?
+                                       :post/show-dates? '?
+                                       :post/md-content '?
+                                       :post/image-beside {:image/src '?
+                                                           :image/src-dark '?
+                                                           :image/alt '?}}}}
+                   :format          (edn-request-format {:keywords? true})
+                   :response-format (edn-response-format {:keywords? true})
+                   :on-success      [:fx.http/post-success]
+                   :on-failure      [:fx.http/failure]}})))
 
 (rf/reg-event-db
  :evt.post.form/set-field
@@ -405,7 +400,7 @@
    (assoc fields id value)))
 
 (rf/reg-event-db
- :evt.image/set-field
+ :evt.form.image/set-field
  [(rf/path :form/fields :post/image-beside)]
  (fn [fields [_ id value]]
    (assoc fields id value)))
@@ -416,25 +411,25 @@
    (dissoc db :form/fields)))
 
 (rf/reg-sub
- :subs.form/fields
+ :subs.post.form/fields
  (fn [db _]
    (:form/fields db)))
 
 (rf/reg-sub
- :subs.image/fields
- :<- [:subs.form/fields]
+ :subs.form.image/fields
+ :<- [:subs.post.form/fields]
  (fn [fields _]
    (:post/image-beside fields)))
 
 (rf/reg-sub
- :subs.form/field
- :<- [:subs.form/fields]
+ :subs.post.form/field
+ :<- [:subs.post.form/fields]
  (fn [fields [_ id]]
    (get fields id)))
 
 (rf/reg-sub
- :subs.image/field
- :<- [:subs.image/fields]
+ :subs.form.image/field
+ :<- [:subs.form.image/fields]
  (fn [image-fields [_ id]]
    (get image-fields id)))
 

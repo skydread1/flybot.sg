@@ -65,16 +65,22 @@
 
 #?(:cljs
    (defn prepare-post
-     "Given the `fields` of a post form and the current `page-name`,
+     "Given the `fields` of a post,
       returns a post map matching server format requirements."
-     [fields page-name]
-     (if (:post/id fields)
+     [fields]
+     (if (= "new-post-temp-id" (:post/id fields))
        (-> fields
-           (dissoc :post/view)
-           (assoc :post/last-edit-date (js/Date.)))
-       (-> fields
-           (dissoc :post/view)
+           (dissoc :post/view :post/mode)
            (assoc :post/id (random-uuid)
-                  :post/page page-name
-                  :post/creation-date (js/Date.))))))
+                  :post/creation-date (js/Date.)))
+       (-> fields
+           (dissoc :post/view :post/mode)
+           (assoc :post/last-edit-date (js/Date.))))))
+
+#?(:cljs
+   (defn prepare-page
+     "Given the `fields` of a page,
+      returns a page map matching server format requirements."
+     [fields]
+     (dissoc fields :page/mode)))
 
