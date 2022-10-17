@@ -1,5 +1,6 @@
 (ns cljc.flybot.validation
-  (:require [malli.core :as m]
+  (:require [cljc.flybot.utils :as utils]
+            [malli.core :as m]
             [malli.util :as mu]))
 
 ;;---------- Schemas ----------
@@ -65,16 +66,20 @@
 
 #?(:cljs
    (defn prepare-post
-     "Given the `fields` of a post form and the current `page-name`,
-      returns a post map matching server format requirements."
-     [fields page-name]
-     (if (:post/id fields)
-       (-> fields
-           (dissoc :post/view)
-           (assoc :post/last-edit-date (js/Date.)))
-       (-> fields
-           (dissoc :post/view)
-           (assoc :post/id (random-uuid)
-                  :post/page page-name
-                  :post/creation-date (js/Date.))))))
+     "Given a `post` from the post form,
+      returns a post matching server format requirements."
+     [post]
+     (let [temp-id?   (-> post :post/id utils/temporary-id?)
+           date-field (if temp-id? :post/creation-date :post/last-edit-date)]
+       (-> post
+           (dissoc :post/view :post/mode)
+           (update :post/id (if temp-id? random-uuid identity))
+           (assoc date-field (js/Date.))))))
+
+#?(:cljs
+   (defn prepare-page
+     "Given the `page` from the page form,
+      returns a page matching server format requirements."
+     [page]
+     (dissoc page :page/mode)))
 

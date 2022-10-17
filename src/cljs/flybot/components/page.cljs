@@ -7,20 +7,18 @@
 ;;---------- Post ----------
 
 (defn render-post
-  [post]
-  (let [page-mode      @(rf/subscribe [:subs.page/mode])
-        post-mode      @(rf/subscribe [:subs.post/mode])
+  [page-name {:post/keys [id] :as post}]
+  (let [page-mode      @(rf/subscribe [:subs.page/mode page-name])
+        post-mode      @(rf/subscribe [:subs.post/mode id])
         user-mode      @(rf/subscribe [:subs.user/mode])
-        edited-post-id @(rf/subscribe [:subs.form/field :post/id])]
+        active-post-id @(rf/subscribe [:subs.post.form/field :post/id])]  
     (cond (= :reader user-mode)
           (post/post-read-only post)
           (= :edit page-mode)
           (post/post-read-only post)
-          (and (= :create post-mode) (= {} post))
-          (post/post-create "empty-post-id")
-          (and (= :edit post-mode) (= edited-post-id (:post/id post)) (not= {} post))
-          (post/post-edit edited-post-id)
-          (and (not= :read post-mode) (not= edited-post-id (:post/id post)) (not= {} post))
+          (= :edit post-mode)
+          (post/post-edit id)
+          (and active-post-id (not= active-post-id id))
           (post/post-read-only post)
           :else
           (post/post-read post))))
@@ -28,14 +26,14 @@
 ;;---------- Buttons ----------
 
 (defn edit-page-button
-  []
+  [page-name]
   [:input.button
    {:type "button"
-    :value (if (= :edit @(rf/subscribe [:subs.page/mode]))
+    :value (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
              "Cancel"
              "Edit Page")
     :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.page/toggle-edit-mode])}])
+    :on-click #(rf/dispatch [:evt.page/toggle-edit-mode page-name])}])
 
 (defn submit-page-button
   [page-name]
@@ -74,15 +72,15 @@
   (when (= :editor @(rf/subscribe [:subs.user/mode]))
     [:div.page-header
      {:key (or page-name (str "config-of" page-name))}
-     (if (= :edit @(rf/subscribe [:subs.page/mode]))
+     (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
        [:<>
         [errors page-name [:validation-errors :failure-http-result]]
         [:form
-         [edit-page-button]
+         [edit-page-button page-name]
          [submit-page-button page-name]]
         [page-header-form page-name]]
        [:form
-        [edit-page-button]])]))
+        [edit-page-button page-name]])]))
 
 (defn sort-posts
   [{:sort/keys [type direction]} posts]
@@ -97,15 +95,12 @@
         ordered-posts (->> @(rf/subscribe [:subs.post/posts page-name])
                            (map h/add-hiccup)
                            (sort-posts sorting-method))
-        empty-post    {}
-        posts        (if (and (= :editor @(rf/subscribe [:subs.user/mode]))
-                              (= :read @(rf/subscribe [:subs.page/mode])))
-                       (conj ordered-posts empty-post)
-                       ordered-posts)]
+        new-post      {:post/id "new-post-temp-id"}
+        posts         (conj ordered-posts new-post)]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [page-header page-name]
      (doall
       (for [post posts]
-        (render-post post)))]))
+        (render-post page-name post)))]))

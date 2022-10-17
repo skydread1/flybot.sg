@@ -1,5 +1,6 @@
 (ns cljs.flybot.components.post
-  (:require [cljs.flybot.lib.hiccup :as h]
+  (:require [cljc.flybot.utils :as utils]
+            [cljs.flybot.lib.hiccup :as h]
             [cljs.flybot.components.header :refer [theme-logo]]
             [cljs.flybot.components.error :refer [errors]]
             [re-frame.core :as rf]))
@@ -10,7 +11,7 @@
   []
   [:input.button
    {:type "button"
-    :value (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
+    :value (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
              "Edit Post"
              "Preview Post")
     :on-change "ReadOnly"
@@ -28,21 +29,13 @@
   [post-id]
   [:input.button
    {:type "button"
-    :value (if (= :edit @(rf/subscribe [:subs.post/mode]))
+    :value (if (= :edit @(rf/subscribe [:subs.post/mode post-id]))
              "Cancel"
-             "Edit Post")
+             (if (= post-id "new-post-temp-id")
+               "Create Post"
+               "Edit Post"))
     :on-change "ReadOnly"
     :on-click #(rf/dispatch [:evt.post/toggle-edit-mode post-id])}])
-
-(defn create-button
-  []
-  [:input.button
-   {:type "button"
-    :value (if (= :create @(rf/subscribe [:subs.post/mode]))
-             "Cancel"
-             "Create Post")
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.post/toggle-create-mode])}])
 
 (defn delete-button
   [post-id]
@@ -67,7 +60,7 @@
       {:type "text"
        :name "css-class"
        :placeholder "my-post-1"
-       :value @(rf/subscribe [:subs.form/field :post/css-class])
+       :value @(rf/subscribe [:subs.post.form/field :post/css-class])
        :on-change #(rf/dispatch [:evt.post.form/set-field
                                  :post/css-class
                                  (.. % -target -value)])}]
@@ -78,8 +71,8 @@
       {:type "url"
        :name "img-src"
        :placeholder "https://my.image.com/photo-1"
-       :value @(rf/subscribe [:subs.image/field :image/src])
-       :on-change #(rf/dispatch [:evt.image/set-field
+       :value @(rf/subscribe [:subs.form.image/field :image/src])
+       :on-change #(rf/dispatch [:evt.form.image/set-field
                                  :image/src
                                  (.. % -target -value)])}]
      [:br]
@@ -89,8 +82,8 @@
       {:type "url"
        :name "img-src-dark"
        :placeholder "https://my.image.com/photo-1"
-       :value @(rf/subscribe [:subs.image/field :image/src-dark])
-       :on-change #(rf/dispatch [:evt.image/set-field
+       :value @(rf/subscribe [:subs.form.image/field :image/src-dark])
+       :on-change #(rf/dispatch [:evt.form.image/set-field
                                  :image/src-dark
                                  (.. % -target -value)])}]
      [:br]
@@ -100,8 +93,8 @@
       {:type "text"
        :name "img-alt"
        :placeholder "Coffee on table"
-       :value @(rf/subscribe [:subs.image/field :image/alt])
-       :on-change #(rf/dispatch [:evt.image/set-field
+       :value @(rf/subscribe [:subs.form.image/field :image/alt])
+       :on-change #(rf/dispatch [:evt.form.image/set-field
                                  :image/alt
                                  (.. % -target -value)])}]
      [:br]
@@ -110,7 +103,7 @@
      [:input
       {:type "checkbox"
        :name "show-dates"
-       :default-checked (when @(rf/subscribe [:subs.form/field :post/show-dates?]) "checked")
+       :default-checked (when @(rf/subscribe [:subs.post.form/field :post/show-dates?]) "checked")
        :on-click #(rf/dispatch [:evt.post.form/set-field
                                 :post/show-dates?
                                 (.. % -target -checked)])}]
@@ -126,7 +119,7 @@
       {:name "md-content"
        :required "required"
        :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
-       :value @(rf/subscribe [:subs.form/field :post/md-content])
+       :value @(rf/subscribe [:subs.post.form/field :post/md-content])
        :on-change #(rf/dispatch [:evt.post.form/set-field
                                  :post/md-content
                                  (.. % -target -value)])}]]]])
@@ -168,10 +161,11 @@
   [{:post/keys [id]
     :or {id "empty-read-only-id"}
     :as post}]
-  [:div.post
-   {:key id
-    :id id}
-   [post-view post]])
+  (when-not (utils/temporary-id? id)
+    [:div.post
+     {:key id
+      :id id}
+     [post-view post]]))
 
 (defn post-read
   "Post with a button to create/edit."
@@ -182,31 +176,12 @@
    {:key id
     :id id}
    [:div.post-header
-    (if (= "empty-read-id" id) 
-      [:form
-       [create-button id]]
-      [:form
-       [edit-button id]
-       [delete-button id]])]
-   (when id
-     [post-view post])])
-
-(defn post-create
-  "Create Post Form with preview feature."
-  [post-id]
-  [:div.post
-   {:key post-id
-    :id  post-id}
-   [:div.post-header
     [:form
-     [preview-button]
-     [submit-button]
-     [create-button post-id]]
-    [errors post-id [:validation-errors :failure-http-result]]]
-   (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
-     [post-view
-      (h/add-hiccup @(rf/subscribe [:subs.form/fields]))]
-     [post-form post-id])])
+     [edit-button id]
+     (when-not (utils/temporary-id? id)
+       [delete-button id])]]
+   (when-not (utils/temporary-id? id)
+     [post-view post])])
 
 (defn post-edit
   "Edit Post Form with preview feature."
@@ -218,10 +193,10 @@
     [:form
      [preview-button]
      [submit-button]
-     [edit-button]
+     [edit-button post-id]
      [delete-button post-id]]
     [errors post-id [:validation-errors :failure-http-result]]]
-   (if (= :preview @(rf/subscribe [:subs.form/field :post/view]))
+   (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
      [post-view
-      (h/add-hiccup @(rf/subscribe [:subs.form/fields]))]
+      (h/add-hiccup @(rf/subscribe [:subs.post.form/fields]))]
      [post-form])])
