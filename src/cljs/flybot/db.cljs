@@ -8,7 +8,8 @@
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-            [cljc.flybot.validation :as v]
+            [cljc.flybot.utils :as utils]
+            [cljc.flybot.validation :as valid]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
             [clojure.edn :as edn]
@@ -32,24 +33,17 @@
     ;; result is a map containing details of the failure
    (assoc errors :failure-http-result result)))
 
-(defn to-indexed-maps
-  "Transforms a vector of maps `v` to a map of maps using the given key `k` as index.
-   i.e: [{:a :a1 :b :b1} {:a :a2 :b :b2}]
-   => {:a1 {:a :a1 :b :b1} :a2 {:a :a2 :b :b2}}"
-  [k v]
-  (into {} (map (juxt k identity) v)))
-
 (rf/reg-event-fx
  :fx.http/all-success
  (fn [{:keys [db]} [_ {:keys [pages posts]}]]
    {:db (merge db {:app/pages (->> pages
                                    :all
                                    (map #(assoc % :page/mode :read))
-                                   (to-indexed-maps :page/name))
+                                   (utils/to-indexed-maps :page/name))
                    :app/posts (->> posts
                                    :all
                                    (map #(assoc % :post/mode :read))
-                                   (to-indexed-maps :post/id))})
+                                   (utils/to-indexed-maps :post/id))})
     :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]]}))
 
 (rf/reg-event-fx
@@ -196,9 +190,10 @@
 (rf/reg-event-db
  :evt.user/toggle-mode
  (fn [db _]
-   (if (= :editor (:user/mode db))
-     (assoc db :user/mode :reader)
-     (assoc db :user/mode :editor))))
+   (let [new-mode (if (= :editor (:user/mode db))
+                    :reader
+                    :editor)]
+     (assoc db :user/mode new-mode))))
 
 ;; ---------- Page ----------
 
@@ -213,10 +208,10 @@
  :evt.page/toggle-edit-mode
  [(rf/path :app/pages)]
  (fn [pages [_ page-name]]
-   (let [mode (-> pages page-name :page/mode)]
-     (if (= :edit mode)
-       (assoc-in pages [page-name :page/mode] :read)
-       (assoc-in pages [page-name :page/mode] :edit)))))
+   (let [new-mode (if (= :edit (-> pages page-name :page/mode))
+                    :read
+                    :edit)]
+     (assoc-in pages [page-name :page/mode] new-mode))))
 
 ;; View
 
@@ -247,9 +242,9 @@
 (rf/reg-event-fx
  :evt.page.form/send-page
  (fn [{:keys [db]} [_ page-name]]
-   (let [page (-> db :app/pages page-name v/prepare-page (v/validate v/page-schema))]
+   (let [page (-> db :app/pages page-name valid/prepare-page (valid/validate valid/page-schema))]
      (if (:errors page)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (v/error-msg page)]]]}
+       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg page)]]]}
        {:http-xhrio {:method          :post
                      :uri             "/all"
                      :params          {:pages
@@ -286,7 +281,8 @@
    (let [post (-> db :app/posts (get post-id))]
      (if (= :edit (:post/mode post))
        {:db (assoc-in db [:app/posts post-id :post/mode] :read)
-        :fx [[:dispatch [:evt.post.form/clear-form]]]}
+        :fx [[:dispatch [:evt.post.form/clear-form]]
+             [:dispatch [:evt.error/clear-errors]]]}
        {:db (assoc-in db [:app/posts post-id :post/mode] :edit)
         :fx [[:dispatch [:evt.post.form/autofill post-id]]]}))))
 
@@ -334,17 +330,18 @@
 (rf/reg-event-db
  :evt.post.form/toggle-preview
  [(rf/path :form/fields)]
- (fn [fields _]
-   (if (= :preview (:post/view fields))
-     (assoc fields :post/view :edit)
-     (assoc fields :post/view :preview))))
+ (fn [post _]
+   (let [new-view (if (= :preview (:post/view post))
+                    :edit
+                    :preview)]
+     (assoc post :post/view new-view))))
 
 (rf/reg-event-fx
  :evt.post.form/send-post
  (fn [{:keys [db]} _]
-   (let [post (-> db :form/fields v/prepare-post (v/validate v/post-schema))]
+   (let [post (-> db :form/fields valid/prepare-post (valid/validate valid/post-schema))]
      (if (:errors post)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (v/error-msg post)]]]}
+       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             "/all"
                      :params          {:posts
@@ -369,7 +366,7 @@
 (rf/reg-event-fx
  :evt.post.form/autofill
  (fn [{:keys [db]} [_ post-id]]
-   (if (= "new-post-temp-id" post-id)
+   (if (utils/temporary-id? post-id)
      {:db         (assoc db :form/fields
                          {:post/id   post-id
                           :post/page (-> db :app/current-view :data :page-name)
@@ -396,14 +393,14 @@
 (rf/reg-event-db
  :evt.post.form/set-field
  [(rf/path :form/fields)]
- (fn [fields [_ id value]]
-   (assoc fields id value)))
+ (fn [post [_ id value]]
+   (assoc post id value)))
 
 (rf/reg-event-db
  :evt.form.image/set-field
  [(rf/path :form/fields :post/image-beside)]
- (fn [fields [_ id value]]
-   (assoc fields id value)))
+ (fn [post [_ id value]]
+   (assoc post id value)))
 
 (rf/reg-event-db
  :evt.post.form/clear-form
@@ -418,14 +415,14 @@
 (rf/reg-sub
  :subs.form.image/fields
  :<- [:subs.post.form/fields]
- (fn [fields _]
-   (:post/image-beside fields)))
+ (fn [post _]
+   (:post/image-beside post)))
 
 (rf/reg-sub
  :subs.post.form/field
  :<- [:subs.post.form/fields]
- (fn [fields [_ id]]
-   (get fields id)))
+ (fn [post [_ id]]
+   (get post id)))
 
 (rf/reg-sub
  :subs.form.image/field

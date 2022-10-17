@@ -1,5 +1,6 @@
 (ns cljs.flybot.components.post
-  (:require [cljs.flybot.lib.hiccup :as h]
+  (:require [cljc.flybot.utils :as utils]
+            [cljs.flybot.lib.hiccup :as h]
             [cljs.flybot.components.header :refer [theme-logo]]
             [cljs.flybot.components.error :refer [errors]]
             [re-frame.core :as rf]))
@@ -160,7 +161,7 @@
   [{:post/keys [id]
     :or {id "empty-read-only-id"}
     :as post}]
-  (when-not (= "new-post-temp-id" id)
+  (when-not (utils/temporary-id? id)
     [:div.post
      {:key id
       :id id}
@@ -177,9 +178,9 @@
    [:div.post-header
     [:form
      [edit-button id]
-     (when-not (= "new-post-temp-id" id)
+     (when-not (utils/temporary-id? id)
        [delete-button id])]]
-   (when-not (= "new-post-temp-id" id)
+   (when-not (utils/temporary-id? id)
      [post-view post])])
 
 (defn post-edit
