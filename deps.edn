@@ -8,6 +8,7 @@
            cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}
            re-frame/re-frame                     {:mvn/version "1.3.0"}
            day8.re-frame/http-fx                 {:mvn/version "0.2.4"}
+           day8.re-frame/test                    {:mvn/version "0.1.5"}
 
            ;; both fron-end and back-end
            metosin/malli                         {:mvn/version "0.8.9"}
@@ -23,7 +24,7 @@
 
            ;; work around to resolve the dep conflict introduced by datomic
            com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
- :paths   ["dev/src" "src" "src/clj" "src/cljc" "src/cljs" "target" "resources"]
+ :paths   ["dev/src" "src" "src/clj" "src/cljc" "test" "test/clj" "test/cljs" "src/cljs" "target" "resources"]
  :aliases
  {:dev
   {:main-opts ["--main"  "figwheel.main"

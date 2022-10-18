@@ -75,7 +75,7 @@
     [user-mode-logo]
     [navbar-web]
     [:div.button.hidden
-     [:button {:on-click #(rf/dispatch [:evt.nav/navbar-open?])}
+     [:button {:on-click #(rf/dispatch [:evt.nav/toggle-navbar])}
       [:svg.burger
        {:viewBox "0 0 20 20"}
        [:path

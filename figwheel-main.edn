@@ -1,1 +1,2 @@
-{:ring-handler clj.flybot.figwheel/figwheel-handler}
+{:ring-handler clj.flybot.figwheel/figwheel-handler
+ :auto-testing true}
