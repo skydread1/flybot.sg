@@ -1,7 +1,7 @@
 (ns cljs.flybot.db-test
   "Hot reloading regression tests for the re-frame logic.
    The tests are executed everytime a cljs file is saved.
-   The results are displayed in https://localhost:9500/figwheel-extra-main/auto-testing"
+   The results are displayed in http://localhost:9500/figwheel-extra-main/auto-testing"
   (:require [cljs.flybot.db]
             [cljs.flybot.lib.router :as router]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]
