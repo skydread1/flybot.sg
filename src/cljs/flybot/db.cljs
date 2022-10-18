@@ -71,7 +71,7 @@
            [:fx.log/message ["Page " page-name " updated."]]]})))
 
 (rf/reg-event-fx
- :fx.http/delete-post-success
+ :fx.http/remove-post-success
  (fn [_ [_ {:keys [posts]}]]
    (let [post-id (-> posts :removed-post :post/id)]
      {:fx [[:dispatch [:evt.post/delete-post post-id]]
@@ -164,7 +164,7 @@
 ;; ---------- Navbar ----------
 
 (rf/reg-event-db
- :evt.nav/navbar-open?
+ :evt.nav/toggle-navbar
  (fn [db [_]]
    (-> db
        (update :nav/navbar-open? not))))
@@ -264,16 +264,20 @@
  (fn [db [_ post-id]]
    (-> db :app/posts (get post-id) :post/mode)))
 
+(defn set-post-modes
+  [posts mode]
+  (loop [all-posts posts
+         post-ids  (keys posts)]
+    (if (seq post-ids)
+      (recur (assoc-in all-posts [(first post-ids) :post/mode] mode)
+             (rest post-ids))
+      all-posts)))
+
 (rf/reg-event-db
  :evt.post/set-modes
  [(rf/path :app/posts)]
  (fn [posts [_ mode]]
-   (loop [all-posts posts
-          post-ids  (keys posts)]
-     (if (seq post-ids)
-       (recur (assoc-in all-posts [(first post-ids) :post/mode] mode)
-              (rest post-ids))
-       all-posts))))
+   (set-post-modes posts mode)))
 
 (rf/reg-event-fx
  :evt.post/toggle-edit-mode
@@ -320,7 +324,7 @@
                                      :post/md-content '?}}}
                  :format          (edn-request-format {:keywords? true})
                  :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/delete-post-success]
+                 :on-success      [:fx.http/remove-post-success]
                  :on-failure      [:fx.http/failure]}}))
 
 ;; ---------- Post Form ----------
@@ -370,7 +374,7 @@
      {:db         (assoc db :form/fields
                          {:post/id   post-id
                           :post/page (-> db :app/current-view :data :page-name)
-                          :post/mode :read})}
+                          :post/mode :edit})}
      {:http-xhrio {:method          :post
                    :uri             "/all"
                    :params          {:posts
