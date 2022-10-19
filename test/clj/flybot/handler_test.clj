@@ -3,40 +3,15 @@
             [clj-commons.byte-streams :as bs]
             [clj.flybot.db :as db]
             [clj.flybot.handler :as sut]
+            [cljc.flybot.sample-data :as s]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datomic.api :as d]
             [robertluo.fun-map :refer [closeable fnk halt! life-cycle-map touch]]
             [clojure.edn :as edn]))
 
-;;---------- Sample data ----------
-
-(def post-1-id (d/squuid))
-(def post-2-id (d/squuid))
-(def post-3-id (d/squuid))
-(def post-1-create-date (java.util.Date.))
-(def post-2-create-date (java.util.Date.))
-(def post-1 {:post/id post-1-id
-             :post/page :home
-             :post/css-class "post-1"
-             :post/creation-date post-1-create-date
-             :post/md-content "#Some content 1"
-             :post/image-beside {:image/src "https://some-image.svg"
-                                 :image/src-dark "https://some-image-dark-mode.svg"
-                                 :image/alt "something"}})
-(def post-2 {:post/id post-2-id
-             :post/page :home
-             :post/css-class "post-2"
-             :post/creation-date post-2-create-date
-             :post/md-content "#Some content 2"})
-
-(def home-page {:page/name           :home
-                :page/sorting-method {:sort/type :post/creation-date
-                                      :sort/direction :ascending}})
-(def apply-page {:page/name :apply})
-
 (defn sample-data->db
   [conn]
-  @(d/transact conn [post-1 post-2 home-page apply-page]))
+  @(d/transact conn [s/post-1 s/post-2 s/home-page s/apply-page]))
 
 ;;---------- System ----------
 
@@ -96,7 +71,7 @@
 (deftest ring-handler
   (testing "Returns the proper ring response."
     (let [ring-handler (:ring-handler test-system)]
-      (is (= apply-page
+      (is (= s/apply-page
              (-> {:body-params
                   {:pages
                    {(list :page :with [:apply])
@@ -166,22 +141,22 @@
                                  :post/page '?
                                  :post/creation-date '?
                                  :post/md-content '?}]}})]
-      (is (= [post-1-id post-2-id]
+      (is (= [s/post-1-id s/post-2-id]
              (->> resp :body :posts :all (map :post/id))))))
   (testing "Execute a request for a post."
     (let [resp (post-request "/all"
                              {:posts
-                              {(list :post :with [post-1-id])
+                              {(list :post :with [s/post-1-id])
                                {:post/id '?
                                 :post/page '?
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
-      (is (= post-1-id
+      (is (= s/post-1-id
              (-> resp :body :posts :post :post/id)))))
   (testing "Execute a request for a new post."
     (let [resp (post-request "/all"
                              {:posts
-                              {(list :new-post :with [{:post/id            post-3-id
+                              {(list :new-post :with [{:post/id            s/post-3-id
                                                        :post/page          :home
                                                        :post/creation-date (java.util.Date.)
                                                        :post/md-content    "Content"}])
@@ -189,16 +164,16 @@
                                 :post/page '?
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
-      (is (= post-3-id
+      (is (= s/post-3-id
              (->> resp :body :posts :new-post :post/id)))))
   (testing "Execute a request for a delete post."
     (let [resp (post-request "/all"
                              {:posts
-                              {(list :removed-post :with [post-3-id])
+                              {(list :removed-post :with [s/post-3-id])
                                {:post/id '?
                                 :post/page '?
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
-      (is (= post-3-id
+      (is (= s/post-3-id
              (-> resp :body :posts :removed-post :post/id))))))
 
