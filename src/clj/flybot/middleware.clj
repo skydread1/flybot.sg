@@ -12,13 +12,10 @@
 
 (def exception-middleware
   (exception/create-exception-middleware
-   (merge
-    exception/default-handlers
-    {;; ex-data with :type :pattern
-     :pattern (partial handler 502 "invalid pattern provided")
-
-       ;; override the default handler
-     ::exception/default (partial handler 500 "default")})))
+   {;; ex-data with :type :pattern
+    :pattern (partial handler 407 "invalid pattern provided")
+    ;; override the default handler
+    ::exception/default (partial handler 500 "default")}))
 
 (defn wrap-base
   [handler]

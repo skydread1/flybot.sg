@@ -107,52 +107,55 @@
                  :page))))))
 
 (defn post-request
-  [uri body]
-  (-> @(http/request
-        {:content-type :edn
-         :accept       :edn
-         :url          (str "http://localhost:8100" uri)
-         :method       :post
-         :body         (str body)})
-      :body
-      bs/to-string
-      edn/read-string))
+  ([uri body]
+   (post-request :post uri body))
+  ([method uri body]
+   (let [resp (try
+                @(http/request
+                  {:content-type :edn
+                   :accept       :edn
+                   :url          (str "http://localhost:8100" uri)
+                   :method       (or method :post)
+                   :body         (str body)})
+                (catch Exception e
+                  (ex-data e)))]
+     (update resp :body (fn [body]
+                          (-> body bs/to-string edn/read-string))))))
 
 (deftest app-routes
   ;;---------- Errors
-  (testing "Invalid pattern so returns error."
-    (let [resp (post-request "/all"
-                             {:pages
-                              {(list :all :with [])
-                               [{:invalid-key '?}]}})]
-      ;; TOFIX: should catch pattern error via mw/esception-middleware and return
-      ;; the pattern error with 502 status
-      ;; Current behaviour: throw the error 502 but do not catch it.
-      (is (= "Invalid client pattern data"
-             (-> resp :error :cause)))))
+  (testing "Invalid route so returns error 404."
+    (let [resp (post-request "/wrong-route" ::PATTERN)]
+      (is (= 404 (-> resp :status)))))
+  (testing "Invalid http method so returns error 405."
+    (let [resp (post-request :get "/all" ::PATTERN)]
+      (is (= 405 (-> resp :status)))))
+  (testing "Invalid pattern so returns error 407."
+    (let [resp (post-request "/all" {:invalid-key '?})]
+      (is (= 407 (-> resp :status)))))
 
-  ;;---------- Pages 
+  ;;---------- Pages
   (testing "Execute a request for all pages."
     (let [resp (post-request "/all"
                              {:pages
                               {(list :all :with [])
                                [{:page/name '?}]}})]
       (is (= [{:page/name :home} {:page/name :apply}]
-             (-> resp :pages :all)))))
+             (-> resp :body :pages :all)))))
   (testing "Execute a request for a page."
     (let [resp (post-request "/all"
                              {:pages
                               {(list :page :with [:home])
                                {:page/name '?}}})]
       (is (= {:page/name :home}
-             (-> resp :pages :page)))))
+             (-> resp :body :pages :page)))))
   (testing "Execute a request for a new page."
     (let [resp (post-request "/all"
                              {:pages
                               {(list :new-page :with [{:page/name :about}])
                                {:page/name '?}}})]
       (is (= {:page/name :about}
-             (-> resp :pages :new-page)))))
+             (-> resp :body :pages :new-page)))))
   
   ;;---------- Posts
   (testing "Execute a request for all posts."
@@ -164,7 +167,7 @@
                                  :post/creation-date '?
                                  :post/md-content '?}]}})]
       (is (= [post-1-id post-2-id]
-             (->> resp :posts :all (map :post/id))))))
+             (->> resp :body :posts :all (map :post/id))))))
   (testing "Execute a request for a post."
     (let [resp (post-request "/all"
                              {:posts
@@ -174,7 +177,7 @@
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
       (is (= post-1-id
-             (-> resp :posts :post :post/id)))))
+             (-> resp :body :posts :post :post/id)))))
   (testing "Execute a request for a new post."
     (let [resp (post-request "/all"
                              {:posts
@@ -187,7 +190,7 @@
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
       (is (= post-3-id
-             (->> resp :posts :new-post :post/id)))))
+             (->> resp :body :posts :new-post :post/id)))))
   (testing "Execute a request for a delete post."
     (let [resp (post-request "/all"
                              {:posts
@@ -197,5 +200,5 @@
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
       (is (= post-3-id
-             (-> resp :posts :removed-post :post/id))))))
+             (-> resp :body :posts :removed-post :post/id))))))
 

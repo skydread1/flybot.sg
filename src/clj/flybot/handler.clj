@@ -53,6 +53,6 @@
                                          mw/wrap-base
                                          mw/exception-middleware]}})
    (reitit/create-default-handler
-    {:not-found          (constantly {:status 404, :body "Page not found"})
-     :method-not-allowed (constantly {:status 405, :body "Not allowed"})
-     :not-acceptable     (constantly {:status 406, :body "Not acceptable"})})))
+    {:not-found          (constantly {:status 404 :body "Page not found"})
+     :method-not-allowed (constantly {:status 405 :body "Not allowed"})
+     :not-acceptable     (constantly {:status 406 :body "Not acceptable"})})))
