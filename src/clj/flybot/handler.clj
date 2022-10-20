@@ -4,7 +4,6 @@
             [cljc.flybot.validation :as v]
             [datomic.api :as d]
             [muuntaja.core :as m]
-            [reitit.middleware :as middleware]
             [reitit.ring :as reitit]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [sg.flybot.pullable :as pull]))
@@ -36,21 +35,24 @@
           resp    (pull/run pattern
                             v/api-schema
                             (op/pullable-data (first executors) db))]
-      {:body    (first resp)
-       :headers {"content-type" "application/edn"}})))
+      (if (:error resp)
+        (throw (ex-info "invalid pattern" (merge {:type :pattern} resp)))
+        {:body    (first resp)
+         :headers {"content-type" "application/edn"}}))))
 
 (defn app-routes
   "API routes, returns a ring-handler."
   [ring-handler]
   (reitit/ring-handler
    (reitit/router
-    [["/all" {:post ring-handler :middleware [:content :wrap-base]}]
+    [["/all" {:post ring-handler}]
      ["/*"   (reitit/create-resource-handler {:root "public"})]]
     {:conflicts            (constantly nil)
-     ::middleware/registry {:content muuntaja/format-middleware
-                            :wrap-base mw/wrap-base}
-     :data                 {:muuntaja m/instance}})
+     :data                 {:muuntaja m/instance
+                            :middleware [muuntaja/format-middleware
+                                         mw/wrap-base
+                                         mw/exception-middleware]}})
    (reitit/create-default-handler
-    {:not-found          (constantly {:status 404, :body "Page not found"})
-     :method-not-allowed (constantly {:status 405, :body "Not allowed"})
-     :not-acceptable     (constantly {:status 406, :body "Not acceptable"})})))
+    {:not-found          (constantly {:status 404 :body "Page not found"})
+     :method-not-allowed (constantly {:status 405 :body "Not allowed"})
+     :not-acceptable     (constantly {:status 406 :body "Not acceptable"})})))

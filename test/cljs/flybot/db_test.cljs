@@ -2,37 +2,13 @@
   "Hot reloading regression tests for the re-frame logic.
    The tests are executed everytime a cljs file is saved.
    The results are displayed in http://localhost:9500/figwheel-extra-main/auto-testing"
-  (:require [cljs.flybot.db]
+  (:require [cljc.flybot.sample-data :as s]
+            [cljs.flybot.db]
             [cljs.flybot.lib.router :as router]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [day8.re-frame.test :as rf-test]
             [re-frame.core :as rf]
             [re-frame.db :as rf.db]))
-
-;; ---------- Sample data ----------
-
-(def post-1-id (random-uuid))
-(def post-2-id (random-uuid))
-(def post-1 {:post/id post-1-id
-             :post/page :home
-             :post/css-class "post-1"
-             :post/creation-date (js/Date.)
-             :post/md-content "#Some content 1"
-             :post/image-beside {:image/src "https://some-image.svg"
-                                 :image/src-dark "https://some-image-dark-mode.svg"
-                                 :image/alt "something"}})
-(def post-2 {:post/id post-2-id
-             :post/page :home
-             :post/css-class "post-2"
-             :post/creation-date (js/Date.)
-             :post/md-content "#Some content 2"})
-
-(def sample-pages-and-posts
-  {:posts {:all [post-1 post-2]}
-   :pages {:all [{:page/name :home
-                  :page/sorting-method {:sort/type :post/creation-date
-                                        :sort/direction :ascending}}
-                 {:page/name :apply}]}})
 
 ;; ---------- Fixtures ----------
 
@@ -50,7 +26,7 @@
   ;; Mock success http request
   (rf/reg-fx :http-xhrio
              (fn [_]
-               (rf/dispatch [:fx.http/all-success sample-pages-and-posts])))
+               (rf/dispatch [:fx.http/all-success s/init-pages-and-posts])))
   ;; Initialize db
   (rf/dispatch [:evt.app/initialize]))
 
@@ -79,7 +55,7 @@
      ;; Mock success http request
      (rf/reg-fx :http-xhrio
                 (fn [_]
-                  (rf/dispatch [:fx.http/all-success sample-pages-and-posts])))
+                  (rf/dispatch [:fx.http/all-success s/init-pages-and-posts])))
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initial db state is accurate in case no server error."
@@ -184,13 +160,13 @@
 (deftest edit-post
   (rf-test/run-test-sync
    (test-fixtures)
-   (let [p1-mode          (rf/subscribe [:subs.post/mode post-1-id])
+   (let [p1-mode          (rf/subscribe [:subs.post/mode s/post-1-id])
          p1-form          (rf/subscribe [:subs.post.form/fields])
          p1-preview       (rf/subscribe [:subs.post.form/field :post/view])
          posts            (rf/subscribe [:subs.post/posts :home])
          errors           (rf/subscribe [:subs.error/errors])
          validation-error (rf/subscribe [:subs.error/error :validation-errors])
-         new-post-1       (assoc post-1
+         new-post-1       (assoc s/post-1
                                  :post/md-content     "#New Content 1"
                                  :post/last-edit-date (js/Date.))]
      ;;---------- AUTOFILL POST FORM
@@ -201,13 +177,13 @@
      (rf/reg-fx :http-xhrio
                 (fn [_]
                   (rf/dispatch [:fx.http/post-success
-                                {:posts {:post post-1}}])))
+                                {:posts {:post s/post-1}}])))
      ;; Toggle mode
-     (rf/dispatch [:evt.post/toggle-edit-mode post-1-id])
+     (rf/dispatch [:evt.post/toggle-edit-mode s/post-1-id])
      (testing "New post mode is :edit."
        (is (= :edit @p1-mode)))
      (testing "The post data got filled in the form."
-       (is (= post-1 @p1-form)))
+       (is (= s/post-1 @p1-form)))
 
      ;;---------- PREVIEW POST
      ;; Toggle preview
@@ -234,7 +210,7 @@
      (rf/dispatch [:evt.post.form/send-post])
      (testing "Post sent successfully."
        (is (= [(assoc new-post-1 :post/mode :read)
-               (assoc post-2 :post/mode :read)]
+               (assoc s/post-2 :post/mode :read)]
               @posts)))
      (testing "Form and errors cleared."
        (is (not @p1-form))
@@ -279,8 +255,8 @@
      ;; Send post with new content to server
      (rf/dispatch [:evt.post.form/send-post])
      (testing "Post sent successfully."
-       (is (= [(assoc post-1 :post/mode :read)
-               (assoc post-2 :post/mode :read)
+       (is (= [(assoc s/post-1 :post/mode :read)
+               (assoc s/post-2 :post/mode :read)
                (assoc new-post :post/mode :read)]
               @posts)))
      (testing "Form cleared."
@@ -291,15 +267,15 @@
    (test-fixtures)
    (let [posts   (rf/subscribe [:subs.post/posts :home])
          p1-form (rf/subscribe [:subs.post.form/fields])
-         p1-mode (rf/subscribe [:subs.post/mode post-1-id])]
+         p1-mode (rf/subscribe [:subs.post/mode s/post-1-id])]
      ;;---------- DELETE POST - READ MODE
      (rf/reg-fx :http-xhrio
                 (fn [_]
                   (rf/dispatch [:fx.http/remove-post-success
-                                {:posts {:removed-post {:post/id post-2-id}}}])))
-     (rf/dispatch [:evt.post/remove-post post-2-id])
+                                {:posts {:removed-post {:post/id s/post-2-id}}}])))
+     (rf/dispatch [:evt.post/remove-post s/post-2-id])
      (testing "Post got removed and form cleared."
-       (is (= [(assoc post-1 :post/mode :read)] @posts))
+       (is (= [(assoc s/post-1 :post/mode :read)] @posts))
        (is (not @p1-form)))
 
      ;;---------- DELETE POST - EDIT MODE
@@ -307,9 +283,9 @@
      (rf/reg-fx :http-xhrio
                 (fn [_]
                   (rf/dispatch [:fx.http/post-success
-                                {:posts {:post post-1}}])))
+                                {:posts {:post s/post-1}}])))
      ;; Toggle mode
-     (rf/dispatch [:evt.post/toggle-edit-mode post-1-id])
+     (rf/dispatch [:evt.post/toggle-edit-mode s/post-1-id])
      (testing "Post 1 in edit mode."
        (is (= :edit @p1-mode)))
 
@@ -317,7 +293,7 @@
      (rf/reg-fx :http-xhrio
                 (fn [_]
                   (rf/dispatch [:fx.http/remove-post-success
-                                {:posts {:removed-post {:post/id post-1-id}}}])))
-     (rf/dispatch [:evt.post/remove-post post-1-id])
+                                {:posts {:removed-post {:post/id s/post-1-id}}}])))
+     (rf/dispatch [:evt.post/remove-post s/post-1-id])
      (testing "Post got removed."
        (is (= [] @posts))))))

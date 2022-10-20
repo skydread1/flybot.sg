@@ -31,7 +31,7 @@
      [:sort/direction :keyword]]]])
 
 (def api-schema
-  [:map
+  [:map {:closed true}
    [:posts
     {:optional true}
     [:map
