@@ -1,9 +1,15 @@
 (ns cljc.flybot.validation
-  (:require [cljc.flybot.utils :as utils]
-            [malli.core :as m]
-            [malli.util :as mu]))
+  "The schemas can be used for both validation and pull pattern.
+   The main difference between validation schema and pull pattern schema is
+   that pull pattern schems has all keys optional as we do not want to
+   force the client to require any fields.
+   However, for validation schema (form inputs for frontend, request params for backend),
+   we often need the client to provide some mandatory fields."
+  (:require [malli.core :as m]
+            [malli.util :as mu]
+            [cljc.flybot.utils :as u]))
 
-;;---------- Schemas ----------
+;;---------- Validation Schemas ----------
 
 (def post-schema
   [:map {:closed true}
@@ -30,21 +36,35 @@
      [:sort/type :keyword]
      [:sort/direction :keyword]]]])
 
+(defn all-keys-optional
+  "Walk through the given `schema` and set all keys to optional."
+  [schema]
+  (m/walk
+   schema
+   (m/schema-walker
+    (fn [sch]
+      (if (= :map (m/type sch))
+        (mu/optional-keys sch)
+        sch)))))
+
+;;---------- Pull Schemas ----------
+
 (def api-schema
-  [:map {:closed true}
-   [:posts
-    {:optional true}
-    [:map
-     [:post {:optional true} post-schema]
-     [:all {:optional true} [:vector post-schema]]
-     [:new-post {:optional true} post-schema]
-     [:removed-post {:optional true} post-schema]]]
-   [:pages
-    {:optional true}
-    [:map
-     [:page {:optional true} page-schema]
-     [:all {:optional true} [:vector page-schema]]
-     [:new-page {:optional true} page-schema]]]])
+  "All keys are optional because it is just a data query schema."
+  (all-keys-optional
+   [:map
+    {:closed true}
+    [:posts
+     [:map
+      [:post post-schema]
+      [:all [:vector post-schema]]
+      [:new-post post-schema]
+      [:removed-post post-schema]]]
+    [:pages
+     [:map
+      [:page page-schema]
+      [:all [:vector page-schema]]
+      [:new-page page-schema]]]]))
 
 ;;---------- Front-end validation ----------
 
@@ -64,22 +84,20 @@
        :errors
        (map #(select-keys % [:path :type]))))
 
-#?(:cljs
-   (defn prepare-post
-     "Given a `post` from the post form,
+(defn prepare-post
+  "Given a `post` from the post form,
       returns a post matching server format requirements."
-     [post]
-     (let [temp-id?   (-> post :post/id utils/temporary-id?)
-           date-field (if temp-id? :post/creation-date :post/last-edit-date)]
-       (-> post
-           (dissoc :post/view :post/mode)
-           (update :post/id (if temp-id? random-uuid identity))
-           (assoc date-field (js/Date.))))))
+  [post]
+  (let [temp-id?   (-> post :post/id u/temporary-id?)
+        date-field (if temp-id? :post/creation-date :post/last-edit-date)]
+    (-> post
+        (dissoc :post/view :post/mode)
+        (update :post/id (if temp-id? (u/mk-uuid) identity))
+        (assoc date-field (u/mk-date)))))
 
-#?(:cljs
-   (defn prepare-page
-     "Given the `page` from the page form,
+(defn prepare-page
+  "Given the `page` from the page form,
       returns a page matching server format requirements."
-     [page]
-     (dissoc page :page/mode)))
+  [page]
+  (dissoc page :page/mode))
 
