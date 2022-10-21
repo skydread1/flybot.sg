@@ -1,4 +1,13 @@
-(ns cljc.flybot.utils)
+(ns cljc.flybot.utils
+  (:require #?(:clj [datomic.api :as d])))
+
+(defn mk-uuid
+  []
+  #?(:clj (d/squuid) :cljs (random-uuid)))
+
+(defn mk-date
+  []
+  #?(:clj (java.util.Date.) :cljs (js/Date.)))
 
 (defn temporary-id?
   [id]

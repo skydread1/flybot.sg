@@ -116,13 +116,15 @@
                               {(list :all :with [])
                                [{:page/name '?}]}})]
       (is (= [{:page/name :home} {:page/name :apply}]
-             (-> resp :body :pages :all)))))
+             (->> resp :body :pages :all)))))
   (testing "Execute a request for a page."
     (let [resp (post-request "/all"
                              {:pages
                               {(list :page :with [:home])
-                               {:page/name '?}}})]
-      (is (= {:page/name :home}
+                               {:page/name '?
+                                :page/sorting-method {:sort/type '?
+                                                      :sort/direction '?}}}})]
+      (is (= s/home-page
              (-> resp :body :pages :page)))))
   (testing "Execute a request for a new page."
     (let [resp (post-request "/all"
@@ -137,43 +139,38 @@
     (let [resp (post-request "/all"
                              {:posts
                               {(list :all :with [])
-                               [{:post/id '?
-                                 :post/page '?
-                                 :post/creation-date '?
-                                 :post/md-content '?}]}})]
-      (is (= [s/post-1-id s/post-2-id]
-             (->> resp :body :posts :all (map :post/id))))))
+                               [{:post/id '?}]}})]
+      (is (= [{:post/id s/post-1-id} {:post/id s/post-2-id}]
+             (-> resp :body :posts :all)))))
   (testing "Execute a request for a post."
     (let [resp (post-request "/all"
                              {:posts
                               {(list :post :with [s/post-1-id])
                                {:post/id '?
                                 :post/page '?
+                                :post/css-class '?
                                 :post/creation-date '?
-                                :post/md-content '?}}})]
-      (is (= s/post-1-id
-             (-> resp :body :posts :post :post/id)))))
+                                :post/md-content '?
+                                :post/image-beside {:image/src '?
+                                                    :image/src-dark '?
+                                                    :image/alt '?}}}})]
+      (is (= s/post-1
+             (-> resp :body :posts :post)))))
   (testing "Execute a request for a new post."
     (let [resp (post-request "/all"
                              {:posts
-                              {(list :new-post :with [{:post/id            s/post-3-id
-                                                       :post/page          :home
-                                                       :post/creation-date (java.util.Date.)
-                                                       :post/md-content    "Content"}])
+                              {(list :new-post :with [s/post-3])
                                {:post/id '?
                                 :post/page '?
                                 :post/creation-date '?
                                 :post/md-content '?}}})]
-      (is (= s/post-3-id
-             (->> resp :body :posts :new-post :post/id)))))
+      (is (= s/post-3
+             (-> resp :body :posts :new-post)))))
   (testing "Execute a request for a delete post."
     (let [resp (post-request "/all"
                              {:posts
                               {(list :removed-post :with [s/post-3-id])
-                               {:post/id '?
-                                :post/page '?
-                                :post/creation-date '?
-                                :post/md-content '?}}})]
-      (is (= s/post-3-id
-             (-> resp :body :posts :removed-post :post/id))))))
+                               {:post/id '?}}})]
+      (is (= {:post/id s/post-3-id}
+             (-> resp :body :posts :removed-post))))))
 

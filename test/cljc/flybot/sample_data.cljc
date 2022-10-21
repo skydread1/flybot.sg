@@ -1,20 +1,14 @@
 (ns cljc.flybot.sample-data
   "Sample data that can be used in both backend and frontend tests."
-  (:require #?(:clj [datomic.api :as d])))
+  (:require [cljc.flybot.utils :as u]))
 
-(defn mk-uuid
-  []
-  #?(:clj (d/squuid) :cljs (random-uuid)))
 
-(defn mk-date
-  []
-  #?(:clj (java.util.Date.) :cljs (js/Date.)))
 
-(def post-1-id (mk-uuid))
-(def post-2-id (mk-uuid))
-(def post-3-id (mk-uuid))
-(def post-1-create-date (mk-date))
-(def post-2-create-date (mk-date))
+(def post-1-id (u/mk-uuid))
+(def post-2-id (u/mk-uuid))
+(def post-3-id (u/mk-uuid))
+(def post-1-create-date (u/mk-date))
+(def post-2-create-date (u/mk-date))
 (def post-1 {:post/id post-1-id
              :post/page :home
              :post/css-class "post-1"
@@ -28,6 +22,10 @@
              :post/css-class "post-2"
              :post/creation-date post-2-create-date
              :post/md-content "#Some content 2"})
+(def post-3 {:post/id            post-3-id
+             :post/page          :home
+             :post/creation-date (java.util.Date.)
+             :post/md-content    "Content"})
 
 (def home-page {:page/name           :home
                 :page/sorting-method {:sort/type :post/creation-date
