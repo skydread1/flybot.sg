@@ -22,7 +22,7 @@
     :injectors     (fnk [db-conn]
                         [(fn [] {:db (d/db db-conn)})])
     :executors     (fnk [db-conn]
-                        [(handler/mk-executor db-conn)])
+                        [(handler/mk-executors db-conn)])
     :ring-handler  (fnk [injectors executors]
                         (handler/mk-ring-handler injectors executors))
     :reitit-router (fnk [ring-handler]

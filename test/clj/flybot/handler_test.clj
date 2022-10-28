@@ -29,7 +29,7 @@
     :injectors     (fnk [db-conn]
                         [(fn [] {:db (d/db db-conn)})])
     :executors     (fnk [db-conn]
-                        [(sut/mk-executor db-conn)])
+                        [(sut/mk-executors db-conn)])
     :ring-handler  (fnk [injectors executors]
                         (sut/mk-ring-handler injectors executors))
     :reitit-router (fnk [ring-handler]
@@ -52,21 +52,33 @@
 
 ;;---------- Tests ----------
 
-(deftest executor
-  (let [executor (-> test-system :executors first)]
-    (testing "No effects."
-      (is (= ::POST
-             (executor {:response ::POST}))))
+(deftest executors
+  (let [executors (-> test-system :executors first)]
     (testing "With effects that do not affect the response."
       (is (= ::NEW-POST
-             (executor {:response ::NEW-POST
-                        :effects {:db {:payload [{:post/id (d/squuid)}]}}}))))
+             (executors ::NEW-POST [{:db {:payload [{:post/id (d/squuid)}]}}]))))
     (testing "With effects that affect the response."
       (is (= [::NEW-POST ::EFFECTS-RESPONSE]
-             (executor {:response ::NEW-POST
-                        :effects {:db {:payload [{:post/id (d/squuid)}]
-                                       :f-merge (fn [response _]
-                                                  [response ::EFFECTS-RESPONSE])}}}))))))
+             (executors ::NEW-POST [{:db {:payload [{:post/id (d/squuid)}]
+                                          :f-merge (fn [response _]
+                                                     [response ::EFFECTS-RESPONSE])}}])))
+      (is (= [::NEW-POST ::EFFECTS-RESPONSE ::EFFECTS-RESPONSE2]
+             (executors ::NEW-POST [{:db {:payload [{:post/id (d/squuid)}]
+                                          :f-merge (fn [response _]
+                                                     [response ::EFFECTS-RESPONSE])}}
+                                    {:db {:payload [{:post/id (d/squuid)}]
+                                          :f-merge (fn [response _]
+                                                     (conj response ::EFFECTS-RESPONSE2))}}]))))))
+
+(deftest mk-query
+  (testing "The query gathers the effects description as expected"
+    (let [data    {:a (constantly {:response ::RESP-A :effects ::EFFECTS-A})
+                   :b (constantly {:response ::RESP-B :effects ::EFFECTS-B})}
+          pattern {(list :a :with [::OK]) '?
+                   (list :b :with [::OK2]) '?}
+          q       (sut/mk-query pattern)]
+      (is (= [{:a ::RESP-A :b ::RESP-B} {:all-effects [::EFFECTS-A ::EFFECTS-B]}]
+             (q data))))))
 
 (deftest ring-handler
   (testing "Returns the proper ring response."
