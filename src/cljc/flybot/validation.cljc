@@ -92,7 +92,7 @@
         date-field (if temp-id? :post/creation-date :post/last-edit-date)]
     (-> post
         (dissoc :post/view :post/mode)
-        (update :post/id (if temp-id? (u/mk-uuid) identity))
+        (update :post/id (if temp-id? #(u/mk-uuid) identity))
         (assoc date-field (u/mk-date)))))
 
 (defn prepare-page
