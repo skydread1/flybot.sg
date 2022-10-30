@@ -17,31 +17,32 @@
 
 (def test-system
   (life-cycle-map
-   {:db-uri        "datomic:mem://website-test"
-    :db-conn       (fnk [db-uri]
-                        (d/create-database db-uri)
-                        (let [conn (d/connect db-uri)]
-                          (db/add-schemas conn)
-                          (sample-data->db conn)
-                          (closeable
-                           conn
-                           #(d/delete-database db-uri))))
-    :injectors     (fnk [db-conn]
-                        [(fn [] {:db (d/db db-conn)})])
-    :executors     (fnk [db-conn]
-                        [(sut/mk-executors db-conn)])
-    :ring-handler  (fnk [injectors executors]
-                        (sut/mk-ring-handler injectors executors))
-    :reitit-router (fnk [ring-handler]
-                        (sut/app-routes ring-handler))
-    :http-port     8100
-    :http-server   (fnk [http-port reitit-router]
-                        (let [svr (http/start-server
-                                   reitit-router
-                                   {:port http-port})]
-                          (closeable
-                           svr
-                           #(.close svr))))}))
+   {:db-uri         "datomic:mem://website-test"
+    :db-conn        (fnk [db-uri]
+                         (d/create-database db-uri)
+                         (let [conn (d/connect db-uri)]
+                           (db/add-schemas conn)
+                           (sample-data->db conn)
+                           (closeable
+                            conn
+                            #(d/delete-database db-uri))))
+    :injectors      (fnk [db-conn]
+                         [(fn [] {:db (d/db db-conn)})])
+    :executors      (fnk [db-conn]
+                         [(sut/mk-executors db-conn)])
+    :saturn-handler sut/saturn-handler
+    :ring-handler   (fnk [injectors saturn-handler executors]
+                         (sut/mk-ring-handler injectors saturn-handler executors))
+    :reitit-router  (fnk [ring-handler]
+                         (sut/app-routes ring-handler))
+    :http-port      8100
+    :http-server    (fnk [http-port reitit-router]
+                         (let [svr (http/start-server
+                                    reitit-router
+                                    {:port http-port})]
+                           (closeable
+                            svr
+                            #(.close svr))))}))
 
 (defn system-fixture [f]
   (touch test-system)
@@ -79,6 +80,22 @@
           q       (sut/mk-query pattern)]
       (is (= [{:a ::RESP-A :b ::RESP-B} {:all-effects [::EFFECTS-A ::EFFECTS-B]}]
              (q data))))))
+
+(deftest saturn-handler
+  (testing "Returns the proper saturn response."
+    (let [saturn-handler (:saturn-handler test-system)
+          db-conn        (:db-conn test-system)]
+      (is (= {:response     {:posts
+                             {:removed-post
+                              #:post{:id ::ID}}}
+              :effects-desc [{:db
+                              {:payload
+                               [[:db/retractEntity
+                                 [:post/id ::ID]]]}}]}
+             (saturn-handler {:body-params {:posts
+                                            {(list :removed-post :with [::ID])
+                                             {:post/id '?}}}
+                              :db (d/db db-conn)}))))))
 
 (deftest ring-handler
   (testing "Returns the proper ring response."

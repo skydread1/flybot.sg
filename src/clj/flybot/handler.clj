@@ -55,24 +55,34 @@
                   [k v]))))
      #(assoc % :all-effects (persistent! all-effects)))))
 
+(defn saturn-handler
+  "A saturn handler takes a ring request enhanced with additional keys form the injectors.
+   The saturn handler is purely functional.
+   The description of the side effects to be performed are returned and they will be executed later on in the executors."
+  [{:keys [body-params db]}]
+  (let [pattern           body-params
+        pattern-validator (sch/pattern-validator v/api-schema)
+        pattern           (pattern-validator pattern)
+        data              (op/pullable-data db)]
+    (if (:error pattern)
+      (throw (ex-info "invalid pattern" (merge {:type :pattern} pattern)))
+      (let [[resp effs] ((mk-query pattern) data)]
+        {:response     resp
+         :effects-desc (:all-effects effs)}))))
+
 (defn mk-ring-handler
-  "Takes a seq on `injectors` and a seq `executors`.
+  "Takes a seq on `injectors`, a `saturn-handler` and a seq `executors`.
    As for now, only supports db injector and db executor.
    Returns a ring-handler."
-  [injectors executors]
-  (fn [{:keys [body-params]}]
-    (let [db                (:db ((first injectors)))
-          pattern           body-params
-          pattern-validator (sch/pattern-validator v/api-schema)
-          pattern           (pattern-validator pattern)
-          data              (op/pullable-data db)]
-      (if (:error pattern)
-        (throw (ex-info "invalid pattern" (merge {:type :pattern} pattern)))
-        (let [[resp {:keys [all-effects]}] ((mk-query pattern) data)]
-          {:body    (if (seq all-effects)
-                      ((first executors) resp all-effects)
-                      resp)
-           :headers {"content-type" "application/edn"}})))))
+  [injectors saturn-handler executors]
+  (fn [req]
+    (let [sat-req  (merge req ((first injectors)))
+          {:keys [response effects-desc]} (saturn-handler sat-req)
+          resp (if (seq effects-desc)
+                 ((first executors) response effects-desc)
+                 response)]
+      {:body    resp
+       :headers {"content-type" "application/edn"}})))
 
 (defn app-routes
   "API routes, returns a ring-handler."

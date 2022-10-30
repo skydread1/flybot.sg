@@ -10,31 +10,32 @@
 
 (def system
   (life-cycle-map
-   {:db-uri        "datomic:mem://website"
-    :db-conn       (fnk [db-uri]
-                        (d/create-database db-uri)
-                        (let [conn (d/connect db-uri)]
-                          (db/add-schemas conn)
-                          (db/add-initial-data conn)
-                          (closeable
-                           conn
-                           #(d/delete-database db-uri))))
-    :injectors     (fnk [db-conn]
-                        [(fn [] {:db (d/db db-conn)})])
-    :executors     (fnk [db-conn]
-                        [(handler/mk-executors db-conn)])
-    :ring-handler  (fnk [injectors executors]
-                        (handler/mk-ring-handler injectors executors))
-    :reitit-router (fnk [ring-handler]
-                        (handler/app-routes ring-handler))
-    :http-port     8123
-    :http-server   (fnk [http-port reitit-router]
-                        (let [svr (http/start-server
-                                   reitit-router
-                                   {:port http-port})]
-                          (closeable
-                           svr
-                           #(.close svr))))}))
+   {:db-uri         "datomic:mem://website"
+    :db-conn        (fnk [db-uri]
+                         (d/create-database db-uri)
+                         (let [conn (d/connect db-uri)]
+                           (db/add-schemas conn)
+                           (db/add-initial-data conn)
+                           (closeable
+                            conn
+                            #(d/delete-database db-uri))))
+    :injectors      (fnk [db-conn]
+                         [(fn [] {:db (d/db db-conn)})])
+    :executors      (fnk [db-conn]
+                         [(handler/mk-executors db-conn)])
+    :saturn-handler handler/saturn-handler
+    :ring-handler   (fnk [injectors saturn-handler executors]
+                         (handler/mk-ring-handler injectors saturn-handler executors))
+    :reitit-router  (fnk [ring-handler]
+                         (handler/app-routes ring-handler))
+    :http-port      8123
+    :http-server    (fnk [http-port reitit-router]
+                         (let [svr (http/start-server
+                                    reitit-router
+                                    {:port http-port})]
+                           (closeable
+                            svr
+                            #(.close svr))))}))
 
 (defn -main [& _]
   (touch system))
