@@ -42,11 +42,11 @@
   "Path to be pulled with the pull-pattern.
    The pull-pattern `:with` option will provide the params to execute the function
    before pulling it."
-  [executor db]
-  {:posts {:all          (fn [] (executor (get-all-posts db)))
-           :post         (fn [post-id] (executor (get-post db post-id)))
-           :new-post     (fn [post] (executor (add-post post)))
-           :removed-post (fn [post-id] (executor (delete-post post-id)))}
-   :pages {:all          (fn [] (executor (get-all-pages db)))
-           :page         (fn [page-name] (executor (get-page db page-name)))
-           :new-page     (fn [page] (executor (add-page page)))}})
+  [db]
+  {:posts {:all          (fn [] (get-all-posts db))
+           :post         (fn [post-id] (get-post db post-id))
+           :new-post     (fn [post] (add-post post))
+           :removed-post (fn [post-id] (delete-post post-id))}
+   :pages {:all          (fn [] (get-all-pages db))
+           :page         (fn [page-name] (get-page db page-name))
+           :new-page     (fn [page] (add-page page))}})

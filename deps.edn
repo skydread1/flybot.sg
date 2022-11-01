@@ -15,7 +15,7 @@
            metosin/reitit                        {:mvn/version "0.5.18"}
            metosin/muuntaja                      {:mvn/version "0.6.8"}
            flybot-sg/lasagna-pull                {:git/url "https://github.com/flybot-sg/lasagna-pull.git"
-                                                  :sha     "f94bb4b8f8ee1450f7b50d8c9473489a46d5868e"}
+                                                  :sha     "ed0258e6293e972ba2c886939cef59c4ebbd7f89"}
 
            ;; back-end
            aleph/aleph                           {:mvn/version "0.5.0"}
