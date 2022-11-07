@@ -1,7 +1,11 @@
 (ns clj.flybot.middleware
-  (:require
-   [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-   [reitit.ring.middleware.exception :as exception]))
+  (:require [reitit.ring.middleware.exception :as exception]
+            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+            [ring.middleware.session :refer [wrap-session]]
+            [ring.middleware.session.memory :refer [memory-store]]))
+
+(def session-store
+  (memory-store))
 
 (defn handler [status message exception request]
   {:status status
@@ -17,9 +21,18 @@
     ;; override the default handler
     ::exception/default (partial handler 500 "default")}))
 
-(defn wrap-base
+(def ring-config
+  (-> site-defaults
+      (assoc-in [:security :anti-forgery] false)
+      (assoc-in [:session :store] session-store)
+      (assoc-in [:session :cookie-attrs :same-site] :lax)))
+
+(defn wrap-defaults-custom
   [handler]
   (-> handler
       (wrap-defaults
-       (-> site-defaults
-           (assoc-in [:security :anti-forgery] false)))))
+       ring-config)))
+
+(defn wrap-session-custom
+  [handler]
+  (wrap-session handler (:session ring-config)))

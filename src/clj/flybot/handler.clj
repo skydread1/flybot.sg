@@ -1,7 +1,8 @@
 (ns clj.flybot.handler
   (:require [clj.flybot.middleware :as mw]
             [clj.flybot.operation :as op]
-            [cljc.flybot.validation :as v]
+            [clj.flybot.auth.handler :as auth] 
+            [cljc.flybot.validation :as v] 
             [datomic.api :as d]
             [muuntaja.core :as m]
             [reitit.ring :as reitit]
@@ -89,12 +90,14 @@
   [ring-handler]
   (reitit/ring-handler
    (reitit/router
-    [["/all" {:post ring-handler}]
-     ["/*"   (reitit/create-resource-handler {:root "public"})]]
+    (into auth/auth-routes
+          [["/all" {:post ring-handler}]
+           ["/*"   (reitit/create-resource-handler {:root "public"})]])
     {:conflicts            (constantly nil)
      :data                 {:muuntaja m/instance
-                            :middleware [muuntaja/format-middleware
-                                         mw/wrap-base
+                            :middleware [mw/wrap-session-custom
+                                         muuntaja/format-middleware
+                                         mw/wrap-defaults-custom
                                          mw/exception-middleware]}})
    (reitit/create-default-handler
     {:not-found          (constantly {:status 404 :body "Page not found"})

@@ -18,15 +18,10 @@
                                                   :sha     "ed0258e6293e972ba2c886939cef59c4ebbd7f89"}
 
            ;; back-end
-           aleph/aleph                                        {:mvn/version "0.5.0"}
-           robertluo/fun-map                                  {:mvn/version "0.4.5"}
-           com.datomic/datomic-free                           {:mvn/version "0.9.5697"}
-           com.google.api-client/google-api-client            {:mvn/version "2.0.0"}
-           com.google.oauth-client/google-oauth-client-jetty  {:mvn/version "1.22.0"}
-           com.google.gdata/core                              {:mvn/version "1.47.1"
-                                                               :exclusions [org.apache.httpcomponents/httpclient
-                                                                            org.mortbay.jetty/jetty
-                                                                            com.google.code.findbugs/jsr305]}
+           aleph/aleph                           {:mvn/version "0.5.0"}
+           robertluo/fun-map                     {:mvn/version "0.4.5"}
+           com.datomic/datomic-free              {:mvn/version "0.9.5697"}
+           buddy/buddy-hashers                   {:mvn/version "1.8.158"}
 
            ;; work around to resolve the dep conflict introduced by datomic
            com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
