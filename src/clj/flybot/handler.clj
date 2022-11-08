@@ -1,8 +1,8 @@
 (ns clj.flybot.handler
   (:require [clj.flybot.middleware :as mw]
             [clj.flybot.operation :as op]
-            [clj.flybot.auth.handler :as auth] 
-            [cljc.flybot.validation :as v] 
+            [clj.flybot.auth :as auth]
+            [cljc.flybot.validation :as v]
             [datomic.api :as d]
             [muuntaja.core :as m]
             [reitit.ring :as reitit]
@@ -48,7 +48,9 @@
      pattern
      (fn [q] (pull/post-process-query
               q
-              (fn [[k {:keys [response effects] :as v}]]
+              (fn [[k {:keys [response effects error] :as v}]]
+                (when error
+                 (throw (ex-info "executor-error" error)))
                 (when effects
                   (conj! all-effects effects))
                 (if response
@@ -60,8 +62,8 @@
   "A saturn handler takes a ring request enhanced with additional keys form the injectors.
    The saturn handler is purely functional.
    The description of the side effects to be performed are returned and they will be executed later on in the executors."
-  [{:keys [body-params db]}]
-  (let [pattern           body-params
+  [{:keys [params body-params db]}]
+  (let [pattern           (if (seq params) params body-params)
         pattern-validator (sch/pattern-validator v/api-schema)
         pattern           (pattern-validator pattern)
         data              (op/pullable-data db)]
@@ -77,13 +79,27 @@
    Returns a ring-handler."
   [injectors saturn-handler executors]
   (fn [req]
-    (let [sat-req  (merge req ((first injectors)))
+    (let [sat-req (merge req ((first injectors)))
           {:keys [response effects-desc]} (saturn-handler sat-req)
           resp (if (seq effects-desc)
                  ((first executors) response effects-desc)
                  response)]
       {:body    resp
        :headers {"content-type" "application/edn"}})))
+
+(defn auth-middleware
+  [ring-handler]
+  (fn [request]
+    (let [user-info               (or (-> request :session :user-info)
+                                      (auth/google-api-fetch-user (-> request :session :oauth2/access-tokens)))
+          {:keys [id email name]} user-info
+          pattern                {:users
+                                  {(list :logged-in-user :with [id email name])
+                                   {:user/id '?
+                                    :user/email '?
+                                    :user/name '?
+                                    :user/role '?}}}]
+      (ring-handler (assoc request :params pattern)))))
 
 (defn app-routes
   "API routes, returns a ring-handler."
@@ -92,6 +108,7 @@
    (reitit/router
     (into auth/auth-routes
           [["/all" {:post ring-handler}]
+           ["/oauth/google/success" {:get ring-handler :middleware [auth-middleware]}]
            ["/*"   (reitit/create-resource-handler {:root "public"})]])
     {:conflicts            (constantly nil)
      :data                 {:muuntaja m/instance

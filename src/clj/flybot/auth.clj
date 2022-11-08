@@ -1,5 +1,5 @@
-(ns clj.flybot.auth.handler
-  (:require [flybot.auth.oauth2-reitit :as reitit]
+(ns clj.flybot.auth
+  (:require [clj.flybot.auth.oauth2-reitit :as reitit]
             [aleph.http :as http]
             [cheshire.core :as cheshire]
             [clj-commons.byte-streams :as bs]
@@ -25,36 +25,30 @@
                            x))]
     (walk/postwalk transform coll)))
 
-(defn fetch-user-data
+(defn google-api-fetch-user
   [access-tokens]
-  (let [google-access-token (-> access-tokens :google :token)
+  (let [google-api-url      "https://www.googleapis.com/oauth2/v2/userinfo"
+        google-access-token (-> access-tokens :google :token)
         response            (try
                               @(http/request
                                 {:content-type  :json
                                  :accept        :json
-                                 :url           "https://www.googleapis.com/oauth2/v2/userinfo"
+                                 :url           google-api-url
                                  :method        :get
                                  :oauth-token   google-access-token})
                               (catch Exception e
                                 (ex-data e)))]
-    (when (= (:status response) 200)
+    (if (= (:status response) 200)
       (-> response
           :body
           bs/to-string
           (cheshire/parse-string true)
-          to-snake-case))))
+          to-snake-case)
+       {:error {:type           :api.google/fetch-user
+                :google-api-url google-api-url}})))
 
-(defn profile-handler [request]
-  (let [user-info    (or (-> request :session :user-info)
-                         (fetch-user-data (-> request :session :oauth2/access-tokens)))
-        response     {:headers {"Content-Type" "text/html"}
-                      :body    (-> user-info str)}
-        session (-> (:session request)
-                    (assoc :user-info user-info))]
-    (-> response
-        (assoc :session session))))
-
-(defn logout-handler [landing-uri]
+(defn logout-handler
+  [landing-uri]
   (fn [request]
     (let [session (-> (:session request)
                       (dissoc :oauth2/access-tokens :user-info))]
@@ -63,5 +57,4 @@
 
 (def auth-routes
   (into (reitit/oauth2-routes google-oauth-cfg)
-        [["/user/profile" {:get profile-handler}]
-         ["/oauth/google/logout" {:get (logout-handler "/")}]]))
+        [["/oauth/google/logout"  {:get (logout-handler "/")}]]))

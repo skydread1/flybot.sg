@@ -19,6 +19,14 @@
   [db]
   {:response (db/get-all-pages db)})
 
+(defn get-user
+  [db user-id]
+  {:response (db/get-user db user-id)})
+
+(defn get-all-users
+  [db]
+  {:response (db/get-all-users db)})
+
 ;;---------- Ops with effects ----------
 
 (defn add-post
@@ -36,6 +44,24 @@
   {:response page
    :effects  {:db {:payload [page]}}})
 
+(defn login-user
+  [db id email name]
+  (if-let [user (db/get-user db id)]
+    ;; already in db so just return user
+    {:response user}
+    ;; first login so add to db
+    (let [user #:user{:id id :email email :name name :role :editor}]
+      {:response user
+       :effects  {:db {:payload [user]}}})))
+
+(defn delete-user
+  [db id]
+  (if-let [user (db/get-user db id)]
+    {:response user
+     :effects  {:db {:payload [[:db/retractEntity [:user/id id]]]}}}
+    {:error {:type    :user/delete
+             :user-id id}}))
+
 ;;---------- Pullable data ----------
 
 (defn pullable-data
@@ -49,4 +75,8 @@
            :removed-post (fn [post-id] (delete-post post-id))}
    :pages {:all          (fn [] (get-all-pages db))
            :page         (fn [page-name] (get-page db page-name))
-           :new-page     (fn [page] (add-page page))}})
+           :new-page     (fn [page] (add-page page))}
+   :users {:all            (fn [] (get-all-users db))
+           :user           (fn [id] (get-user db id))
+           :logged-in-user (fn [id email name] (login-user db id email name))
+           :removed-user   (fn [id] (delete-user db id))}})

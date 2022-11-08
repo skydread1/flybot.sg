@@ -66,6 +66,21 @@
     :db/isComponent true
     :db/cardinality :db.cardinality/one}])
 
+(def user-schema
+  [{:db/ident :user/id
+    :db/valueType :db.type/string
+    :db/unique :db.unique/identity
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :user/email
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :user/name
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :user/role
+    :db/valueType :db.type/keyword
+    :db/cardinality :db.cardinality/one}])
+
 ;; ---------- Initial Data ----------
 
 (defn slurp-md
@@ -234,6 +249,33 @@
        (map first)
        vec))
 
+;;---------- User ----------
+
+(def user-pull-pattern
+  [:user/id :user/email :user/name :user/role])
+
+(defn get-user
+  [db id]
+  (->> (d/q
+        '[:find (pull ?user pull-pattern)
+          :in $ ?id pull-pattern
+          :where [?user :user/id ?id]]
+        db
+        id
+        user-pull-pattern)
+       ffirst))
+
+(defn get-all-users
+  [db]
+  (->> (d/q
+        '[:find (pull ?user pull-pattern)
+          :in $ pull-pattern
+          :where [?user :user/id]]
+        db
+        user-pull-pattern)
+       (map first)
+       vec))
+
 ;;---------- Initialization ----------
 
 (defn add-schemas
@@ -241,7 +283,8 @@
   @(d/transact conn (concat image-schema
                             sort-config-schema
                             post-schema
-                            page-schema)))
+                            page-schema
+                            user-schema)))
 
 (defn add-initial-data
   [conn]

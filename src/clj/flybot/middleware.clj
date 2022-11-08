@@ -14,12 +14,14 @@
           :data (ex-data exception)
           :uri (:uri request)}})
 
+;;TODO: error not thrown if comes from redirect?
 (def exception-middleware
+  "When a ex-data :type is matched, create a handler with custom status and error message."
   (exception/create-exception-middleware
-   {;; ex-data with :type :pattern
-    :pattern (partial handler 407 "invalid pattern provided")
-    ;; override the default handler
-    ::exception/default (partial handler 500 "default")}))
+   {:pattern               (partial handler 407 "invalid pattern provided")
+    :user/delete           (partial handler 409 "User does not exist")
+    :api.google/fetch-user (partial handler 412 "Could not fecth google user info")
+    ::exception/default    (partial handler 500 "default")}))
 
 (def ring-config
   (-> site-defaults

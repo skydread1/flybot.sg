@@ -3,6 +3,7 @@
             [clj-commons.byte-streams :as bs]
             [clj.flybot.db :as db]
             [clj.flybot.handler :as sut]
+            [clj.flybot.auth :as auth]
             [cljc.flybot.sample-data :as s]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datomic.api :as d]
@@ -11,7 +12,9 @@
 
 (defn sample-data->db
   [conn]
-  @(d/transact conn [s/post-1 s/post-2 s/home-page s/apply-page]))
+  @(d/transact conn [s/post-1 s/post-2
+                     s/home-page s/apply-page
+                     s/bob-user s/alice-user]))
 
 ;;---------- System ----------
 
@@ -110,9 +113,9 @@
                  :pages
                  :page))))))
 
-(defn post-request
+(defn http-request
   ([uri body]
-   (post-request :post uri body))
+   (http-request :post uri body))
   ([method uri body]
    (let [resp (try
                 @(http/request
@@ -129,25 +132,31 @@
 (deftest app-routes
   ;;---------- Errors
   (testing "Invalid route so returns error 404."
-    (let [resp (post-request "/wrong-route" ::PATTERN)]
+    (let [resp (http-request "/wrong-route" ::PATTERN)]
       (is (= 404 (-> resp :status)))))
   (testing "Invalid http method so returns error 405."
-    (let [resp (post-request :get "/all" ::PATTERN)]
+    (let [resp (http-request :get "/all" ::PATTERN)]
       (is (= 405 (-> resp :status)))))
   (testing "Invalid pattern so returns error 407."
-    (let [resp (post-request "/all" {:invalid-key '?})]
+    (let [resp (http-request "/all" {:invalid-key '?})]
       (is (= 407 (-> resp :status)))))
+  (testing "Cannot delete user who does not exist so returns 409."
+    (let [resp (http-request "/all"
+                             {:users
+                              {(list :removed-user :with [s/joshua-id])
+                               {:user/id '?}}})]
+      (is (= 409 (-> resp :status))))
 
   ;;---------- Pages
   (testing "Execute a request for all pages."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:pages
                               {(list :all :with [])
                                [{:page/name '?}]}})]
       (is (= [{:page/name :home} {:page/name :apply}]
-             (->> resp :body :pages :all)))))
+             (-> resp :body :pages :all)))))
   (testing "Execute a request for a page."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:pages
                               {(list :page :with [:home])
                                {:page/name '?
@@ -156,23 +165,23 @@
       (is (= s/home-page
              (-> resp :body :pages :page)))))
   (testing "Execute a request for a new page."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:pages
                               {(list :new-page :with [{:page/name :about}])
                                {:page/name '?}}})]
       (is (= {:page/name :about}
              (-> resp :body :pages :new-page)))))
-  
+
   ;;---------- Posts
   (testing "Execute a request for all posts."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:posts
                               {(list :all :with [])
                                [{:post/id '?}]}})]
       (is (= [{:post/id s/post-1-id} {:post/id s/post-2-id}]
              (-> resp :body :posts :all)))))
   (testing "Execute a request for a post."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:posts
                               {(list :post :with [s/post-1-id])
                                {:post/id '?
@@ -186,7 +195,7 @@
       (is (= s/post-1
              (-> resp :body :posts :post)))))
   (testing "Execute a request for a new post."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:posts
                               {(list :new-post :with [s/post-3])
                                {:post/id '?
@@ -196,10 +205,49 @@
       (is (= s/post-3
              (-> resp :body :posts :new-post)))))
   (testing "Execute a request for a delete post."
-    (let [resp (post-request "/all"
+    (let [resp (http-request "/all"
                              {:posts
                               {(list :removed-post :with [s/post-3-id])
                                {:post/id '?}}})]
       (is (= {:post/id s/post-3-id}
-             (-> resp :body :posts :removed-post))))))
+             (-> resp :body :posts :removed-post)))))
 
+  ;;---------- Users
+  (testing "Execute a request for all users."
+    (let [resp (http-request "/all"
+                             {:users
+                              {(list :all :with [])
+                               [{:user/id '?}]}})]
+      (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
+             (-> resp :body :users :all)))))
+  (testing "Execute a request for a user."
+    (let [resp (http-request "/all"
+                             {:users
+                              {(list :user :with [s/alice-id])
+                               {:user/id '?
+                                :user/email '?
+                                :user/name '?
+                                :user/role '?}}})]
+      (is (= s/alice-user
+             (-> resp :body :users :user)))))
+  (testing "Execute a request for a new user."
+    (with-redefs [auth/google-api-fetch-user (constantly {:id    s/joshua-id
+                                                          :email "joshua@mail.com"
+                                                          :name  "Joshua"})]
+      (let [resp (http-request :get
+                               "/oauth/google/success"
+                               {:users
+                                {(list :logged-in-user :with [s/joshua-user])
+                                 {:user/id '?
+                                  :user/email '?
+                                  :user/name '?
+                                  :user/role '?}}})]
+        (is (= s/joshua-user
+               (-> resp :body :users :logged-in-user))))))
+  (testing "Execute a request for a delete user."
+    (let [resp (http-request "/all"
+                             {:users
+                              {(list :removed-user :with [s/joshua-id])
+                               {:user/id '?}}})]
+      (is (= {:user/id s/joshua-id}
+             (-> resp :body :users :removed-user)))))))

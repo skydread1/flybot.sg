@@ -1,4 +1,4 @@
-(ns flybot.auth.oauth2-reitit
+(ns clj.flybot.auth.oauth2-reitit
   "oauth2 adaptation of weavejester/ring-oauth2 inspired by the fork green-coder/reitit-oauth2
    Instead of having oauth2 as a ring middleware (does not work with reitit), we have it as reitit routes."
   (:require [aleph.http :as http]
