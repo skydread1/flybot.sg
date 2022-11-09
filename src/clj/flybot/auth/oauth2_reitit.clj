@@ -5,7 +5,8 @@
             [clojure.string :as str]
             [crypto.random :as random]
             [ring.util.codec :as codec]
-            [ring.util.response :as response])
+            [ring.util.response :as response]
+            [clj-time.core :as time])
   (:import [java.net URI]))
 
 (defn- scopes [profile]
@@ -46,7 +47,9 @@
   (-> {:token access_token
        :extra-data (dissoc body :access_token :expires_in :refresh_token :id_token)}
       (cond-> expires_in (assoc :expires (-> expires_in
-                                             coerce-to-int))
+                                             coerce-to-int
+                                             time/seconds
+                                             time/from-now))
               refresh_token (assoc :refresh-token refresh_token)
               id_token (assoc :id-token id_token))))
 

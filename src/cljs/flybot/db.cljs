@@ -108,7 +108,7 @@
                  :user/mode        :reader
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
-                 :uri             "/all"
+                 :uri             "/pages/all"
                  :params {:pages
                           {(list :all :with [])
                            [{:page/name '?
@@ -246,7 +246,7 @@
      (if (:errors page)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg page)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/all"
+                     :uri             "/pages/new-page"
                      :params          {:pages
                                        {(list :new-page :with [page])
                                         {:page/name '?}}}
@@ -315,7 +315,7 @@
  :evt.post/remove-post
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
-                 :uri             "/all"
+                 :uri             "/posts/removed-post"
                  :params          {:posts
                                    {(list :removed-post :with [post-id])
                                     {:post/id '?
@@ -347,7 +347,7 @@
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/all"
+                     :uri             "/posts/new-post"
                      :params          {:posts
                                        {(list :new-post :with [post])
                                         {:post/id '?
@@ -376,7 +376,7 @@
                           :post/page (-> db :app/current-view :data :page-name)
                           :post/mode :edit})}
      {:http-xhrio {:method          :post
-                   :uri             "/all"
+                   :uri             "/posts/post"
                    :params          {:posts
                                      {(list :post :with [post-id])
                                       {:post/id '?

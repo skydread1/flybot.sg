@@ -98,12 +98,16 @@
                                    {:user/id '?
                                     :user/email '?
                                     :user/name '?
-                                    :user/role '?}}}]
-      (ring-handler (assoc request :params pattern)))))
+                                    :user/role '?}}}
+          resp (ring-handler (assoc request :params pattern))]
+      ;; TODO: the session could be updated in the executor instead?
+      (assoc-in resp
+                [:session :user-info]
+                (-> resp :body :users :logged-in-user)))))
 
 (defn has-permission?
   [session permission]
-  (= permission (:role session)))
+  (= permission (-> session :user-info :user/role)))
 
 (defn authorization-middleware
   [ring-handler permission]
