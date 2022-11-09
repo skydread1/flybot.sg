@@ -76,13 +76,19 @@
                                                      (conj response ::EFFECTS-RESPONSE2))}}]))))))
 
 (deftest mk-query
-  (testing "The query gathers the effects description as expected"
-    (let [data    {:a (constantly {:response ::RESP-A :effects ::EFFECTS-A})
-                   :b (constantly {:response ::RESP-B :effects ::EFFECTS-B})}
+  (testing "The query gathers effects description and session as expected"
+    (let [data    {:a (constantly {:response ::RESP-A
+                                   :effects ::EFFECTS-A
+                                   :session {:A ::SESSION-A}})
+                   :b (constantly {:response ::RESP-B
+                                   :effects ::EFFECTS-B
+                                   :session {:B ::SESSION-B}})}
           pattern {(list :a :with [::OK]) '?
                    (list :b :with [::OK2]) '?}
           q       (sut/mk-query pattern)]
-      (is (= [{:a ::RESP-A :b ::RESP-B} {:all-effects [::EFFECTS-A ::EFFECTS-B]}]
+      (is (= [{:a ::RESP-A :b ::RESP-B} {:pulled/effects [::EFFECTS-A ::EFFECTS-B]
+                                         :pulled/session {:A ::SESSION-A
+                                                          :B ::SESSION-B}}]
              (q data))))))
 
 (deftest saturn-handler
@@ -95,7 +101,8 @@
               :effects-desc [{:db
                               {:payload
                                [[:db/retractEntity
-                                 [:post/id ::ID]]]}}]}
+                                 [:post/id ::ID]]]}}]
+              :session      {}}
              (saturn-handler {:body-params {:posts
                                             {(list :removed-post :with [::ID])
                                              {:post/id '?}}}

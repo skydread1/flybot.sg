@@ -52,7 +52,8 @@
     ;; first login so add to db
     (let [user #:user{:id id :email email :name name :role :editor}]
       {:response user
-       :effects  {:db {:payload [user]}}})))
+       :effects  {:db {:payload [user]}}
+       :session  {:user-info user}})))
 
 (defn delete-user
   [db id]

@@ -43,35 +43,44 @@
    - query-wrapper: gather all the effects description in a coll
    - finalize: assoc all effects descriptions in the second value of pattern."
   [pattern]
-  (let [all-effects (transient [])]
+  (let [effects-acc (transient [])
+        session-map (transient {})]
     (pull/query
      pattern
      (fn [q] (pull/post-process-query
               q
-              (fn [[k {:keys [response effects error] :as v}]]
+              (fn [[k {:keys [response effects session error] :as v}]]
                 (when error
                  (throw (ex-info "executor-error" error)))
+                (when session
+                  (reduce
+                   (fn [res [k v]] (assoc! res k v))
+                   session-map
+                   session))
                 (when effects
-                  (conj! all-effects effects))
+                  (conj! effects-acc effects))
                 (if response
                   [k response]
                   [k v]))))
-     #(assoc % :all-effects (persistent! all-effects)))))
+     #(assoc %
+             :pulled/effects (persistent! effects-acc)
+             :pulled/session (persistent! session-map)))))
 
 (defn saturn-handler
   "A saturn handler takes a ring request enhanced with additional keys form the injectors.
    The saturn handler is purely functional.
    The description of the side effects to be performed are returned and they will be executed later on in the executors."
-  [{:keys [params body-params db]}]
+  [{:keys [params body-params session db]}]
   (let [pattern           (if (seq params) params body-params)
         pattern-validator (sch/pattern-validator v/api-schema)
         pattern           (pattern-validator pattern)
         data              (op/pullable-data db)]
     (if (:error pattern)
       (throw (ex-info "invalid pattern" (merge {:type :pattern} pattern)))
-      (let [[resp effs] ((mk-query pattern) data)]
+      (let [[resp complements] ((mk-query pattern) data)]
         {:response     resp
-         :effects-desc (:all-effects effs)}))))
+         :effects-desc (:pulled/effects complements)
+         :session      (merge session (:pulled/session complements))}))))
 
 (defn mk-ring-handler
   "Takes a seq on `injectors`, a `saturn-handler` and a seq `executors`.
@@ -80,12 +89,13 @@
   [injectors saturn-handler executors]
   (fn [req]
     (let [sat-req (merge req ((first injectors)))
-          {:keys [response effects-desc]} (saturn-handler sat-req)
+          {:keys [response effects-desc session]} (saturn-handler sat-req)
           resp (if (seq effects-desc)
                  ((first executors) response effects-desc)
                  response)]
       {:body    resp
-       :headers {"content-type" "application/edn"}})))
+       :headers {"content-type" "application/edn"}
+       :session session})))
 
 (defn authentification-middleware
   [ring-handler]
@@ -98,12 +108,8 @@
                                    {:user/id '?
                                     :user/email '?
                                     :user/name '?
-                                    :user/role '?}}}
-          resp (ring-handler (assoc request :params pattern))]
-      ;; TODO: the session could be updated in the executor instead?
-      (assoc-in resp
-                [:session :user-info]
-                (-> resp :body :users :logged-in-user)))))
+                                    :user/role '?}}}]
+      (ring-handler (assoc request :params pattern)))))
 
 (defn has-permission?
   [session permission]
