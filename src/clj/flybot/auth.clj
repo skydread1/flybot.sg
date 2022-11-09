@@ -3,12 +3,9 @@
             [aleph.http :as http]
             [cheshire.core :as cheshire]
             [clj-commons.byte-streams :as bs]
-            [clojure.edn :as edn]
             [clojure.string :as str]
             [clojure.walk :as walk]
             [ring.util.response :as response]))
-
-(def google-oauth-cfg (edn/read-string (slurp "config/google-creds.edn")))
 
 (defn decode-key
   "Converts a train case string/keyword into a snake case keyword."
@@ -55,6 +52,7 @@
       (-> (response/redirect landing-uri)
           (assoc :session session)))))
 
-(def auth-routes
-  (into (reitit/oauth2-routes google-oauth-cfg)
+(defn auth-routes
+  [oauth2-config]
+  (into (reitit/oauth2-routes oauth2-config)
         [["/oauth/google/logout"  {:get (logout-handler "/")}]]))

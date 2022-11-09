@@ -115,10 +115,10 @@
 
 (defn app-routes
   "API routes, returns a ring-handler."
-  [ring-handler]
+  [ring-handler oauth2-config]
   (reitit/ring-handler
    (reitit/router
-    (into auth/auth-routes
+    (into (auth/auth-routes oauth2-config)
           [["/posts"
             ["/all"          {:post ring-handler}]
             ["/post"         {:post ring-handler}]

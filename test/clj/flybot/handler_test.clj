@@ -29,6 +29,7 @@
                            (closeable
                             conn
                             #(d/delete-database db-uri))))
+    :oauth2-config  (edn/read-string (slurp "config/google-creds.edn"))
     :injectors      (fnk [db-conn]
                          [(fn [] {:db (d/db db-conn)})])
     :executors      (fnk [db-conn]
@@ -36,8 +37,8 @@
     :saturn-handler sut/saturn-handler
     :ring-handler   (fnk [injectors saturn-handler executors]
                          (sut/mk-ring-handler injectors saturn-handler executors))
-    :reitit-router  (fnk [ring-handler]
-                         (sut/app-routes ring-handler))
+    :reitit-router  (fnk [ring-handler oauth2-config]
+                         (sut/app-routes ring-handler oauth2-config))
     :http-port      8100
     :http-server    (fnk [http-port reitit-router]
                          (let [svr (http/start-server
@@ -135,13 +136,13 @@
     (let [resp (http-request "/wrong-route" ::PATTERN)]
       (is (= 404 (-> resp :status)))))
   (testing "Invalid http method so returns error 405."
-    (let [resp (http-request :get "/all" ::PATTERN)]
+    (let [resp (http-request :get "/pages/page" ::PATTERN)]
       (is (= 405 (-> resp :status)))))
   (testing "Invalid pattern so returns error 407."
-    (let [resp (http-request "/all" {:invalid-key '?})]
+    (let [resp (http-request "/pages/page" {:invalid-key '?})]
       (is (= 407 (-> resp :status)))))
   (testing "Cannot delete user who does not exist so returns 409."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/pages/page"
                              {:users
                               {(list :removed-user :with [s/joshua-id])
                                {:user/id '?}}})]
