@@ -18,10 +18,11 @@
 (def exception-middleware
   "When a ex-data :type is matched, create a handler with custom status and error message."
   (exception/create-exception-middleware
-   {:pattern               (partial handler 407 "invalid pattern provided")
+   {:pattern               (partial handler 407 "Invalid pattern provided")
     :user/delete           (partial handler 409 "User does not exist")
     :api.google/fetch-user (partial handler 412 "Could not fecth google user info")
-    ::exception/default    (partial handler 500 "default")}))
+    :authorization         (partial handler 413 "User does not have the required permission.")
+    ::exception/default    (partial handler 500 "Default")}))
 
 (def ring-config
   (-> site-defaults

@@ -145,18 +145,24 @@
                              {:users
                               {(list :removed-user :with [s/joshua-id])
                                {:user/id '?}}})]
-      (is (= 409 (-> resp :status))))
-
+      (is (= 409 (-> resp :status)))))
+  (testing "User does not have permission so returns 413."
+    (let [resp (http-request "/posts/new-post"
+                             {:posts
+                              {(list :new-post :with [::POST])
+                               {:post/id '?}}})]
+      (is (= 413 (-> resp :status)))))
+  
   ;;---------- Pages
   (testing "Execute a request for all pages."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/pages/all"
                              {:pages
                               {(list :all :with [])
                                [{:page/name '?}]}})]
       (is (= [{:page/name :home} {:page/name :apply}]
              (-> resp :body :pages :all)))))
   (testing "Execute a request for a page."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/pages/page"
                              {:pages
                               {(list :page :with [:home])
                                {:page/name '?
@@ -165,23 +171,24 @@
       (is (= s/home-page
              (-> resp :body :pages :page)))))
   (testing "Execute a request for a new page."
-    (let [resp (http-request "/all"
-                             {:pages
-                              {(list :new-page :with [{:page/name :about}])
-                               {:page/name '?}}})]
-      (is (= {:page/name :about}
-             (-> resp :body :pages :new-page)))))
+    (with-redefs [sut/has-permission? (constantly true)]
+      (let [resp (http-request "/pages/new-page"
+                               {:pages
+                                {(list :new-page :with [{:page/name :about}])
+                                 {:page/name '?}}})]
+        (is (= {:page/name :about}
+               (-> resp :body :pages :new-page))))))
 
   ;;---------- Posts
   (testing "Execute a request for all posts."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/posts/all"
                              {:posts
                               {(list :all :with [])
                                [{:post/id '?}]}})]
       (is (= [{:post/id s/post-1-id} {:post/id s/post-2-id}]
              (-> resp :body :posts :all)))))
   (testing "Execute a request for a post."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/posts/post"
                              {:posts
                               {(list :post :with [s/post-1-id])
                                {:post/id '?
@@ -195,33 +202,35 @@
       (is (= s/post-1
              (-> resp :body :posts :post)))))
   (testing "Execute a request for a new post."
-    (let [resp (http-request "/all"
-                             {:posts
-                              {(list :new-post :with [s/post-3])
-                               {:post/id '?
-                                :post/page '?
-                                :post/creation-date '?
-                                :post/md-content '?}}})]
-      (is (= s/post-3
-             (-> resp :body :posts :new-post)))))
+    (with-redefs [sut/has-permission? (constantly true)]
+      (let [resp (http-request "/posts/new-post"
+                               {:posts
+                                {(list :new-post :with [s/post-3])
+                                 {:post/id '?
+                                  :post/page '?
+                                  :post/creation-date '?
+                                  :post/md-content '?}}})]
+        (is (= s/post-3
+               (-> resp :body :posts :new-post))))))
   (testing "Execute a request for a delete post."
-    (let [resp (http-request "/all"
-                             {:posts
-                              {(list :removed-post :with [s/post-3-id])
-                               {:post/id '?}}})]
-      (is (= {:post/id s/post-3-id}
-             (-> resp :body :posts :removed-post)))))
+    (with-redefs [sut/has-permission? (constantly true)]
+      (let [resp (http-request "/posts/removed-post"
+                               {:posts
+                                {(list :removed-post :with [s/post-3-id])
+                                 {:post/id '?}}})]
+        (is (= {:post/id s/post-3-id}
+               (-> resp :body :posts :removed-post))))))
 
   ;;---------- Users
   (testing "Execute a request for all users."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/users/all"
                              {:users
                               {(list :all :with [])
                                [{:user/id '?}]}})]
       (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
              (-> resp :body :users :all)))))
   (testing "Execute a request for a user."
-    (let [resp (http-request "/all"
+    (let [resp (http-request "/users/user"
                              {:users
                               {(list :user :with [s/alice-id])
                                {:user/id '?
@@ -245,9 +254,10 @@
         (is (= s/joshua-user
                (-> resp :body :users :logged-in-user))))))
   (testing "Execute a request for a delete user."
-    (let [resp (http-request "/all"
-                             {:users
-                              {(list :removed-user :with [s/joshua-id])
-                               {:user/id '?}}})]
-      (is (= {:user/id s/joshua-id}
-             (-> resp :body :users :removed-user)))))))
+    (with-redefs [sut/has-permission? (constantly true)]
+      (let [resp (http-request "/users/removed-user"
+                               {:users
+                                {(list :removed-user :with [s/joshua-id])
+                                 {:user/id '?}}})]
+        (is (= {:user/id s/joshua-id}
+               (-> resp :body :users :removed-user)))))))

@@ -87,7 +87,7 @@
       {:body    resp
        :headers {"content-type" "application/edn"}})))
 
-(defn auth-middleware
+(defn authentification-middleware
   [ring-handler]
   (fn [request]
     (let [user-info               (or (-> request :session :user-info)
@@ -101,21 +101,51 @@
                                     :user/role '?}}}]
       (ring-handler (assoc request :params pattern)))))
 
+(defn has-permission?
+  [session permission]
+  (= permission (:role session)))
+
+(defn authorization-middleware
+  [ring-handler permission]
+  (fn [request]
+    (if (has-permission? (:session request) permission)
+      (ring-handler request)
+      (throw (ex-info "Authorization error" {:type               :authorization
+                                             :missing-permission permission})))))
+
 (defn app-routes
   "API routes, returns a ring-handler."
   [ring-handler]
   (reitit/ring-handler
    (reitit/router
     (into auth/auth-routes
-          [["/all" {:post ring-handler}]
-           ["/oauth/google/success" {:get ring-handler :middleware [auth-middleware]}]
+          [["/posts"
+            ["/all"          {:post ring-handler}]
+            ["/post"         {:post ring-handler}]
+            ["/new-post"     {:post       ring-handler
+                              :middleware [[authorization-middleware :editor]]}]
+            ["/removed-post" {:post       ring-handler
+                              :middleware [[authorization-middleware :admin]]}]]
+           ["/pages"
+            ["/all"          {:post ring-handler}]
+            ["/page"         {:post ring-handler}]
+            ["/new-page"     {:post       ring-handler
+                              :middleware [[authorization-middleware :editor]]}]]
+           ["/users"
+            ["/all"            {:post ring-handler}]
+            ["/user"           {:post ring-handler}]
+            ["/logged-in-user" {:post ring-handler}]
+            ["/removed-user"   {:post       ring-handler
+                                :middleware [[authorization-middleware :admin]]}]]
+           ["/oauth/google/success" {:get        ring-handler
+                                     :middleware [authentification-middleware]}]
            ["/*"   (reitit/create-resource-handler {:root "public"})]])
-    {:conflicts            (constantly nil)
-     :data                 {:muuntaja m/instance
-                            :middleware [mw/wrap-session-custom
-                                         muuntaja/format-middleware
-                                         mw/wrap-defaults-custom
-                                         mw/exception-middleware]}})
+    {:conflicts (constantly nil)
+     :data      {:muuntaja   m/instance
+                 :middleware [mw/wrap-session-custom
+                              muuntaja/format-middleware
+                              mw/wrap-defaults-custom
+                              mw/exception-middleware]}})
    (reitit/create-default-handler
     {:not-found          (constantly {:status 404 :body "Page not found"})
      :method-not-allowed (constantly {:status 405 :body "Not allowed"})
