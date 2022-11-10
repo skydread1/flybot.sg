@@ -108,20 +108,27 @@
                                    {:user/id '?
                                     :user/email '?
                                     :user/name '?
-                                    :user/role '?}}}]
+                                    :user/roles [{:role/name '?
+                                                  :role/date-granted '?}]}}}]
       (ring-handler (assoc request :params pattern)))))
 
 (defn has-permission?
-  [session permission]
-  (= permission (-> session :user-info :user/role)))
+  [session-permissions required-permissions]
+  (some->> (map (fn [permission]
+                  (some #{permission} required-permissions))
+                session-permissions)
+           seq
+           (every? some?)))
 
 (defn authorization-middleware
-  [ring-handler permission]
+  [ring-handler required-permissions]
   (fn [request]
-    (if (has-permission? (:session request) permission)
-      (ring-handler request)
-      (throw (ex-info "Authorization error" {:type               :authorization
-                                             :missing-permission permission})))))
+    (let [session-permissions (->> request :session :user-info :user/roles (map :role/name))]
+      (if (has-permission? session-permissions required-permissions)
+        (ring-handler request)
+        (throw (ex-info "Authorization error" {:type            :authorization
+                                               :has-permission  session-permissions
+                                               :need-permission required-permissions}))))))
 
 (defn app-routes
   "API routes, returns a ring-handler."
@@ -133,20 +140,20 @@
             ["/all"          {:post ring-handler}]
             ["/post"         {:post ring-handler}]
             ["/new-post"     {:post       ring-handler
-                              :middleware [[authorization-middleware :editor]]}]
+                              :middleware [[authorization-middleware [:editor]]]}]
             ["/removed-post" {:post       ring-handler
-                              :middleware [[authorization-middleware :admin]]}]]
+                              :middleware [[authorization-middleware [:admin]]]}]]
            ["/pages"
             ["/all"          {:post ring-handler}]
             ["/page"         {:post ring-handler}]
             ["/new-page"     {:post       ring-handler
-                              :middleware [[authorization-middleware :editor]]}]]
+                              :middleware [[authorization-middleware [:editor]]]}]]
            ["/users"
             ["/all"            {:post ring-handler}]
             ["/user"           {:post ring-handler}]
             ["/logged-in-user" {:post ring-handler}]
             ["/removed-user"   {:post       ring-handler
-                                :middleware [[authorization-middleware :admin]]}]]
+                                :middleware [[authorization-middleware [:admin]]]}]]
            ["/oauth/google/success" {:get        ring-handler
                                      :middleware [authentification-middleware]}]
            ["/*"   (reitit/create-resource-handler {:root "public"})]])

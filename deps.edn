@@ -19,7 +19,7 @@
 
            ;; back-end
            aleph/aleph                           {:mvn/version "0.5.0"}
-           robertluo/fun-map                     {:mvn/version "0.5.108"}
+           robertluo/fun-map                     {:mvn/version "0.5.109"}
            com.datomic/datomic-free              {:mvn/version "0.9.5697"}
            skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
                                                   :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}

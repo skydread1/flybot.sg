@@ -1,7 +1,6 @@
 (ns clj.flybot.db
   (:require [clojure.java.io :as io]
-            [datomic.api :as d])
-  (:import [datomic Datom]))
+            [datomic.api :as d]))
 
 ;; ---------- Schemas ----------
 
@@ -40,10 +39,6 @@
     :db/valueType :db.type/ref
     :db/isComponent true
     :db/cardinality :db.cardinality/one}
-   {:db/ident :post/dk-images
-    :db/valueType :db.type/ref
-    :db/isComponent true
-    :db/cardinality :db.cardinality/many}
    {:db/ident :post/md-content
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}])
@@ -66,6 +61,15 @@
     :db/isComponent true
     :db/cardinality :db.cardinality/one}])
 
+(def role-schema
+  [{:db/ident :role/name
+    :db/valueType :db.type/keyword
+    :db/unique :db.unique/identity
+    :db/cardinality :db.cardinality/one}
+   {:db/ident :role/date-granted
+    :db/valueType :db.type/instant
+    :db/cardinality :db.cardinality/one}])
+
 (def user-schema
   [{:db/ident :user/id
     :db/valueType :db.type/string
@@ -77,9 +81,10 @@
    {:db/ident :user/name
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}
-   {:db/ident :user/role
-    :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one}])
+   {:db/ident :user/roles
+    :db/valueType :db.type/ref
+    :db/isComponent true
+    :db/cardinality :db.cardinality/many}])
 
 ;; ---------- Initial Data ----------
 
@@ -193,8 +198,7 @@
    :post/last-edit-date
    :post/show-dates?
    :post/md-content
-   {:post/image-beside [:image/src :image/src-dark :image/alt]}
-   {:post/dk-images [:image/src]}])
+   {:post/image-beside [:image/src :image/src-dark :image/alt]}])
 
 (defn get-post
   "Get the post with the given `id`."
@@ -252,7 +256,10 @@
 ;;---------- User ----------
 
 (def user-pull-pattern
-  [:user/id :user/email :user/name :user/role])
+  [:user/id
+   :user/email
+   :user/name
+   {:user/roles [:role/name :role/date-granted]}])
 
 (defn get-user
   [db id]
@@ -284,6 +291,7 @@
                             sort-config-schema
                             post-schema
                             page-schema
+                            role-schema
                             user-schema)))
 
 (defn add-initial-data

@@ -1,6 +1,5 @@
 (ns clj.flybot.figwheel
   (:require [clj.flybot.core :as core]
-            [clojure.edn :as edn]
             [robertluo.fun-map :refer [touch halt!]]))
 
 ;;---------- System for front-end dev ----------

@@ -1,5 +1,6 @@
 (ns clj.flybot.operation
-  (:require [clj.flybot.db :as db]))
+  (:require [clj.flybot.db :as db]
+            [cljc.flybot.utils :as utils]))
 
 ;;---------- No Effect Ops ----------
 
@@ -48,9 +49,14 @@
   [db id email name]
   (if-let [user (db/get-user db id)]
     ;; already in db so just return user
-    {:response user}
+    {:response user
+     :session  {:user-info user}}
     ;; first login so add to db
-    (let [user #:user{:id id :email email :name name :role :editor}]
+    (let [user #:user{:id    id
+                      :email email
+                      :name  name
+                      :roles [#:role{:name          :editor
+                                     :date-granted (utils/mk-date)}]}]
       {:response user
        :effects  {:db {:payload [user]}}
        :session  {:user-info user}})))

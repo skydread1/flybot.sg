@@ -40,21 +40,29 @@
 (def bob-id "bob-id")
 (def alice-id "alice-id")
 (def joshua-id "joshua-id")
+(def bob-date-granted (u/mk-date))
+(def alice-date-granted (u/mk-date))
+(def joshua-date-granted (u/mk-date))
 
 (def bob-user {:user/id "bob-id"
                :user/email "bob@mail.com" 
                :user/name "Bob"
-               :user/role :admin})
+               :user/roles [{:role/name :admin
+                             :role/date-granted bob-date-granted}
+                            {:role/name :editor
+                             :role/date-granted bob-date-granted}]})
 
 (def alice-user {:user/id "alice-id"
                  :user/email "alice@mail.com" 
                  :user/name "Alice"
-                 :user/role :editor})
+                 :user/roles [{:role/name :editor
+                               :role/date-granted alice-date-granted}]})
 
 (def joshua-user {:user/id "joshua-id"
                   :user/email "joshua@mail.com"
                   :user/name "Joshua"
-                  :user/role :editor})
+                  :user/roles [{:role/name :editor
+                                :role/date-granted joshua-date-granted}]})
 
 (def init-pages-and-posts
   {:posts {:all [post-1 post-2]}

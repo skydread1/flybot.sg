@@ -8,7 +8,8 @@
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datomic.api :as d]
             [robertluo.fun-map :refer [closeable fnk halt! life-cycle-map touch]]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [cljc.flybot.utils :as utils]))
 
 (defn sample-data->db
   [conn]
@@ -244,21 +245,16 @@
                                {:user/id '?
                                 :user/email '?
                                 :user/name '?
-                                :user/role '?}}})]
+                                :user/roles [{:role/name '?
+                                              :role/date-granted '?}]}}})]
       (is (= s/alice-user
              (-> resp :body :users :user)))))
   (testing "Execute a request for a new user."
     (with-redefs [auth/google-api-fetch-user (constantly {:id    s/joshua-id
                                                           :email "joshua@mail.com"
-                                                          :name  "Joshua"})]
-      (let [resp (http-request :get
-                               "/oauth/google/success"
-                               {:users
-                                {(list :logged-in-user :with [s/joshua-user])
-                                 {:user/id '?
-                                  :user/email '?
-                                  :user/name '?
-                                  :user/role '?}}})]
+                                                          :name  "Joshua"})
+                  utils/mk-date (constantly s/joshua-date-granted)]
+      (let [resp (http-request :get "/oauth/google/success" nil)]
         (is (= s/joshua-user
                (-> resp :body :users :logged-in-user))))))
   (testing "Execute a request for a delete user."

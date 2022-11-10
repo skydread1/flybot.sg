@@ -41,7 +41,9 @@
    [:user/id :string]
    [:user/email :string]
    [:user/name :string]
-   [:user/role :keyword]])
+   [:user/roles [:vector [:map
+                          [:role/name :keyword]
+                          [:role/date-granted inst?]]]]])
 
 (defn all-keys-optional
   "Walk through the given `schema` and set all keys to optional."
