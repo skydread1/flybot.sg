@@ -1,6 +1,6 @@
 (ns clj.flybot.core
   (:require [aleph.http :as http]
-            [robertluo.fun-map :refer [fnk life-cycle-map closeable touch halt!]]
+            [robertluo.fun-map :refer [fw fnk life-cycle-map closeable touch halt!]]
             [clj.flybot.handler :as handler]
             [clojure.edn :as edn]
             [clj.flybot.db :as db]
