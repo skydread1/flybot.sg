@@ -1,5 +1,5 @@
 (ns clj.flybot.auth
-  (:require [clj.flybot.auth.oauth2-reitit :as reitit]
+  (:require [reitit.oauth2 :as reitit]
             [aleph.http :as http]
             [cheshire.core :as cheshire]
             [clj-commons.byte-streams :as bs]
@@ -54,5 +54,5 @@
 
 (defn auth-routes
   [oauth2-config]
-  (into (reitit/oauth2-routes oauth2-config)
+  (into (reitit/reitit-routes oauth2-config)
         [["/oauth/google/logout"  {:get (logout-handler "/")}]]))

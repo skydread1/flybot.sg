@@ -21,7 +21,8 @@
            aleph/aleph                           {:mvn/version "0.5.0"}
            robertluo/fun-map                     {:mvn/version "0.4.5"}
            com.datomic/datomic-free              {:mvn/version "0.9.5697"}
-           clj-time/clj-time                     {:mvn/version "0.15.2"}
+           skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
+                                                  :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}
 
            ;; work around to resolve the dep conflict introduced by datomic
            com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
