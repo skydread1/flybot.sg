@@ -8,8 +8,7 @@
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datomic.api :as d]
             [robertluo.fun-map :refer [closeable fnk halt! life-cycle-map touch]]
-            [clojure.edn :as edn]
-            [cljc.flybot.utils :as utils]))
+            [clojure.edn :as edn]))
 
 (defn sample-data->db
   [conn]
@@ -180,7 +179,7 @@
       (is (= s/home-page
              (-> resp :body :pages :page)))))
   (testing "Execute a request for a new page."
-    (with-redefs [sut/has-permission? (constantly true)]
+    (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/pages/new-page"
                                {:pages
                                 {(list :new-page :with [{:page/name :about}])
@@ -211,7 +210,7 @@
       (is (= s/post-1
              (-> resp :body :posts :post)))))
   (testing "Execute a request for a new post."
-    (with-redefs [sut/has-permission? (constantly true)]
+    (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/new-post"
                                {:posts
                                 {(list :new-post :with [s/post-3])
@@ -222,7 +221,7 @@
         (is (= s/post-3
                (-> resp :body :posts :new-post))))))
   (testing "Execute a request for a delete post."
-    (with-redefs [sut/has-permission? (constantly true)]
+    (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/removed-post"
                                {:posts
                                 {(list :removed-post :with [s/post-3-id])
@@ -253,12 +252,12 @@
     (with-redefs [auth/google-api-fetch-user (constantly {:id    s/joshua-id
                                                           :email "joshua@mail.com"
                                                           :name  "Joshua"})
-                  utils/mk-date (constantly s/joshua-date-granted)]
+                  auth/redirect-302          (fn [resp _] resp)]
       (let [resp (http-request :get "/oauth/google/success" nil)]
-        (is (= s/joshua-user
-               (-> resp :body :users :logged-in-user))))))
+        (is (= s/joshua-id
+               (-> resp :body :users :auth :registered :user/id))))))
   (testing "Execute a request for a delete user."
-    (with-redefs [sut/has-permission? (constantly true)]
+    (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/users/removed-user"
                                {:users
                                 {(list :removed-user :with [s/joshua-id])

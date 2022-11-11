@@ -79,6 +79,20 @@
            [:dispatch [:evt.error/clear-errors]]
            [:fx.log/message ["Post " post-id " deleted."]]]})))
 
+(rf/reg-event-fx
+ :fx.http/login-success
+ (fn [_ [_ {:keys [users]}]]
+   (let [user (-> users :auth :logged)]
+     (when user
+       {:fx [[:dispatch [:evt.user/add-user user]]
+             [:fx.log/message ["User " (:user/name user) " logged in."]]]}))))
+
+(rf/reg-event-fx
+ :fx.http/logout-success
+ (fn [{:keys [db]} [_ _]]
+   {:db (dissoc db :app/user)
+    :fx [[:fx.log/message ["User logged out."]]]}))
+
 ;; ---------- App ----------
 
 ;; Initialization
@@ -194,6 +208,34 @@
                     :reader
                     :editor)]
      (assoc db :user/mode new-mode))))
+
+(rf/reg-event-db
+ :evt.user/add-user
+ (fn [db [_ user]]
+   (assoc db :app/user user)))
+
+(rf/reg-sub
+ :subs.user/user
+ (fn [db _]
+   (:app/user db)))
+
+(rf/reg-event-fx
+ :evt.user/login
+ (fn [_ _]
+   {:http-xhrio {:method          :get
+                 :uri             "/users/login"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/login-success]
+                 :on-failure      [:fx.http/failure]}}))
+
+(rf/reg-event-fx
+ :evt.user/logout
+ (fn [_ _]
+   {:http-xhrio {:method          :get
+                 :uri             "/users/logout"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/logout-success]
+                 :on-failure      [:fx.http/failure]}}))
 
 ;; ---------- Page ----------
 

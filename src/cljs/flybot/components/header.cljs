@@ -21,6 +21,9 @@
    (internal-link :flybot/apply "Apply")
    (internal-link :flybot/about "About Us")
    (internal-link :flybot/blog "Blog")
+   (if @(rf/subscribe [:subs.user/user])
+     [:a {:href "" :on-click #(rf/dispatch [:evt.user/logout])} "Logout"]
+     [:a {:href "oauth/google/login"} "Login"])
    (internal-link :flybot/contact "Contact" false)
    [:p "]"]])
 
@@ -65,6 +68,7 @@
        {:d "M244.917 157.867c-48 0-87.1 39.1-87.1 87.1s39.1 87.1 87.1 87.1 87.1-39.1 87.1-87.1-39.1-87.1-87.1-87.1zm0 139.9c-29.1 0-52.8-23.7-52.8-52.8s23.7-52.8 52.8-52.8 52.8 23.7 52.8 52.8-23.7 52.8-52.8 52.8z"}]])])
 
 (defn header-comp []
+  (rf/dispatch [:evt.user/login])
   [:header.container
    [:div.top
     [:div
@@ -73,6 +77,7 @@
        :src "assets/flybot-logo.png"}]]
     [theme-logo]
     [user-mode-logo]
+    [:div (:user/name @(rf/subscribe [:subs.user/user]))]
     [navbar-web]
     [:div.button.hidden
      [:button {:on-click #(rf/dispatch [:evt.nav/toggle-navbar])}

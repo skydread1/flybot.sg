@@ -44,15 +44,66 @@
        {:error {:type           :api.google/fetch-user
                 :google-api-url google-api-url}})))
 
-(defn logout-handler
-  [landing-uri]
+(defn app-authentification-middleware
+  "Use the user-id from the session to get is information from the db."
+  [ring-handler]
+  (fn [{:keys [session] :as req}]
+    (if-let [user-id (-> session :user-id)]
+      (let [pattern {:users
+                     {:auth
+                      {(list :logged :with [user-id])
+                       {:user/id '?
+                        :user/email '?
+                        :user/name '?
+                        :user/roles [{:role/name '?
+                                      :role/date-granted '?}]}}}}]
+        (ring-handler (assoc req :params pattern)))
+      {:body {:msg "No User to login"}})))
+
+(defn redirect-302
+  [resp landing-uri]
+  (-> resp
+      (assoc :status 302)
+      (assoc-in [:headers "Location"] landing-uri)))
+
+(defn google-authentification-middleware
+  "Use the access token returned from google oauth2 to fetch the user-info"
+  [ring-handler]
+  (fn [{:keys [session] :as request}]
+    (let [user-info (google-api-fetch-user (-> session :oauth2/access-tokens))
+          {:keys [id email name]} user-info
+          pattern                {:users
+                                  {:auth
+                                   {(list :registered :with [id email name])
+                                    {:user/id '?}}}}
+          resp                   (ring-handler (assoc request :params pattern))]
+      (redirect-302 resp "/"))))
+
+(defn has-permission?
+  [session-permissions required-permissions]
+  (some->> (map (fn [permission]
+                  (some #{permission} required-permissions))
+                session-permissions)
+           seq
+           (every? some?)))
+
+(defn authorization-middleware
+  [ring-handler required-permissions]
   (fn [request]
-    (let [session (-> (:session request)
-                      (dissoc :oauth2/access-tokens :user-info))]
-      (-> (response/redirect landing-uri)
-          (assoc :session session)))))
+    (let [session-permissions (->> request :session :user-roles)]
+      (if (has-permission? session-permissions required-permissions)
+        (ring-handler request)
+        (throw (ex-info "Authorization error" {:type            :authorization
+                                               :has-permission  session-permissions
+                                               :need-permission required-permissions}))))))
+
+(defn logout-handler
+  [request]
+  (let [session (-> (:session request)
+                    (dissoc :oauth2/access-tokens :user-id :user-roles))]
+    (-> (response/redirect "/")
+        (assoc :session session))))
 
 (defn auth-routes
   [oauth2-config]
-  (into (reitit/reitit-routes oauth2-config)
-        [["/oauth/google/logout"  {:get (logout-handler "/")}]]))
+  (reitit/reitit-routes oauth2-config))

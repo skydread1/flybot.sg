@@ -46,11 +46,20 @@
    :effects  {:db {:payload [page]}}})
 
 (defn login-user
+  [db user-id]
+  (if-let [{:user/keys [id roles] :as user} (db/get-user db user-id)]
+    {:response user
+     :session  {:user-id id
+                :user-roles (map :role/name roles)}}
+    {:error {:type    :user/login
+             :user-id user-id}}))
+
+(defn register-user
   [db id email name]
   (if-let [user (db/get-user db id)]
     ;; already in db so just return user
     {:response user
-     :session  {:user-info user}}
+     :session  {:user-id id}}
     ;; first login so add to db
     (let [user #:user{:id    id
                       :email email
@@ -59,7 +68,7 @@
                                      :date-granted (utils/mk-date)}]}]
       {:response user
        :effects  {:db {:payload [user]}}
-       :session  {:user-info user}})))
+       :session  {:user-id id}})))
 
 (defn delete-user
   [db id]
@@ -80,10 +89,11 @@
            :post         (fn [post-id] (get-post db post-id))
            :new-post     (fn [post] (add-post post))
            :removed-post (fn [post-id] (delete-post post-id))}
-   :pages {:all          (fn [] (get-all-pages db))
-           :page         (fn [page-name] (get-page db page-name))
-           :new-page     (fn [page] (add-page page))}
-   :users {:all            (fn [] (get-all-users db))
-           :user           (fn [id] (get-user db id))
-           :logged-in-user (fn [id email name] (login-user db id email name))
-           :removed-user   (fn [id] (delete-user db id))}})
+   :pages {:all       (fn [] (get-all-pages db))
+           :page      (fn [page-name] (get-page db page-name))
+           :new-page  (fn [page] (add-page page))}
+   :users {:all          (fn [] (get-all-users db))
+           :user         (fn [id] (get-user db id))
+           :removed-user (fn [id] (delete-user db id))
+           :auth         {:registered (fn [id email name] (register-user db id email name))
+                          :logged     (fn [id] (login-user db id))}}})

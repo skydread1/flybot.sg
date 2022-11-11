@@ -78,8 +78,10 @@
      [:map
       [:user user-schema]
       [:all [:vector user-schema]]
-      [:logged-in-user user-schema]
-      [:removed-user user-schema]]]]))
+      [:removed-user user-schema]
+      [:auth [:map
+              [:registered user-schema]
+              [:logged user-schema]]]]]]))
 
 ;;---------- Front-end validation ----------
 

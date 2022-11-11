@@ -97,39 +97,6 @@
        :headers {"content-type" "application/edn"}
        :session session})))
 
-(defn authentification-middleware
-  [ring-handler]
-  (fn [request]
-    (let [user-info               (or (-> request :session :user-info)
-                                      (auth/google-api-fetch-user (-> request :session :oauth2/access-tokens)))
-          {:keys [id email name]} user-info
-          pattern                {:users
-                                  {(list :logged-in-user :with [id email name])
-                                   {:user/id '?
-                                    :user/email '?
-                                    :user/name '?
-                                    :user/roles [{:role/name '?
-                                                  :role/date-granted '?}]}}}]
-      (ring-handler (assoc request :params pattern)))))
-
-(defn has-permission?
-  [session-permissions required-permissions]
-  (some->> (map (fn [permission]
-                  (some #{permission} required-permissions))
-                session-permissions)
-           seq
-           (every? some?)))
-
-(defn authorization-middleware
-  [ring-handler required-permissions]
-  (fn [request]
-    (let [session-permissions (->> request :session :user-info :user/roles (map :role/name))]
-      (if (has-permission? session-permissions required-permissions)
-        (ring-handler request)
-        (throw (ex-info "Authorization error" {:type            :authorization
-                                               :has-permission  session-permissions
-                                               :need-permission required-permissions}))))))
-
 (defn app-routes
   "API routes, returns a ring-handler."
   [ring-handler oauth2-config]
@@ -140,22 +107,25 @@
             ["/all"          {:post ring-handler}]
             ["/post"         {:post ring-handler}]
             ["/new-post"     {:post       ring-handler
-                              :middleware [[authorization-middleware [:editor]]]}]
+                              :middleware [[auth/authorization-middleware [:editor]]]}]
             ["/removed-post" {:post       ring-handler
-                              :middleware [[authorization-middleware [:admin]]]}]]
+                              :middleware [[auth/authorization-middleware [:admin]]]}]]
            ["/pages"
             ["/all"          {:post ring-handler}]
             ["/page"         {:post ring-handler}]
             ["/new-page"     {:post       ring-handler
-                              :middleware [[authorization-middleware [:editor]]]}]]
+                              :middleware [[auth/authorization-middleware [:editor]]]}]]
            ["/users"
+            ["/login"          {:get        ring-handler
+                                :middleware [auth/app-authentification-middleware]}]
+            ["/logout"         {:get auth/logout-handler}]
             ["/all"            {:post ring-handler}]
             ["/user"           {:post ring-handler}]
             ["/logged-in-user" {:post ring-handler}]
             ["/removed-user"   {:post       ring-handler
-                                :middleware [[authorization-middleware [:admin]]]}]]
+                                :middleware [[auth/authorization-middleware [:admin]]]}]]
            ["/oauth/google/success" {:get        ring-handler
-                                     :middleware [authentification-middleware]}]
+                                     :middleware [auth/google-authentification-middleware]}]
            ["/*"   (reitit/create-resource-handler {:root "public"})]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance
