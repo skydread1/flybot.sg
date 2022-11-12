@@ -45,7 +45,8 @@
                 :google-api-url google-api-url}})))
 
 (defn app-authentification-middleware
-  "Use the user-id from the session to get is information from the db."
+  "Uses the user-id from the session to get is information from the db.
+   If no user-id in the session, does nothing."
   [ring-handler]
   (fn [{:keys [session] :as req}]
     (if-let [user-id (-> session :user-id)]
@@ -58,7 +59,7 @@
                         :user/roles [{:role/name '?
                                       :role/date-granted '?}]}}}}]
         (ring-handler (assoc req :params pattern)))
-      {:body {:msg "No User to login"}})))
+      {:body {:no-user-session true}})))
 
 (defn redirect-302
   [resp landing-uri]
@@ -67,7 +68,7 @@
       (assoc-in [:headers "Location"] landing-uri)))
 
 (defn google-authentification-middleware
-  "Use the access token returned from google oauth2 to fetch the user-info"
+  "Uses the access token returned from google oauth2 to fetch the user-info"
   [ring-handler]
   (fn [{:keys [session] :as request}]
     (let [user-info (google-api-fetch-user (-> session :oauth2/access-tokens))
