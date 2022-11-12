@@ -41,6 +41,7 @@
    [:user/id :string]
    [:user/email :string]
    [:user/name :string]
+   [:user/picture :string]
    [:user/roles [:vector [:map
                           [:role/name :keyword]
                           [:role/date-granted inst?]]]]])

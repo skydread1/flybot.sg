@@ -56,10 +56,12 @@
                        {:user/id '?
                         :user/email '?
                         :user/name '?
+                        :user/picture '?
                         :user/roles [{:role/name '?
                                       :role/date-granted '?}]}}}}]
         (ring-handler (assoc req :params pattern)))
-      {:body {:no-user-session true}})))
+      {:body    {:no-user-session true}
+       :headers {"content-type" "application/edn"}})))
 
 (defn redirect-302
   [resp landing-uri]
@@ -72,12 +74,12 @@
   [ring-handler]
   (fn [{:keys [session] :as request}]
     (let [user-info (google-api-fetch-user (-> session :oauth2/access-tokens))
-          {:keys [id email name]} user-info
-          pattern                {:users
-                                  {:auth
-                                   {(list :registered :with [id email name])
-                                    {:user/id '?}}}}
-          resp                   (ring-handler (assoc request :params pattern))]
+          {:keys [id email name picture]} user-info
+          pattern {:users
+                   {:auth
+                    {(list :registered :with [id email name picture])
+                     {:user/id '?}}}}
+          resp (ring-handler (assoc request :params pattern))]
       (redirect-302 resp "/"))))
 
 (defn has-permission?

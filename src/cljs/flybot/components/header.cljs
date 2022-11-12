@@ -15,16 +15,21 @@
           :data-reitit-handle-click reitit?}
       text])))
 
+(defn login-link
+  "Link to the server for the login/logout of a user."
+  []
+  (if @(rf/subscribe [:subs.user/user])
+    [:a {:href "" :on-click #(rf/dispatch [:evt.user/logout])} "Logout"]
+    [:a {:href "oauth/google/login"} "Login"]))
+
 (defn navbar-content []
   [[:p "["]
    (internal-link :flybot/home "Home")
    (internal-link :flybot/apply "Apply")
    (internal-link :flybot/about "About Us")
    (internal-link :flybot/blog "Blog")
-   (if @(rf/subscribe [:subs.user/user])
-     [:a {:href "" :on-click #(rf/dispatch [:evt.user/logout])} "Logout"]
-     [:a {:href "oauth/google/login"} "Login"])
    (internal-link :flybot/contact "Contact" false)
+   (login-link)
    [:p "]"]])
 
 (defn navbar-web []
@@ -72,12 +77,17 @@
    [:div.top
     [:div
      [:img.flybotlogo
-      {:alt "Flybot logo",
+      {:alt "Flybot logo"
        :src "assets/flybot-logo.png"}]]
     [theme-logo]
-    [user-mode-logo]
-    [:div (:user/name @(rf/subscribe [:subs.user/user]))]
+    (when @(rf/subscribe [:subs.user/user])
+      [user-mode-logo])
     [navbar-web]
+    (when-let [{:user/keys [name picture]} @(rf/subscribe [:subs.user/user])]
+      [:div
+       [:img.user-pic
+        {:alt (str name " profile picture")
+         :src picture}]])
     [:div.button.hidden
      [:button {:on-click #(rf/dispatch [:evt.nav/toggle-navbar])}
       [:svg.burger

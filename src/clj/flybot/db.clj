@@ -81,6 +81,9 @@
    {:db/ident :user/name
     :db/valueType :db.type/string
     :db/cardinality :db.cardinality/one}
+   {:db/ident :user/picture
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}
    {:db/ident :user/roles
     :db/valueType :db.type/ref
     :db/isComponent true
@@ -259,6 +262,7 @@
   [:user/id
    :user/email
    :user/name
+   :user/picture
    {:user/roles [:role/name :role/date-granted]}])
 
 (defn get-user

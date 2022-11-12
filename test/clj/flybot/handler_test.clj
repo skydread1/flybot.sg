@@ -244,6 +244,7 @@
                                {:user/id '?
                                 :user/email '?
                                 :user/name '?
+                                :user/picture '?
                                 :user/roles [{:role/name '?
                                               :role/date-granted '?}]}}})]
       (is (= s/alice-user
@@ -251,7 +252,8 @@
   (testing "Execute a request for a new user."
     (with-redefs [auth/google-api-fetch-user (constantly {:id    s/joshua-id
                                                           :email "joshua@mail.com"
-                                                          :name  "Joshua"})
+                                                          :name  "Joshua"
+                                                          :picture "joshua-pic"})
                   auth/redirect-302          (fn [resp _] resp)]
       (let [resp (http-request :get "/oauth/google/success" nil)]
         (is (= s/joshua-id

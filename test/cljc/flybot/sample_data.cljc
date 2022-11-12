@@ -47,6 +47,7 @@
 (def bob-user {:user/id "bob-id"
                :user/email "bob@mail.com" 
                :user/name "Bob"
+               :user/picture "bob-pic"
                :user/roles [{:role/name :admin
                              :role/date-granted bob-date-granted}
                             {:role/name :editor
@@ -55,12 +56,14 @@
 (def alice-user {:user/id "alice-id"
                  :user/email "alice@mail.com" 
                  :user/name "Alice"
+                 :user/picture "alice-pic"
                  :user/roles [{:role/name :editor
                                :role/date-granted alice-date-granted}]})
 
 (def joshua-user {:user/id "joshua-id"
                   :user/email "joshua@mail.com"
                   :user/name "Joshua"
+                  :user/picture "joshua-pic"
                   :user/roles [{:role/name :editor
                                 :role/date-granted joshua-date-granted}]})
 

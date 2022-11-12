@@ -90,7 +90,7 @@
 (rf/reg-event-fx
  :fx.http/logout-success
  (fn [{:keys [db]} [_ _]]
-   {:db (dissoc db :app/user)
+   {:db (-> db (dissoc :app/user) (assoc :user/mode :reader))
     :fx [[:fx.log/message ["User logged out."]]]}))
 
 ;; ---------- App ----------

@@ -240,9 +240,17 @@ input[type=button] {
     width: 4rem;
 }
 
+.user-pic {
+    width: 2rem;
+}
+
 @media (min-width: 1024px) {
     .flybotlogo {
         width: 7rem;
+    }
+
+    .user-pic {
+        width: 4rem;
     }
 }
 
