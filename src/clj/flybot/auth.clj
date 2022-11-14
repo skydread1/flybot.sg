@@ -1,10 +1,11 @@
 (ns clj.flybot.auth
-  (:require [reitit.oauth2 :as reitit]
-            [aleph.http :as http]
+  (:require [aleph.http :as http]
             [cheshire.core :as cheshire]
             [clj-commons.byte-streams :as bs]
+            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
+            [reitit.oauth2 :as reitit]
             [ring.util.response :as response]))
 
 (defn decode-key
@@ -84,11 +85,7 @@
 
 (defn has-permission?
   [session-permissions required-permissions]
-  (some->> (map (fn [permission]
-                  (some #{permission} required-permissions))
-                session-permissions)
-           seq
-           (every? some?)))
+  (set/subset? (set required-permissions) (set session-permissions)))
 
 (defn authorization-middleware
   [ring-handler required-permissions]
@@ -101,11 +98,9 @@
                                                :need-permission required-permissions}))))))
 
 (defn logout-handler
-  [request]
-  (let [session (-> (:session request)
-                    (dissoc :oauth2/access-tokens :user-id :user-roles))]
-    (-> (response/redirect "/")
-        (assoc :session session))))
+  [_]
+  (-> (response/redirect "/")
+      (update :session dissoc :oauth2/access-tokens :user-id :user-roles)))
 
 (defn auth-routes
   [oauth2-config]
