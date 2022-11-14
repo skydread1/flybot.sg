@@ -36,6 +36,16 @@
      [:sort/type :keyword]
      [:sort/direction :keyword]]]])
 
+(def user-schema
+  [:map {:closed true}
+   [:user/id :string]
+   [:user/email :string]
+   [:user/name :string]
+   [:user/picture :string]
+   [:user/roles [:vector [:map
+                          [:role/name :keyword]
+                          [:role/date-granted inst?]]]]])
+
 (defn all-keys-optional
   "Walk through the given `schema` and set all keys to optional."
   [schema]
@@ -64,7 +74,15 @@
      [:map
       [:page page-schema]
       [:all [:vector page-schema]]
-      [:new-page page-schema]]]]))
+      [:new-page page-schema]]]
+    [:users
+     [:map
+      [:user user-schema]
+      [:all [:vector user-schema]]
+      [:removed-user user-schema]
+      [:auth [:map
+              [:registered user-schema]
+              [:logged user-schema]]]]]]))
 
 ;;---------- Front-end validation ----------
 

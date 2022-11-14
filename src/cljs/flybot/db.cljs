@@ -79,6 +79,20 @@
            [:dispatch [:evt.error/clear-errors]]
            [:fx.log/message ["Post " post-id " deleted."]]]})))
 
+(rf/reg-event-fx
+ :fx.http/login-success
+ (fn [_ [_ {:keys [users]}]]
+   (let [user (-> users :auth :logged)]
+     (when user
+       {:fx [[:dispatch [:evt.user/add-user user]]
+             [:fx.log/message ["User " (:user/name user) " logged in."]]]}))))
+
+(rf/reg-event-fx
+ :fx.http/logout-success
+ (fn [{:keys [db]} [_ _]]
+   {:db (-> db (dissoc :app/user) (assoc :user/mode :reader))
+    :fx [[:fx.log/message ["User logged out."]]]}))
+
 ;; ---------- App ----------
 
 ;; Initialization
@@ -108,7 +122,7 @@
                  :user/mode        :reader
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
-                 :uri             "/all"
+                 :uri             "/pages/all"
                  :params {:pages
                           {(list :all :with [])
                            [{:page/name '?
@@ -195,6 +209,34 @@
                     :editor)]
      (assoc db :user/mode new-mode))))
 
+(rf/reg-event-db
+ :evt.user/add-user
+ (fn [db [_ user]]
+   (assoc db :app/user user)))
+
+(rf/reg-sub
+ :subs.user/user
+ (fn [db _]
+   (:app/user db)))
+
+(rf/reg-event-fx
+ :evt.user/login
+ (fn [_ _]
+   {:http-xhrio {:method          :get
+                 :uri             "/users/login"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/login-success]
+                 :on-failure      [:fx.http/failure]}}))
+
+(rf/reg-event-fx
+ :evt.user/logout
+ (fn [_ _]
+   {:http-xhrio {:method          :get
+                 :uri             "/users/logout"
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/logout-success]
+                 :on-failure      [:fx.http/failure]}}))
+
 ;; ---------- Page ----------
 
 ;; Mode
@@ -246,7 +288,7 @@
      (if (:errors page)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg page)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/all"
+                     :uri             "/pages/new-page"
                      :params          {:pages
                                        {(list :new-page :with [page])
                                         {:page/name '?}}}
@@ -315,7 +357,7 @@
  :evt.post/remove-post
  (fn [_ [_ post-id]]
    {:http-xhrio {:method          :post
-                 :uri             "/all"
+                 :uri             "/posts/removed-post"
                  :params          {:posts
                                    {(list :removed-post :with [post-id])
                                     {:post/id '?
@@ -347,7 +389,7 @@
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/all"
+                     :uri             "/posts/new-post"
                      :params          {:posts
                                        {(list :new-post :with [post])
                                         {:post/id '?
@@ -376,7 +418,7 @@
                           :post/page (-> db :app/current-view :data :page-name)
                           :post/mode :edit})}
      {:http-xhrio {:method          :post
-                   :uri             "/all"
+                   :uri             "/posts/post"
                    :params          {:posts
                                      {(list :post :with [post-id])
                                       {:post/id '?

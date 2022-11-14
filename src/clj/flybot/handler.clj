@@ -1,6 +1,7 @@
 (ns clj.flybot.handler
   (:require [clj.flybot.middleware :as mw]
             [clj.flybot.operation :as op]
+            [clj.flybot.auth :as auth]
             [cljc.flybot.validation :as v]
             [datomic.api :as d]
             [muuntaja.core :as m]
@@ -42,33 +43,44 @@
    - query-wrapper: gather all the effects description in a coll
    - finalize: assoc all effects descriptions in the second value of pattern."
   [pattern]
-  (let [all-effects (transient [])]
+  (let [effects-acc (transient [])
+        session-map (transient {})]
     (pull/query
      pattern
      (fn [q] (pull/post-process-query
               q
-              (fn [[k {:keys [response effects] :as v}]]
+              (fn [[k {:keys [response effects session error] :as v}]]
+                (when error
+                 (throw (ex-info "executor-error" error)))
+                (when session
+                  (reduce
+                   (fn [res [k v]] (assoc! res k v))
+                   session-map
+                   session))
                 (when effects
-                  (conj! all-effects effects))
+                  (conj! effects-acc effects))
                 (if response
                   [k response]
                   [k v]))))
-     #(assoc % :all-effects (persistent! all-effects)))))
+     #(assoc %
+             :pulled/effects (persistent! effects-acc)
+             :pulled/session (persistent! session-map)))))
 
 (defn saturn-handler
   "A saturn handler takes a ring request enhanced with additional keys form the injectors.
    The saturn handler is purely functional.
    The description of the side effects to be performed are returned and they will be executed later on in the executors."
-  [{:keys [body-params db]}]
-  (let [pattern           body-params
+  [{:keys [params body-params session db]}]
+  (let [pattern           (if (seq params) params body-params)
         pattern-validator (sch/pattern-validator v/api-schema)
         pattern           (pattern-validator pattern)
         data              (op/pullable-data db)]
     (if (:error pattern)
       (throw (ex-info "invalid pattern" (merge {:type :pattern} pattern)))
-      (let [[resp effs] ((mk-query pattern) data)]
+      (let [[resp complements] ((mk-query pattern) data)]
         {:response     resp
-         :effects-desc (:all-effects effs)}))))
+         :effects-desc (:pulled/effects complements)
+         :session      (merge session (:pulled/session complements))}))))
 
 (defn mk-ring-handler
   "Takes a seq on `injectors`, a `saturn-handler` and a seq `executors`.
@@ -76,26 +88,51 @@
    Returns a ring-handler."
   [injectors saturn-handler executors]
   (fn [req]
-    (let [sat-req  (merge req ((first injectors)))
-          {:keys [response effects-desc]} (saturn-handler sat-req)
+    (let [sat-req (merge req ((first injectors)))
+          {:keys [response effects-desc session]} (saturn-handler sat-req)
           resp (if (seq effects-desc)
                  ((first executors) response effects-desc)
                  response)]
       {:body    resp
-       :headers {"content-type" "application/edn"}})))
+       :headers {"content-type" "application/edn"}
+       :session session})))
 
 (defn app-routes
   "API routes, returns a ring-handler."
-  [ring-handler]
+  [ring-handler oauth2-config]
   (reitit/ring-handler
    (reitit/router
-    [["/all" {:post ring-handler}]
-     ["/*"   (reitit/create-resource-handler {:root "public"})]]
-    {:conflicts            (constantly nil)
-     :data                 {:muuntaja m/instance
-                            :middleware [muuntaja/format-middleware
-                                         mw/wrap-base
-                                         mw/exception-middleware]}})
+    (into (auth/auth-routes oauth2-config)
+          [["/posts"
+            ["/all"          {:post ring-handler}]
+            ["/post"         {:post ring-handler}]
+            ["/new-post"     {:post       ring-handler
+                              :middleware [[auth/authorization-middleware [:editor]]]}]
+            ["/removed-post" {:post       ring-handler
+                              :middleware [[auth/authorization-middleware [:admin]]]}]]
+           ["/pages"
+            ["/all"          {:post ring-handler}]
+            ["/page"         {:post ring-handler}]
+            ["/new-page"     {:post       ring-handler
+                              :middleware [[auth/authorization-middleware [:editor]]]}]]
+           ["/users"
+            ["/login"          {:get        ring-handler
+                                :middleware [auth/app-authentification-middleware]}]
+            ["/logout"         {:get auth/logout-handler}]
+            ["/all"            {:post ring-handler}]
+            ["/user"           {:post ring-handler}]
+            ["/logged-in-user" {:post ring-handler}]
+            ["/removed-user"   {:post       ring-handler
+                                :middleware [[auth/authorization-middleware [:admin]]]}]]
+           ["/oauth/google/success" {:get        ring-handler
+                                     :middleware [auth/google-authentification-middleware]}]
+           ["/*"   (reitit/create-resource-handler {:root "public"})]])
+    {:conflicts (constantly nil)
+     :data      {:muuntaja   m/instance
+                 :middleware [mw/wrap-session-custom
+                              muuntaja/format-middleware
+                              mw/wrap-defaults-custom
+                              mw/exception-middleware]}})
    (reitit/create-default-handler
     {:not-found          (constantly {:status 404 :body "Page not found"})
      :method-not-allowed (constantly {:status 405 :body "Not allowed"})

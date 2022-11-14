@@ -5,7 +5,10 @@
 ;;---------- System for front-end dev ----------
 
 (def figwheel-system
-  (dissoc core/system :http-port :http-server))
+  (-> core/system
+      (dissoc :http-port :http-server)
+      (assoc-in [:oauth2-config :google :redirect-uri] "http://localhost:9500/oauth/google/callback")))
+
 
 (def figwheel-handler
   (-> figwheel-system

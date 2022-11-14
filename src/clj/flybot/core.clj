@@ -2,6 +2,7 @@
   (:require [aleph.http :as http]
             [robertluo.fun-map :refer [fnk life-cycle-map closeable touch halt!]]
             [clj.flybot.handler :as handler]
+            [clojure.edn :as edn]
             [clj.flybot.db :as db]
             [datomic.api :as d])
   (:gen-class))
@@ -19,6 +20,7 @@
                            (closeable
                             conn
                             #(d/delete-database db-uri))))
+    :oauth2-config  (edn/read-string (slurp "config/google-creds.edn"))
     :injectors      (fnk [db-conn]
                          [(fn [] {:db (d/db db-conn)})])
     :executors      (fnk [db-conn]
@@ -26,8 +28,8 @@
     :saturn-handler handler/saturn-handler
     :ring-handler   (fnk [injectors saturn-handler executors]
                          (handler/mk-ring-handler injectors saturn-handler executors))
-    :reitit-router  (fnk [ring-handler]
-                         (handler/app-routes ring-handler))
+    :reitit-router  (fnk [ring-handler oauth2-config]
+                         (handler/app-routes ring-handler oauth2-config))
     :http-port      8123
     :http-server    (fnk [http-port reitit-router]
                          (let [svr (http/start-server

@@ -17,6 +17,10 @@
 
 (defn app []
   [:div
+   ;; When the app is rendered, send request to login with session
+   ;; If session has no user-id (oauth2 not done), servers just returns 200
+   ;; If session has user-id (oauth2 done), servers returns user-info
+   (rf/dispatch [:evt.user/login])
    [header-comp]
    [current-page]
    [footer-comp]])

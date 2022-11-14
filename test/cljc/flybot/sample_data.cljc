@@ -2,6 +2,8 @@
   "Sample data that can be used in both backend and frontend tests."
   (:require [cljc.flybot.utils :as u]))
 
+;;---------- Posts ----------
+
 (def post-1-id (u/mk-uuid))
 (def post-2-id (u/mk-uuid))
 (def post-3-id (u/mk-uuid))
@@ -26,10 +28,44 @@
              :post/creation-date post-3-create-date
              :post/md-content    "Content"})
 
+;;---------- Pages ----------
+
 (def home-page {:page/name           :home
                 :page/sorting-method {:sort/type :post/creation-date
                                       :sort/direction :ascending}})
 (def apply-page {:page/name :apply})
+
+;;---------- Users ----------
+
+(def bob-id "bob-id")
+(def alice-id "alice-id")
+(def joshua-id "joshua-id")
+(def bob-date-granted (u/mk-date))
+(def alice-date-granted (u/mk-date))
+(def joshua-date-granted (u/mk-date))
+
+(def bob-user {:user/id "bob-id"
+               :user/email "bob@mail.com" 
+               :user/name "Bob"
+               :user/picture "bob-pic"
+               :user/roles [{:role/name :admin
+                             :role/date-granted bob-date-granted}
+                            {:role/name :editor
+                             :role/date-granted bob-date-granted}]})
+
+(def alice-user {:user/id "alice-id"
+                 :user/email "alice@mail.com" 
+                 :user/name "Alice"
+                 :user/picture "alice-pic"
+                 :user/roles [{:role/name :editor
+                               :role/date-granted alice-date-granted}]})
+
+(def joshua-user {:user/id "joshua-id"
+                  :user/email "joshua@mail.com"
+                  :user/name "Joshua"
+                  :user/picture "joshua-pic"
+                  :user/roles [{:role/name :editor
+                                :role/date-granted joshua-date-granted}]})
 
 (def init-pages-and-posts
   {:posts {:all [post-1 post-2]}
