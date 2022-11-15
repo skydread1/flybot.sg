@@ -99,7 +99,7 @@
 
 (defn app-routes
   "API routes, returns a ring-handler."
-  [ring-handler oauth2-config]
+  [ring-handler oauth2-config session-store]
   (reitit/ring-handler
    (reitit/router
     (into (auth/auth-routes oauth2-config)
@@ -129,9 +129,8 @@
            ["/*"   (reitit/create-resource-handler {:root "public"})]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance
-                 :middleware [mw/wrap-session-custom
-                              muuntaja/format-middleware
-                              mw/wrap-defaults-custom
+                 :middleware [muuntaja/format-middleware
+                              [mw/wrap-defaults-custom session-store]
                               mw/exception-middleware]}})
    (reitit/create-default-handler
     {:not-found          (constantly {:status 404 :body "Page not found"})

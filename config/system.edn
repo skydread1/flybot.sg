@@ -1,0 +1,10 @@
+{:prod     {:http-port       8123
+            :db-uri          "datomic:mem://website"
+            :oauth2-callback "http://localhost:8123/oauth/google/callback"}
+ :dev      {:http-port       8123
+            :db-uri          "datomic:mem://website-dev"
+            :oauth2-callback "http://localhost:8123/oauth/google/callback"}
+ :figwheel {:db-uri          "datomic:mem://website-figwheel"
+            :oauth2-callback "http://localhost:9500/oauth/google/callback"}
+ :test     {:http-port       8100
+            :db-uri          "datomic:mem://website-test"}}

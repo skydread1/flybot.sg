@@ -1,13 +1,14 @@
 (ns clj.flybot.handler-test
   (:require [aleph.http :as http]
             [clj-commons.byte-streams :as bs]
+            [clj.flybot.core :as core]
             [clj.flybot.db :as db]
             [clj.flybot.handler :as sut]
             [clj.flybot.auth :as auth]
             [cljc.flybot.sample-data :as s]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datomic.api :as d]
-            [robertluo.fun-map :refer [closeable fnk halt! life-cycle-map touch]]
+            [robertluo.fun-map :refer [closeable fnk halt! touch]]
             [clojure.edn :as edn]))
 
 (defn sample-data->db
@@ -16,37 +17,20 @@
                      s/home-page s/apply-page
                      s/bob-user s/alice-user]))
 
-;;---------- System ----------
+;;---------- System for backend test ----------
 
 (def test-system
-  (life-cycle-map
-   {:db-uri         "datomic:mem://website-test"
-    :db-conn        (fnk [db-uri]
-                         (d/create-database db-uri)
-                         (let [conn (d/connect db-uri)]
-                           (db/add-schemas conn)
-                           (sample-data->db conn)
-                           (closeable
-                            conn
-                            #(d/delete-database db-uri))))
-    :oauth2-config  (edn/read-string (slurp "config/google-creds.edn"))
-    :injectors      (fnk [db-conn]
-                         [(fn [] {:db (d/db db-conn)})])
-    :executors      (fnk [db-conn]
-                         [(sut/mk-executors db-conn)])
-    :saturn-handler sut/saturn-handler
-    :ring-handler   (fnk [injectors saturn-handler executors]
-                         (sut/mk-ring-handler injectors saturn-handler executors))
-    :reitit-router  (fnk [ring-handler oauth2-config]
-                         (sut/app-routes ring-handler oauth2-config))
-    :http-port      8100
-    :http-server    (fnk [http-port reitit-router]
-                         (let [svr (http/start-server
-                                    reitit-router
-                                    {:port http-port})]
-                           (closeable
-                            svr
-                            #(.close svr))))}))
+  (-> (core/system-config :test)
+      core/system
+      (dissoc :oauth2-config)
+      (assoc :db-conn (fnk [db-uri]
+                           (d/create-database db-uri)
+                           (let [conn (d/connect db-uri)]
+                             (db/add-schemas conn)
+                             (sample-data->db conn)
+                             (closeable
+                              conn
+                              #(d/delete-database db-uri)))))))
 
 (defn system-fixture [f]
   (touch test-system)

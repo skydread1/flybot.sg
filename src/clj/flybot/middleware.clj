@@ -1,11 +1,6 @@
 (ns clj.flybot.middleware
   (:require [reitit.ring.middleware.exception :as exception]
-            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
-            [ring.middleware.session :refer [wrap-session]]
-            [ring.middleware.session.memory :refer [memory-store]]))
-
-(def session-store
-  (memory-store))
+            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
 
 (defn handler [status message exception request]
   {:status status
@@ -25,18 +20,15 @@
     :authorization         (partial handler 413 "User does not have the required permission.")
     ::exception/default    (partial handler 500 "Default")}))
 
-(def ring-config
+(defn ring-cfg
+  [session-store]
   (-> site-defaults
       (assoc-in [:security :anti-forgery] false)
       (assoc-in [:session :store] session-store)
       (assoc-in [:session :cookie-attrs :same-site] :lax)))
 
 (defn wrap-defaults-custom
-  [handler]
+  [handler session-store]
   (-> handler
       (wrap-defaults
-       ring-config)))
-
-(defn wrap-session-custom
-  [handler]
-  (wrap-session handler (:session ring-config)))
+       (ring-cfg session-store))))
