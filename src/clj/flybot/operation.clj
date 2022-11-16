@@ -55,13 +55,14 @@
              :user-id user-id}}))
 
 (defn register-user
-  [db id email name picture]
-  (if-let [user (db/get-user db id)]
+  [db user-id email name picture]
+  (if-let [{:user/keys [id roles] :as user} (db/get-user db user-id)]
     ;; already in db so just return user
     {:response user
-     :session  {:user-id id}}
+     :session  {:user-id    id
+                :user-roles (map :role/name roles)}}
     ;; first login so add to db
-    (let [user #:user{:id      id
+    (let [user #:user{:id      user-id
                       :email   email
                       :name    name
                       :picture picture
@@ -69,7 +70,7 @@
                                        :date-granted (utils/mk-date)}]}]
       {:response user
        :effects  {:db {:payload [user]}}
-       :session  {:user-id id}})))
+       :session  {:user-id user-id}})))
 
 (defn delete-user
   [db id]
