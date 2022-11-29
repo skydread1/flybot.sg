@@ -1,5 +1,6 @@
 (ns clj.flybot.figwheel
   (:require [clj.flybot.core :as core]
+            [clj.flybot.dev :refer [system-config]]
             [robertluo.fun-map :refer [touch]]))
 
 ;;---------- System for front-end dev ----------
@@ -8,7 +9,7 @@
 ;; just reload this namespace and refresh your browser.
 
 (def figwheel-system
-  (-> (core/system-config :figwheel)
+  (-> (system-config :figwheel)
       core/system
       (dissoc :http-port :http-server)))
 

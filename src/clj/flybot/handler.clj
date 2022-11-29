@@ -3,7 +3,7 @@
             [clj.flybot.operation :as op]
             [clj.flybot.auth :as auth]
             [cljc.flybot.validation :as v]
-            [datomic.api :as d]
+            [datalevin.core :as d]
             [muuntaja.core :as m]
             [reitit.ring :as reitit]
             [reitit.ring.middleware.muuntaja :as muuntaja]

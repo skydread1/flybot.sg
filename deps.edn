@@ -20,21 +20,26 @@
            ;; back-end
            aleph/aleph                           {:mvn/version "0.5.0"}
            robertluo/fun-map                     {:mvn/version "0.5.109"}
-           com.datomic/datomic-free              {:mvn/version "0.9.5697"}
+           datalevin/datalevin                   {:mvn/version "0.6.22"}
            skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
-                                                  :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}
-
-           ;; work around to resolve the dep conflict introduced by datomic
-           com.google.guava/guava                {:mvn/version "31.0.1-jre"}}
+                                                  :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}}
  :paths   ["dev/src" "src" "src/clj" "src/cljc" "test" "test/clj" "test/cljs" "test/cljc" "src/cljs" "target" "resources"]
+ ;; must be added to run datalevin with java11
+ :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
  :aliases
- {:dev
-  {:main-opts ["--main"  "figwheel.main"
-               "--build" "dev"
-               "--repl"]}
-  :prod
-  {:main-opts ["--main"       "figwheel.main"
-               "--build-once" "prod"]}
-  :build
-  {:deps {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
-   :ns-default build}}}
+ {;; frontend cljs hot reload
+  :dev   {:main-opts ["--main"  "figwheel.main"
+                      "--build" "dev"
+                      "--repl"]}
+  ;; frontend cljs optimized js bundle for prod
+  :prod  {:main-opts ["--main"       "figwheel.main"
+                      "--build-once" "prod"]}
+  ;; build backend uberjar
+  ;; clj -T:build deploy
+  :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
+          :ns-default build}
+  ;; clj -T:jib build
+  :jib   {:deps {io.github.atomisthq/jibbit {:git/tag "v0.1.13" :git/sha "4547f2d"}}
+          :ns-default jibbit.core
+          :ns-aliases {jib jibbit.core}}}}

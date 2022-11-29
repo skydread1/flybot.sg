@@ -3,10 +3,6 @@
 
 # misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 ## Clojure
 .cpcache
@@ -24,7 +20,9 @@ build
 .clj-kondo
 .nrepl-port
 
-## reagent/figwheel
+## figwheel
 target
 
+## datalevin
+datalevin
 
