@@ -2,6 +2,7 @@
   (:require [aleph.http :as http]
             [clj-commons.byte-streams :as bs]
             [clj.flybot.core :as core]
+            [clj.flybot.dev :refer [system-config]]
             [clj.flybot.db :as db]
             [clj.flybot.handler :as sut]
             [clj.flybot.auth :as auth]
@@ -20,11 +21,11 @@
 ;;---------- System for backend test ----------
 
 (def test-system
-  (-> (core/system-config :test)
+  (-> (system-config :test)
       core/system
       (dissoc :oauth2-config)
       (assoc :db-conn (fnk [db-uri]
-                           (let [conn (d/get-conn db-uri db/initial-schema)]
+                           (let [conn (d/get-conn db-uri db/initial-datalevin-schema)]
                              (sample-data->db conn)
                              (closeable
                               {:conn conn}

@@ -26,7 +26,7 @@
    {:db-uri         db-uri
     :db-conn        (fnk [db-uri]
                          (let [db-exist? (d/conn? db-uri)
-                               conn      (d/get-conn db-uri db/initial-schema)]
+                               conn      (d/get-conn db-uri db/initial-datalevin-schema)]
                            (when-not db-exist?
                              (db/add-initial-data conn))
                            (closeable

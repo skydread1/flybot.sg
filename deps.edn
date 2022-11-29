@@ -39,6 +39,7 @@
   ;; clj -T:build deploy
   :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
           :ns-default build}
+  ;; clj -T:jib build
   :jib   {:deps {io.github.atomisthq/jibbit {:git/tag "v0.1.13" :git/sha "4547f2d"}}
           :ns-default jibbit.core
           :ns-aliases {jib jibbit.core}}}}

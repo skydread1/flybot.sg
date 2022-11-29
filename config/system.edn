@@ -1,10 +1,10 @@
 {:prod     {:http-port       8123
-            :db-uri          "/datalevin/prod/flybotdb"
+            :db-uri          "datalevin/prod/flybotdb"
             :oauth2-callback "http://flybot-alb-576432178.ap-southeast-1.elb.amazonaws.com/oauth/google/callback"}
  :dev      {:http-port       8123
-            :db-uri          "/datalevin/dev/db"
+            :db-uri          "datalevin/dev/db"
             :oauth2-callback "http://localhost:8123/oauth/google/callback"}
- :figwheel {:db-uri          "/datalevin/figwheel/db"
+ :figwheel {:db-uri          "datalevin/figwheel/db"
             :oauth2-callback "http://localhost:9500/oauth/google/callback"}
  :test     {:http-port       8100
-            :db-uri          "/datalevin/test/db"}}
+            :db-uri          "datalevin/test/db"}}

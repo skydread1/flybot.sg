@@ -24,7 +24,5 @@ build
 target
 
 ## datalevin
-datalevin/dev
-datalevin/test
-datalevin/figwheel
+datalevin
 
