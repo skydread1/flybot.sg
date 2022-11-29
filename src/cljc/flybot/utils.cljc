@@ -1,5 +1,5 @@
 (ns cljc.flybot.utils
-  (:require #?(:clj [datomic.api :as d])))
+  (:require #?(:clj [datalevin.core :as d])))
 
 (defn mk-uuid
   []

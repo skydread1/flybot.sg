@@ -1,93 +1,80 @@
 (ns clj.flybot.db
   (:require [clojure.java.io :as io]
-            [datomic.api :as d]))
+            [datalevin.core :as d]))
 
 ;; ---------- Schemas ----------
 
 (def image-schema
-  [{:db/ident :image/src
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :image/src-dark
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :image/alt
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}])
+  {:image/src      {:db/valueType :db.type/string
+                    :db/cardinality :db.cardinality/one}
+   :image/src-dark {:db/valueType :db.type/string
+                    :db/cardinality :db.cardinality/one}
+   :image/alt      {:db/valueType :db.type/string
+                    :db/cardinality :db.cardinality/one}})
 
 (def post-schema
-  [{:db/ident :post/id
-    :db/valueType :db.type/uuid
-    :db/unique :db.unique/identity
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/page
-    :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/creation-date
-    :db/valueType :db.type/instant
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/last-edit-date
-    :db/valueType :db.type/instant
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/show-dates?
-    :db/valueType :db.type/boolean
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/css-class
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/image-beside
-    :db/valueType :db.type/ref
-    :db/isComponent true
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :post/md-content
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}])
+  {:post/id             {:db/valueType :db.type/uuid
+                         :db/unique :db.unique/identity
+                         :db/cardinality :db.cardinality/one}
+   :post/page           {:db/valueType :db.type/keyword
+                         :db/cardinality :db.cardinality/one}
+   :post/creation-date  {:db/valueType :db.type/instant
+                         :db/cardinality :db.cardinality/one}
+   :post/last-edit-date {:db/valueType :db.type/instant
+                         :db/cardinality :db.cardinality/one}
+   :post/show-dates?    {:db/valueType :db.type/boolean
+                         :db/cardinality :db.cardinality/one}
+   :post/css-class      {:db/valueType :db.type/string
+                         :db/cardinality :db.cardinality/one}
+   :post/image-beside   {:db/valueType :db.type/ref
+                         :db/isComponent true
+                         :db/cardinality :db.cardinality/one}
+   :post/md-content     {:db/valueType :db.type/string
+                         :db/cardinality :db.cardinality/one}})
 
 (def sort-config-schema
-  [{:db/ident :sort/type
-    :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :sort/direction
-    :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one}])
+  {:sort/type      {:db/valueType :db.type/keyword
+                    :db/cardinality :db.cardinality/one}
+   :sort/direction {:db/valueType :db.type/keyword
+                    :db/cardinality :db.cardinality/one}})
 
 (def page-schema
-  [{:db/ident :page/name
-    :db/valueType :db.type/keyword
-    :db/unique :db.unique/identity
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :page/sorting-method
-    :db/valueType :db.type/ref
-    :db/isComponent true
-    :db/cardinality :db.cardinality/one}])
+  {:page/name           {:db/valueType :db.type/keyword
+                         :db/unique :db.unique/identity
+                         :db/cardinality :db.cardinality/one}
+   :page/sorting-method {:db/valueType :db.type/ref
+                         :db/isComponent true
+                         :db/cardinality :db.cardinality/one}})
 
 (def role-schema
-  [{:db/ident :role/name
-    :db/valueType :db.type/keyword
-    :db/unique :db.unique/identity
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :role/date-granted
-    :db/valueType :db.type/instant
-    :db/cardinality :db.cardinality/one}])
+  {:role/name         {:db/valueType :db.type/keyword
+                       :db/unique :db.unique/identity
+                       :db/cardinality :db.cardinality/one}
+   :role/date-granted {:db/valueType :db.type/instant
+                       :db/cardinality :db.cardinality/one}})
 
 (def user-schema
-  [{:db/ident :user/id
-    :db/valueType :db.type/string
-    :db/unique :db.unique/identity
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :user/email
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :user/name
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :user/picture
-    :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one}
-   {:db/ident :user/roles
-    :db/valueType :db.type/ref
-    :db/isComponent true
-    :db/cardinality :db.cardinality/many}])
+  {:user/id      {:db/valueType :db.type/string
+                  :db/unique :db.unique/identity
+                  :db/cardinality :db.cardinality/one}
+   :user/email   {:db/valueType :db.type/string
+                  :db/cardinality :db.cardinality/one}
+   :user/name    {:db/valueType :db.type/string
+                  :db/cardinality :db.cardinality/one}
+   :user/picture {:db/valueType :db.type/string
+                  :db/cardinality :db.cardinality/one}
+   :user/roles   {:db/valueType :db.type/ref
+                  :db/isComponent true
+                  :db/cardinality :db.cardinality/many}})
+
+(def initial-schema
+  (merge
+   image-schema
+   sort-config-schema
+   post-schema
+   page-schema
+   role-schema
+   user-schema))
 
 ;; ---------- Initial Data ----------
 
@@ -288,15 +275,6 @@
        vec))
 
 ;;---------- Initialization ----------
-
-(defn add-schemas
-  [conn]
-  @(d/transact conn (concat image-schema
-                            sort-config-schema
-                            post-schema
-                            page-schema
-                            role-schema
-                            user-schema)))
 
 (defn add-initial-data
   [conn]

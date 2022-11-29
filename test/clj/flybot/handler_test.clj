@@ -7,7 +7,7 @@
             [clj.flybot.auth :as auth]
             [cljc.flybot.sample-data :as s]
             [clojure.test :refer [deftest is testing use-fixtures]]
-            [datomic.api :as d]
+            [datalevin.core :as d]
             [robertluo.fun-map :refer [closeable fnk halt! touch]]
             [clojure.edn :as edn]))
 
@@ -24,13 +24,11 @@
       core/system
       (dissoc :oauth2-config)
       (assoc :db-conn (fnk [db-uri]
-                           (d/create-database db-uri)
-                           (let [conn (d/connect db-uri)]
-                             (db/add-schemas conn)
+                           (let [conn (d/get-conn db-uri db/initial-schema)]
                              (sample-data->db conn)
                              (closeable
-                              conn
-                              #(d/delete-database db-uri)))))))
+                              {:conn conn}
+                              #(d/clear conn)))))))
 
 (defn system-fixture [f]
   (touch test-system)
@@ -78,13 +76,13 @@
 (deftest saturn-handler
   (testing "Returns the proper saturn response."
     (let [saturn-handler (:saturn-handler test-system)
-          db-conn        (:db-conn test-system)]
+          db-conn        (-> test-system :db-conn :conn)]
       (is (= {:response     {:posts
                              {:removed-post
                               #:post{:id ::ID}}}
               :effects-desc [{:db
                               {:payload
-                               [[:db/retractEntity
+                               [[:db.fn/retractEntity
                                  [:post/id ::ID]]]}}]
               :session      {}}
              (saturn-handler {:body-params {:posts
@@ -177,7 +175,7 @@
                              {:posts
                               {(list :all :with [])
                                [{:post/id '?}]}})]
-      (is (= [{:post/id s/post-1-id} {:post/id s/post-2-id}]
+      (is (= [{:post/id s/post-2-id} {:post/id s/post-1-id}]
              (-> resp :body :posts :all)))))
   (testing "Execute a request for a post."
     (let [resp (http-request "/posts/post"
@@ -219,7 +217,7 @@
                              {:users
                               {(list :all :with [])
                                [{:user/id '?}]}})]
-      (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
+      (is (= [{:user/id s/bob-id} {:user/id s/alice-id}]
              (-> resp :body :users :all)))))
   (testing "Execute a request for a user."
     (let [resp (http-request "/users/user"

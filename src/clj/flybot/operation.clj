@@ -38,7 +38,7 @@
 (defn delete-post
   [post-id]
   {:response {:post/id post-id}
-   :effects  {:db {:payload [[:db/retractEntity [:post/id post-id]]]}}})
+   :effects  {:db {:payload [[:db.fn/retractEntity [:post/id post-id]]]}}})
 
 (defn add-page
   [page]
@@ -76,7 +76,7 @@
   [db id]
   (if-let [user (db/get-user db id)]
     {:response user
-     :effects  {:db {:payload [[:db/retractEntity [:user/id id]]]}}}
+     :effects  {:db {:payload [[:db.fn/retractEntity [:user/id id]]]}}}
     {:error {:type    :user/delete
              :user-id id}}))
 

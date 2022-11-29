@@ -54,12 +54,12 @@
 
 ;; ---------- Deploy Client+Server----------
 
-(defn deploy [_] 
-  (deploy-client nil) 
+(defn deploy [_]
+  (deploy-client nil)
   (uber nil))
 
 ;; run the jar:
-;; java -jar target/flybot.sg-1.2.68-standalone.jar
+;; java -jar target/flybot.sg-1.2.110-standalone.jar
 
 
 
