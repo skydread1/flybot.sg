@@ -1,111 +1,42 @@
 # flybot.sg
-Official Website of [Flybot Pte Ltd](https://www.flybot.sg/)
+Full stack implementation of flybot.sg website : IN PROGRESS
 
-## Stack
+## frontend
 
-This website is a Single Page Application written in ClojureScript.
+To work on the frontend:
+- jack-in `deps+figwheel` (in calva for instance) and do not select any aliases at first
+- when prompt to chose between `dev` and `prod`, tick `dev` for hot reloading developement experience.
+- the website will be running on port `9500`
+- remove the `main.js` in the resources so your dev js is picked up by figwheel
 
-We have the following stack:
-- [figwheel-main](https://figwheel.org/) for live code reloading
-- [reagent](https://github.com/reagent-project/reagent) for react components
-- [hiccup](https://github.com/weavejester/hiccup) for DOM representation
-- [reitit](https://github.com/metosin/reitit) for routing
-- [malli](https://github.com/metosin/malli) to validate some configs at the top of markdown files
-- [markdown-to-hiccup](https://github.com/mpcarolin/markdown-to-hiccup) to allow us to write the page content in markdown.
+## backend
 
-## Features
+To work on the backend:
+- jack-in `deps.edn` without any aliases
+- start the dev-system in the `clj.flybot.dev` namespace to get the website running on port `8123`
+- be sure to have a `main.js` in the resources. if not present, you can generate it via `clj T:build deploy-client`
 
-The website:
-- contains a blog page to write articles in markdown
-- supports dark mode.
-- is fully responsive.
+To test the backend:
+- a test-system is started and closed everytime you run the handler test so you can run your test as usual.
 
-## Content
+## Create a unerjar
 
-### Organisation
+You can use
+ - `clj T:build deploy` to generate the main.js bundle and the uberjar
+ - `clj T:build uber` to only generate the uberjar
+ 
+## Create a container image
 
-Each page section is divided into sub-sections (cards).
-Each card is a markdown file that accepts some optional configuration.
-The markdown files are located in `src/cljs/flybot/content`.
+`clj -T:jib build` will create a flybot/image image.
 
-The folder name is the page name and the files in that folder are the cards names such as:
+## Start container with image
 
-```
-├── content
-│   ├── about
-│   │   ├── company.md
-│   │   └── team.md
-│   ├── apply
-│   │   ├── application.md
-│   │   ├── description.md
-│   │   ├── goal.md
-│   │   └── qualifications.md
-│   ├── blog
-│   │   └── welcome.md
-│   └── home
-│       ├── clojure.md
-│       ├── golden-island.md
-│       ├── magic.md
-│       └── paradigms.md
-```
+So far, the image is meant to create a docker conatiner locally.
 
-### Better markdown link support
+You need to provide 2 env variables: OAUTH2 and SYSTEM.
 
-In the markdown, we can sepcify if a link is a normal hyperlink or a button (thus triggering different css).
+docker run --rm -it -p 8123:8123 -e OAUTH2="creds" -e SYSTEM="{:http-port 8123, :db-uri \"/datalevin/prod/flybotdb\", :oauth2-callback \"https://some-uri\"}" flybot/image
 
-To trigger the button css, just add `-button` at the end of the title such as:
 
-```markdown
-[APPLY](https://docs.google.com/... "Application form -button")
-```
 
-### Config Clojure map
 
-At the top of the markdown, above the demarcation `+++`, we can provide a clojure map such as:
-
-```clojure
-{:order         0
- :image-beside  {:file "clojure-logo.svg" :alt "Clojure Logo"}
- :dark-mode-img ["clojure-logo.svg"]}
-+++
-```
-
-- `:order`: position of the card on the page from top to bottom
-- `:image-beside`: illustrative image on the side of the markdown content
-- `:dark-mode-img`: list of the files (internal in `resources/public/assets` or external `https://...`) that have a dark-mode support.
-
-Note 1: to have a different image for the dark mode, just add the dark image to the `assets` folder using the light image name + `-dark-mode` such as:
-
-```
-├── assets
-│   ├── clojure-logo-dark-mode.svg
-│   ├── clojure-logo.svg
-```
-
-Note 2: if no `:image-beside` is provided, the text will just fill the all width of the page.
-
-## Build
-
-### Dev
-
-For development, use the `dev` alias when you start the figwheel clj/cljs REPL.
-
-The hot reload upon saving will work for both clj and cljs files.
-
-Note: changing a markdown file won't reflect in the browser, you would need to save the clj file with the markdown conversion logic to see the changes.
-
-### Prod
-
-The github action is triggered when the code is pushed. It runs the build.clj task:
-
-```
-clojure -T:build deploy
-```
-
-This command compiles the cljs to the optimised js bundle that Netlify will use to generate the preview in the PR.
-
-## Continous integration
-
-Adding of modifying a markdown file and merging to master will recompile the cljs to the js bundle before automatically publishing the last version of the website via Netlify.
-
-The markdown files are converted to hiccup via Clojure macros, so they are converted at compile time.
