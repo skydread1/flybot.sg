@@ -1,0 +1,9 @@
+;; defalut base image for this is gcr.io/distroless/java
+{:main clj.flybot.core
+ ;; to be provided at container start via -e for instance
+ :env-vars      {:SYSTEM= "SYSTEM"
+                 :OAUTH2 "OAUTH2"}
+ :user          "root"
+ :group         "root"
+ :target-image {:image-name "flybot/image"
+                :type :docker}}

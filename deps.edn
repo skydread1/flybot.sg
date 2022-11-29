@@ -24,6 +24,9 @@
            skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
                                                   :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}}
  :paths   ["dev/src" "src" "src/clj" "src/cljc" "test" "test/clj" "test/cljs" "test/cljc" "src/cljs" "target" "resources"]
+ ;; must be added to run datalevin with java11
+ :jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]
  :aliases
  {;; frontend cljs hot reload
   :dev   {:main-opts ["--main"  "figwheel.main"
@@ -35,4 +38,7 @@
   ;; build backend uberjar
   ;; clj -T:build deploy
   :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
-          :ns-default build}}}
+          :ns-default build}
+  :jib   {:deps {io.github.atomisthq/jibbit {:git/tag "v0.1.13" :git/sha "4547f2d"}}
+          :ns-default jibbit.core
+          :ns-aliases {jib jibbit.core}}}}
