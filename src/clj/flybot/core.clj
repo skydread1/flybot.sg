@@ -5,7 +5,7 @@
             [clojure.edn :as edn]
             [datalevin.core :as d]
             [ring.middleware.session.memory :refer [memory-store]]
-            [robertluo.fun-map :refer [fnk life-cycle-map closeable touch halt!]])
+            [robertluo.fun-map :refer [fnk life-cycle-map closeable touch]])
   (:gen-class))
 
 (def oauth2-default-config
@@ -21,19 +21,14 @@
 ;;---------- System ----------
 
 (defn system
-  [{:keys [http-port db-uri google-creds oauth2-callback db-keep?]}]
+  [{:keys [http-port db-uri google-creds oauth2-callback]}]
   (life-cycle-map
    {:db-uri         db-uri
     :db-conn        (fnk [db-uri]
-                         (let [db-exist? (d/conn? db-uri)
-                               conn      (d/get-conn db-uri db/initial-datalevin-schema)]
-                           (when-not db-exist?
-                             (db/add-initial-data conn))
+                         (let [conn (d/get-conn db-uri db/initial-datalevin-schema)]
                            (closeable
                             {:conn conn}
-                            (if db-keep? 
-                              #(d/close conn)
-                              #(d/clear conn)))))
+                            #(d/close conn))))
     :oauth2-config  (let [{:keys [client-id client-secret]} google-creds]
                       (-> oauth2-default-config
                           (assoc-in [:google :client-id] client-id)
@@ -64,9 +59,7 @@
 
 (def prod-system
   (let [prod-cfg (edn/read-string (System/getenv "SYSTEM"))]
-    (-> (merge prod-cfg oauth2-config)
-        (assoc :db-keep? true)
-        system)))
+    (system (merge prod-cfg oauth2-config))))
 
 (defn -main [& _]
   (touch prod-system))

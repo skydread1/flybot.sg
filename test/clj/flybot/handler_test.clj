@@ -2,7 +2,7 @@
   (:require [aleph.http :as http]
             [clj-commons.byte-streams :as bs]
             [clj.flybot.core :as core]
-            [clj.flybot.dev :refer [system-config]]
+            [clj.flybot.systems :refer [system-config]]
             [clj.flybot.db :as db]
             [clj.flybot.handler :as sut]
             [clj.flybot.auth :as auth]
