@@ -1,6 +1,6 @@
 {:prod     {:http-port       8123
             :db-uri          "datalevin/prod/flybotdb"
-            :oauth2-callback "http://flybot-alb-576432178.ap-southeast-1.elb.amazonaws.com/oauth/google/callback"}
+            :oauth2-callback "https://flybot.sg/oauth/google/callback"}
  :dev      {:http-port       8123
             :db-uri          "datalevin/dev/db"
             :oauth2-callback "http://localhost:8123/oauth/google/callback"}

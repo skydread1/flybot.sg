@@ -122,12 +122,12 @@
 
 (deftest app-routes
   ;;---------- Errors
-  (testing "Invalid route so returns error 404."
+  (testing "Invalid route so returns error 204 and index.html."
     (let [resp (http-request "/wrong-route" ::PATTERN)]
-      (is (= 404 (-> resp :status)))))
-  (testing "Invalid http method so returns error 405."
+      (is (= 204 (-> resp :status)))))
+  (testing "Invalid http method so returns and index.html."
     (let [resp (http-request :get "/pages/page" ::PATTERN)]
-      (is (= 405 (-> resp :status)))))
+      (is (= 204 (-> resp :status)))))
   (testing "Invalid pattern so returns error 407."
     (let [resp (http-request "/pages/page" {:invalid-key '?})]
       (is (= 407 (-> resp :status)))))

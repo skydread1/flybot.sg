@@ -3,6 +3,7 @@
             [clj.flybot.operation :as op]
             [clj.flybot.auth :as auth]
             [cljc.flybot.validation :as v]
+            [clojure.java.io :as io]
             [datalevin.core :as d]
             [muuntaja.core :as m]
             [reitit.ring :as reitit]
@@ -97,6 +98,10 @@
        :headers {"content-type" "application/edn"}
        :session session})))
 
+(defn index-handler [_]
+  {:headers {"Content-Type" "text/html"}
+   :body    (slurp (io/resource "public/index.html"))})
+
 (defn app-routes
   "API routes, returns a ring-handler."
   [ring-handler oauth2-config session-store]
@@ -126,13 +131,9 @@
                                 :middleware [[auth/authorization-middleware [:admin]]]}]]
            ["/oauth/google/success" {:get        ring-handler
                                      :middleware [auth/google-authentification-middleware]}]
-           ["/*"   (reitit/create-resource-handler {:root "public"})]])
+           ["/*" {:get {:handler index-handler}}]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance
                  :middleware [muuntaja/format-middleware
                               [mw/wrap-defaults-custom session-store]
-                              mw/exception-middleware]}})
-   (reitit/create-default-handler
-    {:not-found          (constantly {:status 404 :body "Page not found"})
-     :method-not-allowed (constantly {:status 405 :body "Not allowed"})
-     :not-acceptable     (constantly {:status 406 :body "Not acceptable"})})))
+                              mw/exception-middleware]}})))
