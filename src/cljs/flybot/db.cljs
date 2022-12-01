@@ -118,7 +118,7 @@
    {:db         (assoc
                  db
                  :app/current-view (rfe/push-state :flybot/home)
-                 :app/theme        local-store-theme
+                 :app/theme        (or local-store-theme :dark)
                  :user/mode        :reader
                  :nav/navbar-open? false)
     :http-xhrio {:method          :post
@@ -144,7 +144,7 @@
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/all-success]
                  :on-failure      [:fx.http/failure]}
-    :fx         [[:fx.app/update-html-class local-store-theme]]}))
+    :fx         [[:fx.app/update-html-class (or local-store-theme :dark)]]}))
 
 ;; Theme (dark/light)
 
