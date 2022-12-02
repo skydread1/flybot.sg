@@ -5,9 +5,9 @@
                  :OAUTH2 "OAUTH2"}
  :user          "root"
  :group         "root"
- :target-image {:image-name "688541077069.dkr.ecr.ap-southeast-1.amazonaws.com/flybot-website:v1"
+ :target-image {:image-name "688541077069.dkr.ecr.ap-southeast-1.amazonaws.com/flybot-website"
                 :type       :registry
-                #_:tagger     #_{:fn jibbit.tagger/tag}
+                :tagger     {:fn jibbit.tagger/tag} ;; can comment to push images with unclean git dir for testing
                 :authorizer {:fn   jibbit.aws-ecr/ecr-auth
                              :args {:type         :profile
                                     :profile-name "default"
