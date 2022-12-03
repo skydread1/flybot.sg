@@ -115,36 +115,38 @@
  :evt.app/initialize
  [(rf/inject-cofx :cofx.app/local-store-theme :theme)]
  (fn [{:keys [db local-store-theme]} _]
-   {:db         (assoc
-                 db
-                 :app/current-view (rfe/push-state :flybot/home)
-                 :app/theme        local-store-theme
-                 :user/mode        :reader
-                 :nav/navbar-open? false)
-    :http-xhrio {:method          :post
-                 :uri             "/pages/all"
-                 :params {:pages
-                          {(list :all :with [])
-                           [{:page/name '?
-                             :page/sorting-method {:sort/type '?
-                                                   :sort/direction '?}}]}
-                          :posts
-                          {(list :all :with [])
-                           [{:post/id '?
-                             :post/page '?
-                             :post/css-class '?
-                             :post/creation-date '?
-                             :post/last-edit-date '?
-                             :post/show-dates? '?
-                             :post/md-content '?
-                             :post/image-beside {:image/src '?
-                                                 :image/src-dark '?
-                                                 :image/alt '?}}]}}
-                 :format          (edn-request-format {:keywords? true})
-                 :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/all-success]
-                 :on-failure      [:fx.http/failure]}
-    :fx         [[:fx.app/update-html-class local-store-theme]]}))
+   (let [app-theme    (or local-store-theme :dark)
+         current-view (or (:app/current-view db) (rfe/push-state :flybot/home))]
+     {:db         (assoc
+                   db
+                   :app/current-view current-view
+                   :app/theme        app-theme
+                   :user/mode        :reader
+                   :nav/navbar-open? false)
+      :http-xhrio {:method          :post
+                   :uri             "/pages/all"
+                   :params {:pages
+                            {(list :all :with [])
+                             [{:page/name '?
+                               :page/sorting-method {:sort/type '?
+                                                     :sort/direction '?}}]}
+                            :posts
+                            {(list :all :with [])
+                             [{:post/id '?
+                               :post/page '?
+                               :post/css-class '?
+                               :post/creation-date '?
+                               :post/last-edit-date '?
+                               :post/show-dates? '?
+                               :post/md-content '?
+                               :post/image-beside {:image/src '?
+                                                   :image/src-dark '?
+                                                   :image/alt '?}}]}}
+                   :format          (edn-request-format {:keywords? true})
+                   :response-format (edn-response-format {:keywords? true})
+                   :on-success      [:fx.http/all-success]
+                   :on-failure      [:fx.http/failure]}
+      :fx         [[:fx.app/update-html-class app-theme]]})))
 
 ;; Theme (dark/light)
 

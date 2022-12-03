@@ -1,6 +1,7 @@
 (ns clj.flybot.middleware
   (:require [reitit.ring.middleware.exception :as exception]
-            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]))
+            [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
+            [ring.middleware.ssl :refer [wrap-forwarded-scheme]]))
 
 (defn handler [status message exception request]
   {:status status
@@ -31,4 +32,5 @@
   [handler session-store]
   (-> handler
       (wrap-defaults
-       (ring-cfg session-store))))
+       (ring-cfg session-store))
+      (wrap-forwarded-scheme)))

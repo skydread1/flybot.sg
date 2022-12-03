@@ -1,9 +1,14 @@
-;; defalut base image for this is gcr.io/distroless/java
-{:main clj.flybot.core
- ;; to be provided at container start via -e for instance
- :env-vars      {:SYSTEM= "SYSTEM"
+;; Image config to create the image and push it to ECR
+{:main           clj.flybot.core
+ ;; to be provided at container start via -e for instance.
+ :env-vars      {:SYSTEM "SYSTEM"
                  :OAUTH2 "OAUTH2"}
  :user          "root"
  :group         "root"
- :target-image {:image-name "flybot/image"
-                :type :docker}}
+ :target-image {:image-name "688541077069.dkr.ecr.ap-southeast-1.amazonaws.com/flybot-website"
+                :type       :registry
+                :tagger     {:fn jibbit.tagger/tag} ;; can comment to push images with unclean git dir for testing
+                :authorizer {:fn   jibbit.aws-ecr/ecr-auth
+                             :args {:type         :profile
+                                    :profile-name "default"
+                                    :region       "ap-southeast-1"}}}}
