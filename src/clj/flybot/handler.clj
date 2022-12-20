@@ -122,7 +122,7 @@
                               :middleware [[auth/authorization-middleware [:editor]]]}]]
            ["/users"
             ["/login"          {:get        ring-handler
-                                :middleware [auth/app-authentification-middleware]}]
+                                :middleware [[auth/app-authentification-middleware]]}]
             ["/logout"         {:get auth/logout-handler}]
             ["/all"            {:post ring-handler}]
             ["/user"           {:post ring-handler}]
@@ -130,7 +130,7 @@
             ["/removed-user"   {:post       ring-handler
                                 :middleware [[auth/authorization-middleware [:admin]]]}]]
            ["/oauth/google/success" {:get        ring-handler
-                                     :middleware [auth/google-authentification-middleware]}]
+                                     :middleware [[auth/google-authentification-middleware]]}]
            ["/*" {:get {:handler index-handler}}]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance
