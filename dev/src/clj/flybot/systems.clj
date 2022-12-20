@@ -4,7 +4,7 @@
             [clj.flybot.db :as db]
             [clojure.edn :as edn]
             [datalevin.core :as d]
-            [cljc.flybot.sample-data2 :as sample-data]
+            [clj.flybot.sample-data2 :as sample-data]
             [robertluo.fun-map :refer [fnk closeable touch halt!]]))
 
 (defn system-config
