@@ -26,43 +26,23 @@
 (defn google-api-fetch-user
   [access-tokens]
   (let [google-api-url      "https://www.googleapis.com/oauth2/v2/userinfo"
-        google-access-token (-> access-tokens :google :token)
-        response            (try
-                              @(http/request
-                                {:content-type  :json
-                                 :accept        :json
-                                 :url           google-api-url
-                                 :method        :get
-                                 :oauth-token   google-access-token})
-                              (catch Exception e
-                                (ex-data e)))]
-    (if (= (:status response) 200)
-      (-> response
-          :body
+        google-access-token   (-> access-tokens :google :token)
+        {:keys [status body]} (try
+                                @(http/request
+                                  {:content-type  :json
+                                   :accept        :json
+                                   :url           google-api-url
+                                   :method        :get
+                                   :oauth-token   google-access-token})
+                                (catch Exception e
+                                  (ex-data e)))]
+    (if (= status 200)
+      (-> body
           bs/to-string
           (cheshire/parse-string true)
           to-snake-case)
        {:error {:type           :api.google/fetch-user
                 :google-api-url google-api-url}})))
-
-(defn app-authentification-middleware
-  "Uses the user-id from the session to get is information from the db.
-   If no user-id in the session, does nothing."
-  [ring-handler]
-  (fn [{:keys [session] :as req}]
-    (if-let [user-id (-> session :user-id)]
-      (let [pattern {:users
-                     {:auth
-                      {(list :logged :with [user-id])
-                       {:user/id '?
-                        :user/email '?
-                        :user/name '?
-                        :user/picture '?
-                        :user/roles [{:role/name '?
-                                      :role/date-granted '?}]}}}}]
-        (ring-handler (assoc req :params pattern)))
-      {:body    {:no-user-session true}
-       :headers {"content-type" "application/edn"}})))
 
 (defn redirect-302
   [resp landing-uri]
@@ -70,7 +50,7 @@
       (assoc :status 302)
       (assoc-in [:headers "Location"] landing-uri)))
 
-(defn google-authentification-middleware
+(defn authentification-middleware
   "Uses the access token returned from google oauth2 to fetch the user-info"
   [ring-handler]
   (fn [{:keys [session] :as request}]

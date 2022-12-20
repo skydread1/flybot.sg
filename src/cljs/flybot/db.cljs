@@ -35,16 +35,21 @@
 
 (rf/reg-event-fx
  :fx.http/all-success
- (fn [{:keys [db]} [_ {:keys [pages posts]}]]
-   {:db (merge db {:app/pages (->> pages
-                                   :all
-                                   (map #(assoc % :page/mode :read))
-                                   (utils/to-indexed-maps :page/name))
-                   :app/posts (->> posts
-                                   :all
-                                   (map #(assoc % :post/mode :read))
-                                   (utils/to-indexed-maps :post/id))})
-    :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]]}))
+ (fn [{:keys [db]} [_ {:keys [pages posts users]}]]
+   (let [user (-> users :auth :logged)]
+     {:db (merge db {:app/pages (->> pages
+                                     :all
+                                     (map #(assoc % :page/mode :read))
+                                     (utils/to-indexed-maps :page/name))
+                     :app/posts (->> posts
+                                     :all
+                                     (map #(assoc % :post/mode :read))
+                                     (utils/to-indexed-maps :post/id))
+                     :app/user  (when (seq user) user)})
+      :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]
+           [:fx.log/message [(if (seq user)
+                               (str "User " (:user/name user) " logged in.")
+                               (str "No user logged in"))]]]})))
 
 (rf/reg-event-fx
  :fx.http/post-success
@@ -78,14 +83,6 @@
            [:dispatch [:evt.post.form/clear-form]]
            [:dispatch [:evt.error/clear-errors]]
            [:fx.log/message ["Post " post-id " deleted."]]]})))
-
-(rf/reg-event-fx
- :fx.http/login-success
- (fn [_ [_ {:keys [users]}]]
-   (let [user (-> users :auth :logged)]
-     (when user
-       {:fx [[:dispatch [:evt.user/add-user user]]
-             [:fx.log/message ["User " (:user/name user) " logged in."]]]}))))
 
 (rf/reg-event-fx
  :fx.http/logout-success
@@ -141,13 +138,21 @@
                                :post/md-content '?
                                :post/image-beside {:image/src '?
                                                    :image/src-dark '?
-                                                   :image/alt '?}}]}}
+                                                   :image/alt '?}}]}
+                            :users
+                            {:auth
+                             {(list :logged :with [])
+                              {:user/id '?
+                               :user/email '?
+                               :user/name '?
+                               :user/picture '?
+                               :user/roles [{:role/name '?
+                                             :role/date-granted '?}]}}}}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/all-success]
                    :on-failure      [:fx.http/failure]}
-      :fx         [[:fx.app/update-html-class app-theme]
-                   [:dispatch [:evt.user/login]]]})))
+      :fx         [[:fx.app/update-html-class app-theme]]})))
 
 ;; Theme (dark/light)
 
@@ -212,27 +217,10 @@
                     :editor)]
      (assoc db :user/mode new-mode))))
 
-(rf/reg-event-db
- :evt.user/add-user
- (fn [db [_ user]]
-   (assoc db :app/user user)))
-
 (rf/reg-sub
  :subs.user/user
  (fn [db _]
    (:app/user db)))
-
-;; When the app is rendered, send request to login with session
-;; If session has no user-id (oauth2 not done), servers just returns 200
-;; If session has user-id (oauth2 done), servers returns user-info
-(rf/reg-event-fx
- :evt.user/login
- (fn [_ _]
-   {:http-xhrio {:method          :get
-                 :uri             "/users/login"
-                 :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/login-success]
-                 :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-fx
  :evt.user/logout

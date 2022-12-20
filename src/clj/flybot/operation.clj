@@ -47,12 +47,13 @@
 
 (defn login-user
   [db user-id]
-  (if-let [{:user/keys [id roles] :as user} (db/get-user db user-id)]
-    {:response user
-     :session  {:user-id     id
-                :user-roles (map :role/name roles)}}
-    {:error {:type    :user/login
-             :user-id user-id}}))
+  (when user-id
+    (if-let [{:user/keys [roles] :as user} (db/get-user db user-id)]
+      {:response user
+       :session  {:user-id     user-id
+                  :user-roles (map :role/name roles)}}
+      {:error {:type    :user/login
+               :user-id user-id}})))
 
 (defn register-user
   [db user-id email name picture]
@@ -86,7 +87,7 @@
   "Path to be pulled with the pull-pattern.
    The pull-pattern `:with` option will provide the params to execute the function
    before pulling it."
-  [db]
+  [db session]
   {:posts {:all          (fn [] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
            :new-post     (fn [post] (add-post post))
@@ -98,4 +99,4 @@
            :user         (fn [id] (get-user db id))
            :removed-user (fn [id] (delete-user db id))
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
-                          :logged     (fn [id] (login-user db id))}}})
+                          :logged     (fn [] (login-user db (:user-id session)))}}})
