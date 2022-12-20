@@ -21,7 +21,7 @@
   [_]
   (println "[START] -> Client : Generate js bundle")
   (clean nil)
-  (b/process {:command-args ["clojure" "-M:fig:prod"]})
+  (b/process {:command-args ["clojure" "-M:jvm-base:fig:prod"]})
   (move-js nil)
   (clean nil)
   (println "[END] -> Client : Generate js bundle"))
@@ -31,7 +31,7 @@
 (def lib 'flybot.sg)
 (def version (format "1.2.%s" (b/git-count-revs nil)))
 (def class-dir "target/classes")
-(def basis (b/create-basis {:project "deps.edn"}))
+(def basis (b/create-basis {:project "deps.edn" :aliases [:jvm-base]}))
 (def uber-file (format "target/%s-%s-standalone.jar" (name lib) version))
 
 (defn uber
@@ -56,11 +56,3 @@
 (defn deploy [_]
   (deploy-client nil)
   (uber nil))
-
-;; run the jar:
-;; SYSTEM="SYSTEM" OAUTH2="OAUTH2" java -jar target/flybot.sg-1.2.110-standalone.jar
-
-
-
-
-
