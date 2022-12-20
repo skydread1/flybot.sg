@@ -146,7 +146,8 @@
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/all-success]
                    :on-failure      [:fx.http/failure]}
-      :fx         [[:fx.app/update-html-class app-theme]]})))
+      :fx         [[:fx.app/update-html-class app-theme]
+                   [:dispatch [:evt.user/login]]]})))
 
 ;; Theme (dark/light)
 
@@ -221,6 +222,9 @@
  (fn [db _]
    (:app/user db)))
 
+;; When the app is rendered, send request to login with session
+;; If session has no user-id (oauth2 not done), servers just returns 200
+;; If session has user-id (oauth2 done), servers returns user-info
 (rf/reg-event-fx
  :evt.user/login
  (fn [_ _]
