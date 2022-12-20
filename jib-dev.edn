@@ -1,10 +1,13 @@
 ;; Image config to test de containerised app locally.
 ;; defalut base image for this is gcr.io/distroless/java.
-{:main clj.flybot.core
+{:main         clj.flybot.core
+ :aliases      [:jvm-base]
  ;; to be provided at container start via -e for instance.
- :env-vars      {:SYSTEM "SYSTEM"
-                 :OAUTH2 "OAUTH2"}
+ :env-vars     {:SYSTEM "SYSTEM"
+                :OAUTH2 "OAUTH2"}
  :user          "root"
  :group         "root"
+ :base-image   {:image-name "openjdk:11-slim-buster"
+                :type       :registry}
  :target-image {:image-name "flybot/image"
-                :type :docker}}
+                :type       :docker}}
