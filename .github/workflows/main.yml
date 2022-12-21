@@ -37,3 +37,9 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build main.js
+        run: clojure -T:build js-bundle
+
+      - name: Build image and push to ECR
+        run: clojure -T:jib build
