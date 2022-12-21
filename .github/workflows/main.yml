@@ -25,4 +25,4 @@ jobs:
         run: clojure -A:jvm-base:test-clj
 
       - name: Run the cljs tests
-        run: clojure -A:jvm-base:fig:test-cljs-headless
+        run: clojure -A:jvm-base:fig:cljs/test-headless
