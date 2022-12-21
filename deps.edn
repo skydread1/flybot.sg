@@ -19,8 +19,8 @@
   ;; JVM options to make datalevin work with java version > java8
   :jvm-base {:jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                         "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
-  ;; CLJ paths for the backend tests
-  :test {:extra-paths ["test" "dev/src" "config" "target"]}
+  ;; CLJ paths for the backend systems and tests
+  :dev-clj {:extra-paths ["test" "dev/src" "config" "target"]}
   
   ;; CLJ backend figwheel-system handler
   :fig  {:extra-deps {;; frontend
@@ -47,7 +47,17 @@
   :prod {:main-opts ["--main"       "figwheel.main"
                      "--build-once" "prod"]}
   
-  ;;---------- CI/CD aliases ----------
+  ;;---------- CI aliases ----------
+  ;; Run clj tests
+  :test-clj {:extra-paths ["test" "dev/src" "config"]
+             :extra-deps  {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
+             :main-opts   ["-m" "kaocha.runner"]}
+  
+  :test-cljs {:main-opts ["-m" "figwheel.main"
+                          "-m" "cljs.flybot.test-runner"]}
+
+
+  ;;---------- CD aliases ----------
   ;; build frontend js bundle : clj -T:build deploy-client
   ;; build backend uberjar: clj -T:build uber
   ;; build both js and jar : clj -T:build deploy
