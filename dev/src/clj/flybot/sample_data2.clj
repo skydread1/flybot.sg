@@ -1,4 +1,4 @@
-(ns cljc.flybot.sample-data2
+(ns clj.flybot.sample-data2
   "Realistic sample data that can be used for api or figwheel developement."
   (:require [cljc.flybot.utils :as u]
             [clojure.java.io :as io]
@@ -9,7 +9,7 @@
 (defn slurp-md
   "Slurp the sample files with the markdown."
   [page-name file-name]
-  (-> (str "cljc/flybot/sample_data2/md_content/" page-name "/" file-name)
+  (-> (str "clj/flybot/sample_data2/md_content/" page-name "/" file-name)
       io/resource
       slurp))
 

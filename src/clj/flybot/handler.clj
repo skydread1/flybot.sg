@@ -75,7 +75,7 @@
   (let [pattern           (if (seq params) params body-params)
         pattern-validator (sch/pattern-validator v/api-schema)
         pattern           (pattern-validator pattern)
-        data              (op/pullable-data db)]
+        data              (op/pullable-data db session)]
     (if (:error pattern)
       (throw (ex-info "invalid pattern" (merge {:type :pattern} pattern)))
       (let [[resp complements] ((mk-query pattern) data)]
@@ -121,8 +121,6 @@
             ["/new-page"     {:post       ring-handler
                               :middleware [[auth/authorization-middleware [:editor]]]}]]
            ["/users"
-            ["/login"          {:get        ring-handler
-                                :middleware [auth/app-authentification-middleware]}]
             ["/logout"         {:get auth/logout-handler}]
             ["/all"            {:post ring-handler}]
             ["/user"           {:post ring-handler}]
@@ -130,7 +128,7 @@
             ["/removed-user"   {:post       ring-handler
                                 :middleware [[auth/authorization-middleware [:admin]]]}]]
            ["/oauth/google/success" {:get        ring-handler
-                                     :middleware [auth/google-authentification-middleware]}]
+                                     :middleware [[auth/authentification-middleware]]}]
            ["/*" {:get {:handler index-handler}}]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance
