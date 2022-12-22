@@ -12,6 +12,7 @@
                 :type       :registry
                 :tagger     {:fn jibbit.tagger/tag} ;; can comment to push images with unclean git dir for testing
                 :authorizer {:fn   jibbit.aws-ecr/ecr-auth
-                             :args {:type         :profile
-                                    :profile-name "default"
+                             :args {:type         :environment
+                                    ;;:type         :profile 
+                                    ;;:profile-name "default"
                                     :region       "ap-southeast-1"}}}}
