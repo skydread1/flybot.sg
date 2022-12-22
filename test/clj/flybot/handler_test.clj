@@ -25,7 +25,9 @@
       core/system
       (dissoc :oauth2-config)
       (assoc :db-conn (fnk [db-uri]
-                           (let [conn (d/get-conn db-uri db/initial-datalevin-schema)]
+                           (let [conn (d/get-conn db-uri)
+                                 _    (d/clear conn)
+                                 conn (d/get-conn db-uri db/initial-datalevin-schema)]
                              (sample-data->db conn)
                              (closeable
                               {:conn conn}

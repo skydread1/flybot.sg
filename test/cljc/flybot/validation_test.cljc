@@ -1,4 +1,4 @@
-(ns flybot.validation-test
+(ns cljc.flybot.validation-test
   (:require [clojure.test :refer [deftest testing is]]
             [cljc.flybot.validation :as sut]
             [malli.util :as mu]))

@@ -19,9 +19,7 @@
   ;; JVM options to make datalevin work with java version > java8
   :jvm-base {:jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                         "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
-  ;; CLJ paths for the backend tests
-  :test {:extra-paths ["test" "dev/src" "config" "target"]}
-  
+
   ;; CLJ backend figwheel-system handler
   :fig  {:extra-deps {;; frontend
                       com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
@@ -35,25 +33,42 @@
                       day8.re-frame/http-fx                 {:mvn/version "0.2.4"}
                       day8.re-frame/test                    {:mvn/version "0.1.5"}}
          :extra-paths ["test" "dev/src" "config" "target"]}
-  
+
+  ;; CLJ paths for the backend systems and tests
+  :clj/dev {:extra-paths ["test" "dev/src" "config" "target"]}
+
+  ;; Run clj tests
+  :clj/test {:extra-paths ["test" "dev/src" "config"]
+             :extra-deps  {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
+             :main-opts   ["-m" "kaocha.runner"]}
+
   ;;---------- FRONTEND (cljs) aliases ----------
   ;; cljs repl for figwheel hot reloading development/testing
   ;; be sure to not have a js bundle in resources/public and used :fig alias for clj repl
-  :dev {:main-opts ["--main"  "figwheel.main"
-                    "--build" "dev"
-                    "--repl"]}
-  
+  :cljs/dev {:main-opts ["--main"  "figwheel.main"
+                         "--build" "dev"
+                         "--repl"]}
+
   ;; build the optimised js bundle
-  :prod {:main-opts ["--main"       "figwheel.main"
-                     "--build-once" "prod"]}
-  
-  ;;---------- CI/CD aliases ----------
-  ;; build frontend js bundle : clj -T:build deploy-client
+  :cljs/prod {:main-opts ["--main"       "figwheel.main"
+                          "--build-once" "prod"]}
+
+  ;; Run the cljs tests
+  :cljs/test {:main-opts ["-m" "figwheel.main"
+                          "-m" "cljs.flybot.test-runner"]}
+
+  ;; Run the cljs tests with chrome headless
+  :cljs/test-headless {:main-opts ["-m" "figwheel.main"
+                                   "-co" "tests.cljs.edn"
+                                   "-m" "cljs.flybot.test-runner"]}
+
+  ;;---------- CD aliases ----------
+  ;; build frontend js bundle : clj -T:build js-bundle
   ;; build backend uberjar: clj -T:build uber
   ;; build both js and jar : clj -T:build deploy
   :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
           :ns-default build}
-  
+
   ;; build image and push to image repo
   ;; clj -T:jib build
   :jib {:deps       {io.github.atomisthq/jibbit {:git/tag "v0.1.14" :git/sha "ca4f7d3"}}

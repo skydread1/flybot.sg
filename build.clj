@@ -15,13 +15,13 @@
                 :target "resources/public/main.js"})
   (println "Copied js bundle to the static dir: " static-dir))
 
-(defn deploy-client
+(defn js-bundle
   "- Compiles the sources cljs to a single prod-main.js
    - Moves the prod-main.js from target/public to resources/public."
   [_]
   (println "[START] -> Client : Generate js bundle")
   (clean nil)
-  (b/process {:command-args ["clojure" "-M:jvm-base:fig:prod"]})
+  (b/process {:command-args ["clojure" "-M:jvm-base:fig:cljs/prod"]})
   (move-js nil)
   (clean nil)
   (println "[END] -> Client : Generate js bundle"))
@@ -54,5 +54,5 @@
 ;; ---------- Deploy Client+Server----------
 
 (defn deploy [_]
-  (deploy-client nil)
+  (js-bundle nil)
   (uber nil))

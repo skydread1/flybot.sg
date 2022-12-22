@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+env:
+  OAUTH2: ""
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@7.0
+        with:
+          cli: latest
+          
+      - name: Run the clj tests
+        run: clojure -A:jvm-base:test-clj
+
+      - name: Run the cljs tests
+        run: clojure -A:jvm-base:fig:cljs/test-headless
+
+      - name: Build main.js
+        run: clojure -T:build js-bundle
+
+      - name: Build image and push to ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+        run: clojure -T:jib build
