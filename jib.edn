@@ -2,17 +2,15 @@
 {:main           clj.flybot.core
  :aliases        [:jvm-base]
  ;; to be provided at container start via -e for instance.
- :env-vars      {:SYSTEM "SYSTEM"
-                 :OAUTH2 "OAUTH2"}
+ :env-vars      {:SYSTEM   ""
+                 :OAUTH2   ""}
  :user          "root"
  :group         "root"
  :base-image   {:image-name "openjdk:11-slim-buster"
                 :type       :registry}
- :target-image {:image-name "688541077069.dkr.ecr.ap-southeast-1.amazonaws.com/flybot-website"
+ :target-image {:image-name "$ECR_REPO"
                 :type       :registry
                 :tagger     {:fn jibbit.tagger/tag} ;; can comment to push images with unclean git dir for testing
-                :authorizer {:fn   jibbit.aws-ecr/ecr-auth
-                             :args {:type         :environment
-                                    ;;:type         :profile 
-                                    ;;:profile-name "default"
-                                    :region       "ap-southeast-1"}}}}
+                :authorizer {:fn jibbit.aws-ecr/ecr-auth
+                             :args {:type   :environment
+                                    :region "ap-southeast-1"}}}}

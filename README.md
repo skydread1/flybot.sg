@@ -68,7 +68,11 @@ java -jar target/flybot.sg-{version}-standalone.jar
 
 ### Create a container image and push it to ECR
 
-You need to have valid AWS credentials profile in ~/.aws/credentials and have aws cli installed (v2 or v1)
+You need to aws cli installed (v2 or v1)
+
+You have several [possibilities](https://github.com/atomisthq/jibbit/blob/main/src/jibbit/aws_ecr.clj) to provide credentials to login to your AWS ECR, notably
+- For authorizer type `:profile`: AWS credentials profile in ~/.aws/credentials and `:profile-name` key to jibbit authorizer
+- For authorizer type `:environment`: Env variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 
 To create the image and push it to the ECR account
 - `clj -T:jib build` 
