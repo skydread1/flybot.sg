@@ -1,6 +1,5 @@
 (ns clj.flybot.db
-  (:require [clojure.java.io :as io]
-            [datalevin.core :as d]))
+  (:require [datalevin.core :as d]))
 
 ;; ---------- Datomic Schemas ----------
 
@@ -44,7 +43,13 @@
     :db/valueType :db.type/ref
     :db/isComponent true}
    {:db/ident :post/md-content
-    :db/valueType :db.type/string}])
+    :db/valueType :db.type/string}
+   {:db/ident :post/author
+    :db/valueType :db.type/ref}
+   {:db/ident :post/last-editor
+    :db/valueType :db.type/ref}
+   {:db/ident :post/show-authors?
+    :db/valueType :db.type/boolean}])
 
 (def sort-config-schema
   [{:db/ident :sort/type
@@ -94,43 +99,6 @@
 
 (def initial-datalevin-schema
   (datomic->datalevin initial-datomic-schema))
-
-;;---------- Post ----------
-
-(def post-pull-pattern
-  [:post/id
-   :post/page
-   :post/css-class
-   :post/creation-date
-   :post/last-edit-date
-   :post/show-dates?
-   :post/md-content
-   {:post/image-beside [:image/src :image/src-dark :image/alt]}])
-
-(defn get-post
-  "Get the post with the given `id`."
-  [db id]
-  (->> (d/q
-        '[:find (pull ?posts pull-pattern)
-          :in $ ?id pull-pattern
-          :where
-          [?posts :post/id ?id]]
-        db
-        id
-        post-pull-pattern)
-       ffirst))
-
-(defn get-all-posts
-  "Get all posts"
-  [db]
-  (->> (d/q
-        '[:find (pull ?posts pull-pattern)
-          :in $ pull-pattern
-          :where [?posts :post/id]]
-        db
-        post-pull-pattern)
-       (map first)
-       vec))
 
 ;;---------- Page ----------
 
@@ -188,5 +156,44 @@
           :where [?user :user/id]]
         db
         user-pull-pattern)
+       (map first)
+       vec))
+
+;;---------- Post ----------
+
+(def post-pull-pattern
+  [:post/id
+   :post/page
+   :post/css-class
+   :post/creation-date
+   :post/last-edit-date
+   {:post/author user-pull-pattern}
+   {:post/last-editor user-pull-pattern}
+   :post/show-dates?
+   :post/show-authors?
+   :post/md-content
+   {:post/image-beside [:image/src :image/src-dark :image/alt]}])
+
+(defn get-post
+  "Get the post with the given `id`."
+  [db post-id]
+  (->> (d/q
+        '[:find (pull ?posts pull-pattern)
+          :in $ ?id pull-pattern
+          :where [?posts :post/id ?id]]
+        db
+        post-id
+        post-pull-pattern)
+       ffirst))
+
+(defn get-all-posts
+  "Get all posts"
+  [db]
+  (->> (d/q
+        '[:find (pull ?posts pull-pattern)
+          :in $ pull-pattern
+          :where [?posts :post/id]]
+        db
+        post-pull-pattern)
        (map first)
        vec))

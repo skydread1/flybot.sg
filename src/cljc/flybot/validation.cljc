@@ -11,6 +11,10 @@
 
 ;;---------- Validation Schemas ----------
 
+(def author-schema
+  [:map
+   [:user/id :string]])
+
 (def post-schema
   [:map {:closed true}
    [:post/id :uuid]
@@ -18,7 +22,10 @@
    [:post/css-class {:optional true} :string]
    [:post/creation-date inst?]
    [:post/last-edit-date {:optional true} inst?]
+   [:post/author author-schema]
+   [:post/last-editor {:optional true} author-schema]
    [:post/show-dates? {:optional true} :boolean]
+   [:post/show-authors? {:optional true} :boolean]
    [:post/md-content :string]
    [:post/image-beside
     {:optional true}
@@ -103,15 +110,18 @@
        (map #(select-keys % [:path :type]))))
 
 (defn prepare-post
-  "Given a `post` from the post form,
-      returns a post matching server format requirements."
-  [post]
-  (let [temp-id?   (-> post :post/id u/temporary-id?)
-        date-field (if temp-id? :post/creation-date :post/last-edit-date)]
+  "Given a `post` from the post form and the `user-id`,
+   returns a post matching server format requirements."
+  [post user-id]
+  (let [temp-id?     (-> post :post/id u/temporary-id?)
+        date-field   (if temp-id? :post/creation-date :post/last-edit-date)
+        action       (if (:post/author post) :edition :creation)
+        writer-field (if (= :creation action) :post/author :post/last-editor)]
     (-> post
         (dissoc :post/view :post/mode)
-        (update :post/id (if temp-id? #(u/mk-uuid) identity))
-        (assoc date-field (u/mk-date)))))
+        (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
+        (assoc date-field (u/mk-date))
+        (assoc-in [writer-field :user/id] user-id))))
 
 (defn prepare-page
   "Given the `page` from the page form,
