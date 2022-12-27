@@ -77,12 +77,13 @@
 
 (rf/reg-event-fx
  :fx.http/remove-post-success
- (fn [_ [_ {:keys [posts]}]]
-   (let [post-id (-> posts :removed-post :post/id)]
+ (fn [{:keys [db]} [_ {:keys [posts]}]]
+   (let [post-id   (-> posts :removed-post :post/id)
+         user-name (-> db :app/user :user/name)]
      {:fx [[:dispatch [:evt.post/delete-post post-id]]
            [:dispatch [:evt.post.form/clear-form]]
            [:dispatch [:evt.error/clear-errors]]
-           [:fx.log/message ["Post " post-id " deleted."]]]})))
+           [:fx.log/message ["Post " post-id " deleted by " user-name "."]]]})))
 
 (rf/reg-event-fx
  :fx.http/logout-success
@@ -134,6 +135,9 @@
                                :post/css-class '?
                                :post/creation-date '?
                                :post/last-edit-date '?
+                               :post/author {:user/id '?}
+                               :post/last-editor {:user/id '?}
+                               :post/show-authors? '?
                                :post/show-dates? '?
                                :post/md-content '?
                                :post/image-beside {:image/src '?
@@ -349,19 +353,17 @@
 
 (rf/reg-event-fx
  :evt.post/remove-post
- (fn [_ [_ post-id]]
-   {:http-xhrio {:method          :post
-                 :uri             "/posts/removed-post"
-                 :params          {:posts
-                                   {(list :removed-post :with [post-id])
-                                    {:post/id '?
-                                     :post/page '?
-                                     :post/creation-date '?
-                                     :post/md-content '?}}}
-                 :format          (edn-request-format {:keywords? true})
-                 :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/remove-post-success]
-                 :on-failure      [:fx.http/failure]}}))
+ (fn [{:keys [db]} [_ post-id]]
+   (let [user-id (-> db :app/user :user/id)]
+     {:http-xhrio {:method          :post
+                   :uri             "/posts/removed-post"
+                   :params          {:posts
+                                     {(list :removed-post :with [post-id user-id])
+                                      {:post/id '?}}}
+                   :format          (edn-request-format {:keywords? true})
+                   :response-format (edn-response-format {:keywords? true})
+                   :on-success      [:fx.http/remove-post-success]
+                   :on-failure      [:fx.http/failure]}})))
 
 ;; ---------- Post Form ----------
 
@@ -379,7 +381,8 @@
 (rf/reg-event-fx
  :evt.post.form/send-post
  (fn [{:keys [db]} _]
-   (let [post (-> db :form/fields valid/prepare-post (valid/validate valid/post-schema))]
+   (let [user-id (-> db :app/user :user/id)
+         post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema))]
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
@@ -391,6 +394,9 @@
                                          :post/css-class '?
                                          :post/creation-date '?
                                          :post/last-edit-date '?
+                                         :post/author {:user/id '?}
+                                         :post/last-editor {:user/id '?}
+                                         :post/show-authors? '?
                                          :post/show-dates? '?
                                          :post/md-content '?
                                          :post/image-beside {:image/src '?
@@ -420,6 +426,9 @@
                                        :post/css-class '?
                                        :post/creation-date '?
                                        :post/last-edit-date '?
+                                       :post/author {:user/id '?}
+                                       :post/last-editor {:user/id '?}
+                                       :post/show-authors? '?
                                        :post/show-dates? '?
                                        :post/md-content '?
                                        :post/image-beside {:image/src '?
