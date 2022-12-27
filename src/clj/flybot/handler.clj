@@ -114,7 +114,7 @@
             ["/new-post"     {:post       ring-handler
                               :middleware [[auth/authorization-middleware [:editor]]]}]
             ["/removed-post" {:post       ring-handler
-                              :middleware [[auth/authorization-middleware [:admin]]]}]]
+                              :middleware [[auth/authorization-middleware [:editor]]]}]]
            ["/pages"
             ["/all"          {:post ring-handler}]
             ["/page"         {:post ring-handler}]

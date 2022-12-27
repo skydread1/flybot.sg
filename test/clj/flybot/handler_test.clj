@@ -2,36 +2,20 @@
   (:require [aleph.http :as http]
             [clj-commons.byte-streams :as bs]
             [clj.flybot.core :as core]
-            [clj.flybot.systems :refer [system-config]]
-            [clj.flybot.db :as db]
+            [clj.flybot.systems :as sys]
             [clj.flybot.handler :as sut]
             [clj.flybot.auth :as auth]
-            [cljc.flybot.sample-data :as s]
+            [cljc.flybot.test-sample-data :as s]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datalevin.core :as d]
-            [robertluo.fun-map :refer [closeable fnk halt! touch]]
+            [robertluo.fun-map :refer [halt! touch]]
             [clojure.edn :as edn]))
 
-(defn sample-data->db
-  [conn]
-  @(d/transact conn [s/post-1 s/post-2
-                     s/home-page s/apply-page
-                     s/bob-user s/alice-user]))
-
-;;---------- System for backend test ----------
-
 (def test-system
-  (-> (system-config :test)
+  (-> (sys/system-config :test)
       core/system
       (dissoc :oauth2-config)
-      (assoc :db-conn (fnk [db-uri]
-                           (let [conn (d/get-conn db-uri)
-                                 _    (d/clear conn)
-                                 conn (d/get-conn db-uri db/initial-datalevin-schema)]
-                             (sample-data->db conn)
-                             (closeable
-                              {:conn conn}
-                              #(d/clear conn)))))))
+      (assoc :db-conn (sys/db-conn-system sys/test-schemas))))
 
 (defn system-fixture [f]
   (touch test-system)
@@ -81,15 +65,13 @@
     (let [saturn-handler (:saturn-handler test-system)
           db-conn        (-> test-system :db-conn :conn)]
       (is (= {:response     {:posts
-                             {:removed-post
-                              #:post{:id ::ID}}}
+                             {:new-post
+                              #:post{:id s/post-3-id}}}
               :effects-desc [{:db
-                              {:payload
-                               [[:db.fn/retractEntity
-                                 [:post/id ::ID]]]}}]
+                              {:payload [s/post-3]}}]
               :session      {}}
              (saturn-handler {:body-params {:posts
-                                            {(list :removed-post :with [::ID])
+                                            {(list :new-post :with [s/post-3])
                                              {:post/id '?}}}
                               :db (d/db db-conn)}))))))
 
@@ -188,11 +170,28 @@
                                 :post/page '?
                                 :post/css-class '?
                                 :post/creation-date '?
+                                :post/last-edit-date '?
+                                :post/show-dates? '?
+                                :post/show-authors? '?
+                                :post/author {:user/id '?
+                                              :user/email '?
+                                              :user/name '?
+                                              :user/picture '?
+                                              :user/roles [{:role/name '?
+                                                            :role/date-granted '?}]}
+                                :post/last-editor {:user/id '?
+                                                   :user/email '?
+                                                   :user/name '?
+                                                   :user/picture '?
+                                                   :user/roles [{:role/name '?
+                                                                 :role/date-granted '?}]}
                                 :post/md-content '?
                                 :post/image-beside {:image/src '?
                                                     :image/src-dark '?
                                                     :image/alt '?}}}})]
-      (is (= s/post-1
+      (is (= (-> s/post-1
+                 (assoc :post/author s/alice-user)
+                 (assoc :post/last-editor s/bob-user))
              (-> resp :body :posts :post)))))
   (testing "Execute a request for a new post."
     (with-redefs [auth/has-permission? (constantly true)]
@@ -202,6 +201,12 @@
                                  {:post/id '?
                                   :post/page '?
                                   :post/creation-date '?
+                                  :post/author {:user/id '?
+                                                :user/email '?
+                                                :user/name '?
+                                                :user/picture '?
+                                                :user/roles [{:role/name '?
+                                                              :role/date-granted '?}]}
                                   :post/md-content '?}}})]
         (is (= s/post-3
                (-> resp :body :posts :new-post))))))
@@ -209,7 +214,7 @@
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/removed-post"
                                {:posts
-                                {(list :removed-post :with [s/post-3-id])
+                                {(list :removed-post :with [s/post-3-id s/bob-id])
                                  {:post/id '?}}})]
         (is (= {:post/id s/post-3-id}
                (-> resp :body :posts :removed-post))))))
@@ -220,7 +225,7 @@
                              {:users
                               {(list :all :with [])
                                [{:user/id '?}]}})]
-      (is (= [{:user/id s/bob-id} {:user/id s/alice-id}]
+      (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
              (-> resp :body :users :all)))))
   (testing "Execute a request for a user."
     (let [resp (http-request "/users/user"
