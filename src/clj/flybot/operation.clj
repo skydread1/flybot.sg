@@ -36,9 +36,22 @@
    :effects  {:db {:payload [post]}}})
 
 (defn delete-post
-  [post-id]
-  {:response {:post/id post-id}
-   :effects  {:db {:payload [[:db.fn/retractEntity [:post/id post-id]]]}}})
+  "Delete the post if
+   - `user-id` is author of `post-id`
+   - `user-id` has admin role"
+  [db post-id user-id]
+  (let [author-id (-> (db/get-post db post-id) :post/author :user/id)
+        admin?    (->> (db/get-user db user-id)
+                       :user/roles
+                       (map :role/name)
+                       (filter #(= :admin %))
+                       seq)]
+    (if (or admin? (= author-id user-id))
+      {:response {:post/id post-id}
+       :effects  {:db {:payload [[:db.fn/retractEntity [:post/id post-id]]]}}}
+      {:error {:type      :authorization
+               :user-id   user-id
+               :author-id author-id}})))
 
 (defn add-page
   [page]
@@ -91,7 +104,7 @@
   {:posts {:all          (fn [] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
            :new-post     (fn [post] (add-post post))
-           :removed-post (fn [post-id] (delete-post post-id))}
+           :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
    :pages {:all       (fn [] (get-all-pages db))
            :page      (fn [page-name] (get-page db page-name))
            :new-page  (fn [page] (add-page page))}
