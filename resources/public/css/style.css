@@ -296,12 +296,6 @@ header .top {
     align-items: center;
 }
 
-@media (max-width: 1024px) {
-    header .top>* {
-        width: 20%;
-    }
-}
-
 .pointer {
     cursor: pointer;
 }
