@@ -2,7 +2,7 @@
   "Hot reloading regression tests for the re-frame logic.
    The tests are executed everytime a cljs file is saved.
    The results are displayed in http://localhost:9500/figwheel-extra-main/auto-testing"
-  (:require [cljc.flybot.sample-data :as s]
+  (:require [cljc.flybot.test-sample-data :as s]
             [cljs.flybot.db]
             [cljs.flybot.lib.router :as router]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]
@@ -227,7 +227,6 @@
          new-post-form (rf/subscribe [:subs.post.form/fields])
          posts         (rf/subscribe [:subs.post/posts :home])
          new-post      (assoc empty-post
-                              :post/id (random-uuid)
                               :post/md-content "#New Content 1")]
      ;;---------- AUTOFILL POST FORM
      ;; Toggle mode

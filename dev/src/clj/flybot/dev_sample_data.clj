@@ -1,15 +1,14 @@
-(ns clj.flybot.sample-data2
+(ns clj.flybot.dev-sample-data
   "Realistic sample data that can be used for api or figwheel developement."
   (:require [cljc.flybot.utils :as u]
-            [clojure.java.io :as io]
-            [datalevin.core :as d]))
+            [clojure.java.io :as io]))
 
 ;; ---------- Initial Data ----------
 
 (defn slurp-md
   "Slurp the sample files with the markdown."
   [page-name file-name]
-  (-> (str "clj/flybot/sample_data2/md_content/" page-name "/" file-name)
+  (-> (str "clj/flybot/dev_sample_data/md_content/" page-name "/" file-name)
       io/resource
       slurp))
 
@@ -105,13 +104,3 @@
    {:page/name :blog
     :page/sorting-method {:sort/type :post/creation-date
                           :sort/direction :ascending}}])
-
-;;---------- Initialization ----------
-
-(defn add-initial-data
-  [conn]
-  @(d/transact conn (concat home-posts
-                            apply-posts
-                            about-posts
-                            blog-posts
-                            pages)))
