@@ -54,8 +54,11 @@
 (rf/reg-event-fx
  :fx.http/post-success
  (fn [{:keys [db]} [_ {:keys [posts]}]]
-   (let [post (:post posts)]
-     {:db (assoc db :form/fields post)
+   (let [post        (:post posts)
+         last-editor (or (:post/last-editor post) (:app/user db))]
+     {:db (assoc db :form/fields (assoc post
+                                        :post/last-editor last-editor
+                                        :post/last-edit-date (js/Date.)))
       :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
 
 (rf/reg-event-fx
@@ -135,8 +138,10 @@
                                :post/css-class '?
                                :post/creation-date '?
                                :post/last-edit-date '?
-                               :post/author {:user/id '?}
-                               :post/last-editor {:user/id '?}
+                               :post/author {:user/id '?
+                                             :user/name '?}
+                               :post/last-editor {:user/id '?
+                                                  :user/name '?}
                                :post/show-authors? '?
                                :post/show-dates? '?
                                :post/md-content '?
@@ -394,8 +399,10 @@
                                          :post/css-class '?
                                          :post/creation-date '?
                                          :post/last-edit-date '?
-                                         :post/author {:user/id '?}
-                                         :post/last-editor {:user/id '?}
+                                         :post/author {:user/id '?
+                                                       :user/name '?}
+                                         :post/last-editor {:user/id '?
+                                                            :user/name '?}
                                          :post/show-authors? '?
                                          :post/show-dates? '?
                                          :post/md-content '?
@@ -416,7 +423,9 @@
      {:db         (assoc db :form/fields
                          {:post/id   post-id
                           :post/page (-> db :app/current-view :data :page-name)
-                          :post/mode :edit})}
+                          :post/mode :edit
+                          :post/author (-> db :app/user (select-keys [:user/id :user/name]))
+                          :post/creation-date (js/Date.)})}
      {:http-xhrio {:method          :post
                    :uri             "/posts/post"
                    :params          {:posts
@@ -426,8 +435,10 @@
                                        :post/css-class '?
                                        :post/creation-date '?
                                        :post/last-edit-date '?
-                                       :post/author {:user/id '?}
-                                       :post/last-editor {:user/id '?}
+                                       :post/author {:user/id '?
+                                                     :user/name '?}
+                                       :post/last-editor {:user/id '?
+                                                          :user/name '?}
                                        :post/show-authors? '?
                                        :post/show-dates? '?
                                        :post/md-content '?
