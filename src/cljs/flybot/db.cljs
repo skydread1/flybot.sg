@@ -58,7 +58,7 @@
          last-editor (or (:post/last-editor post) (:app/user db))]
      {:db (assoc db :form/fields (assoc post
                                         :post/last-editor last-editor
-                                        :post/last-edit-date (js/Date.)))
+                                        :post/last-edit-date (utils/mk-date)))
       :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
 
 (rf/reg-event-fx
@@ -425,7 +425,7 @@
                           :post/page (-> db :app/current-view :data :page-name)
                           :post/mode :edit
                           :post/author (-> db :app/user (select-keys [:user/id :user/name]))
-                          :post/creation-date (js/Date.)})}
+                          :post/creation-date (utils/mk-date)})}
      {:http-xhrio {:method          :post
                    :uri             "/posts/post"
                    :params          {:posts
