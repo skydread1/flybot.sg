@@ -259,6 +259,11 @@ input[type=button] {
     height: 32px;
 }
 
+.post-icon {
+    width: 22px;
+    height: 22px;
+}
+
 .burger {
     fill: var(--text-primary-color);
     width: 32px;
@@ -289,12 +294,6 @@ header .top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-@media (max-width: 1024px) {
-    header .top>* {
-        width: 20%;
-    }
 }
 
 .pointer {
@@ -403,11 +402,31 @@ footer p {
     border-bottom-color: var(--border-primary-color);
 }
 
+@media (max-width: 1024px) {
+    section .page-header {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .page-header>form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 section .post {
     padding: 2.5rem;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: var(--border-primary-color);
+}
+
+@media (max-width: 1024px) {
+    section .post {
+        padding: 0.5rem;
+    }
 }
 
 section .post:nth-of-type(odd) {
@@ -442,6 +461,12 @@ section .post-body>div {
     padding: 1.5rem;
 }
 
+@media (max-width: 1024px) {
+    section .post-body>div {
+        padding: 0.5rem;
+    }
+}
+
 section .post-body>.image {
     width: 25%;
 }
@@ -466,7 +491,7 @@ section .image>img {
     section .post .post-body>.image, section .post-body>.text {
         width: 100%;
         margin: auto;
-        padding: 1.5rem;
+        padding: 0.5rem;
     }
 }
 
@@ -485,6 +510,13 @@ section .button  {
     border-width: 2px;
     border-color: var(--border-primary-color);
     background-color: var(--button-primary-color);
+}
+
+@media (max-width: 1024px) {
+    section .button  {
+        width: 50%;
+        margin: 0.5rem auto;
+    }
 }
 
 /* Apply page */
@@ -526,19 +558,39 @@ section.blog h1 {
 
 /* Post */
 
-.post-header{
-    margin: 1rem;
+@media (max-width: 1024px) {
+    .post-header>form {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
-.post-header .button, .page-header .button {
-    min-width: 30%;
-    padding: 0.5rem;
+@media (min-width: 1024px) {
+    .post-header {
+        margin: 1rem;
+    }
 }
 
-.post-dates {
-    font-size: 0.8rem;
+.post-authors {
     border-bottom: groove;
     border-bottom-width: thin;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 1024px) {
+    .post-author {
+        font-size: 0.7rem;
+    }
+}
+
+.post-author>div {
+    padding: 0.3rem;
 }
 
 @media (min-width: 1024px) {

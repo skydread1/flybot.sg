@@ -108,6 +108,16 @@
                                 :post/show-dates?
                                 (.. % -target -checked)])}]
      [:br]
+     [:label {:for "show-authors"} "Show Authors:"]
+     [:br]
+     [:input
+      {:type "checkbox"
+       :name "show-authors"
+       :default-checked (when @(rf/subscribe [:subs.post.form/field :post/show-authors?]) "checked")
+       :on-click #(rf/dispatch [:evt.post.form/set-field
+                                :post/show-authors?
+                                (.. % -target -checked)])}]
+     [:br]
      [theme-logo]]
     [:br]
     [:fieldset
@@ -126,12 +136,56 @@
 
 ;;---------- (pre)View ----------
 
-(defn post-dates
-  [{:post/keys [creation-date last-edit-date :post/show-dates?]}]
-  (when show-dates?
-    [:div.post-dates
-     (when creation-date [:p (str "Created on: " creation-date)])
-     (when last-edit-date [:p (str "Last edited on: " last-edit-date)])]))
+(def clock-icon
+  [:svg.post-icon
+   {:viewBox "0 0 32 32" :fill "none"}
+   [:circle {:cx "16" :cy "16" :r "13" :stroke "#535358" :stroke-width "2"}]
+   [:path {:stroke "#535358" :stroke-linecap "round" :stroke-linejoin "round" :stroke-width "2" :d "M16 8v8l4 4"}]])
+
+(def author-icon
+  [:svg.post-icon
+   {:stroke "#535358" :fill "none" :stroke-linejoin "miter" :viewBox "0 0 24 24" :xmlns "http://www.w3.org/2000/svg" :stroke-linecap "round" :stroke-width "1"}
+   [:polygon {:points "16 3 20 7 6 21 2 21 2 17 16 3" :fill "#059cf7" :opacity "0.1" :stroke-width "0"}]
+   [:polygon {:points "16 3 20 7 6 21 2 21 2 17 16 3"}]
+   [:line {:x1 "12" :y1 "21" :x2 "22" :y2 "21"}]])
+
+(defn format-date
+  [date]
+  (-> (js/Intl.DateTimeFormat. "en-GB")
+      (.format date)))
+
+(defn user-info
+  [user-name date action]
+  [:div.post-author
+   (concat
+    (when user-name
+      [[:div {:key "author-icon"} author-icon]
+       [:div {:key "user-name"} (str user-name)]])
+    (when date
+      [[:div {:key "clock-icon"} clock-icon]
+       [:div {:key "date"} (format-date date)]])
+    (when (or user-name date)
+      [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
+
+(defn post-authors
+  [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
+  (cond (and show-authors? show-dates?)
+        [:div.post-authors
+         [user-info (:user/name author) creation-date :author]
+         [user-info (:user/name last-editor) last-edit-date :editor]]
+    
+        (and show-authors? (not show-dates?))
+        [:div.post-authors
+         [user-info (:user/name author) nil :author]
+         [user-info (:user/name last-editor) nil :editor]]
+    
+        show-dates?
+        [:div.post-authors
+         [user-info nil creation-date :author]
+         [user-info nil last-edit-date :editor]]
+        
+        :else
+        nil))
 
 (defn post-view
   [{:post/keys [css-class image-beside hiccup-content] :as post}]
@@ -145,13 +199,13 @@
        [:div.image
         [:img {:src src :alt alt}]]
        [:div.text
-        [post-dates post]
+        [post-authors post]
         hiccup-content]]
     ;; returns 1 hiccup div
       [:div.post-body
        {:class css-class}
        [:div.textonly
-        [post-dates post]
+        [post-authors post]
         hiccup-content]])))
 
 ;;---------- Post ----------

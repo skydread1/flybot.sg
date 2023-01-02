@@ -8,7 +8,8 @@
             [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [day8.re-frame.test :as rf-test]
             [re-frame.core :as rf]
-            [re-frame.db :as rf.db]))
+            [re-frame.db :as rf.db]
+            [cljc.flybot.utils :as utils]))
 
 ;; ---------- Fixtures ----------
 
@@ -38,6 +39,7 @@
    (let [current-view (rf/subscribe [:subs.page/current-view])
          theme        (rf/subscribe [:subs.app/theme])
          mode         (rf/subscribe [:subs.user/mode])
+         user         (rf/subscribe [:subs.user/user])
          navbar-open? (rf/subscribe [:subs.nav/navbar-open?])
          posts        (rf/subscribe [:subs.post/posts :home])
          http-error   (rf/subscribe [:subs.error/error :failure-http-result])]
@@ -65,7 +67,8 @@
        (is (= :reader @mode))
        (is (= false @navbar-open?))
        (is (= 2 (-> @posts count)))
-       (is (= [:home :apply] (-> @re-frame.db/app-db :app/pages keys)))))))
+       (is (= [:home :apply] (-> @re-frame.db/app-db :app/pages keys)))
+       (is (= s/bob-user @user))))))
 
 (deftest theme
   (rf-test/run-test-sync
@@ -158,108 +161,112 @@
 ;; ---------- Post ----------
 
 (deftest edit-post
-  (rf-test/run-test-sync
-   (test-fixtures)
-   (let [p1-mode          (rf/subscribe [:subs.post/mode s/post-1-id])
-         p1-form          (rf/subscribe [:subs.post.form/fields])
-         p1-preview       (rf/subscribe [:subs.post.form/field :post/view])
-         posts            (rf/subscribe [:subs.post/posts :home])
-         errors           (rf/subscribe [:subs.error/errors])
-         validation-error (rf/subscribe [:subs.error/error :validation-errors])
-         new-post-1       (assoc s/post-1
-                                 :post/md-content     "#New Content 1"
-                                 :post/last-edit-date (js/Date.))]
+  (with-redefs [utils/mk-date (constantly s/post-1-edit-date)]
+    (rf-test/run-test-sync
+     (test-fixtures)
+     (let [p1-mode          (rf/subscribe [:subs.post/mode s/post-1-id])
+           p1-form          (rf/subscribe [:subs.post.form/fields])
+           p1-preview       (rf/subscribe [:subs.post.form/field :post/view])
+           posts            (rf/subscribe [:subs.post/posts :home])
+           errors           (rf/subscribe [:subs.error/errors])
+           validation-error (rf/subscribe [:subs.error/error :validation-errors])
+           new-post-1       (assoc s/post-1
+                                   :post/md-content     "#New Content 1"
+                                   :post/last-edit-date (utils/mk-date))]
      ;;---------- AUTOFILL POST FORM
-     (testing "Initial post mode is :read."
-       (is (= :read @p1-mode)))
+       (testing "Initial post mode is :read."
+         (is (= :read @p1-mode)))
 
      ;; Mock success http request
-     (rf/reg-fx :http-xhrio
-                (fn [_]
-                  (rf/dispatch [:fx.http/post-success
-                                {:posts {:post s/post-1}}])))
+       (rf/reg-fx :http-xhrio
+                  (fn [_]
+                    (rf/dispatch [:fx.http/post-success
+                                  {:posts {:post s/post-1}}])))
      ;; Toggle mode
-     (rf/dispatch [:evt.post/toggle-edit-mode s/post-1-id])
-     (testing "New post mode is :edit."
-       (is (= :edit @p1-mode)))
-     (testing "The post data got filled in the form."
-       (is (= s/post-1 @p1-form)))
+       (rf/dispatch [:evt.post/toggle-edit-mode s/post-1-id])
+       (testing "New post mode is :edit."
+         (is (= :edit @p1-mode)))
+       (testing "The post data got filled in the form."
+         (is (= s/post-1 @p1-form)))
 
      ;;---------- PREVIEW POST
      ;; Toggle preview
-     (rf/dispatch [:evt.post.form/toggle-preview])
-     (testing "Post in preview mode"
-       (is (= :preview @p1-preview)))
+       (rf/dispatch [:evt.post.form/toggle-preview])
+       (testing "Post in preview mode"
+         (is (= :preview @p1-preview)))
 
      ;;---------- POST VALIDATION ERROR
-     (rf/dispatch [:evt.post.form/set-field :post/md-content nil])
+       (rf/dispatch [:evt.post.form/set-field :post/md-content nil])
      ;; Send post but validation error
-     (rf/dispatch [:evt.post.form/send-post])
-     (testing "Validation error added to db."
-       (is @validation-error))
+       (rf/dispatch [:evt.post.form/send-post])
+       (testing "Validation error added to db."
+         (is @validation-error))
 
      ;;---------- SEND POST SUCCESS
      ;; Mock success http request
      ;; Change md-content in the form
-     (rf/dispatch [:evt.post.form/set-field :post/md-content "#New Content 1"])
-     (rf/reg-fx :http-xhrio
-                (fn [_]
-                  (rf/dispatch [:fx.http/send-post-success
-                                {:posts {:new-post new-post-1}}])))
+       (rf/dispatch [:evt.post.form/set-field :post/md-content "#New Content 1"])
+       (rf/reg-fx :http-xhrio
+                  (fn [_]
+                    (rf/dispatch [:fx.http/send-post-success
+                                  {:posts {:new-post new-post-1}}])))
      ;; Send post with new content to server
-     (rf/dispatch [:evt.post.form/send-post])
-     (testing "Post sent successfully."
-       (is (= [(assoc new-post-1 :post/mode :read)
-               (assoc s/post-2 :post/mode :read)]
-              @posts)))
-     (testing "Form and errors cleared."
-       (is (not @p1-form))
-       (is (not @errors))))))
+       (rf/dispatch [:evt.post.form/send-post])
+       (testing "Post sent successfully."
+         (is (= [(assoc new-post-1 :post/mode :read)
+                 (assoc s/post-2 :post/mode :read)]
+                @posts)))
+       (testing "Form and errors cleared."
+         (is (not @p1-form))
+         (is (not @errors)))))))
 
 (deftest create-post
-  (rf-test/run-test-sync
-   (test-fixtures)
-   (let [temp-id       "new-post-temp-id" 
-         empty-post    {:post/id   temp-id
-                        :post/page :home
-                        :post/mode :edit}
-         new-post-mode (rf/subscribe [:subs.post/mode temp-id])
-         new-post-form (rf/subscribe [:subs.post.form/fields])
-         posts         (rf/subscribe [:subs.post/posts :home])
-         new-post      (assoc empty-post
-                              :post/md-content "#New Content 1")]
+  (with-redefs [utils/mk-date (constantly s/post-1-create-date)]
+    (rf-test/run-test-sync
+     (test-fixtures)
+     (let [temp-id       "new-post-temp-id" 
+           empty-post    {:post/id   temp-id
+                          :post/page :home
+                          :post/mode :edit
+                          :post/author {:user/id "bob-id" :user/name "Bob"}
+                          :post/creation-date (utils/mk-date)}
+           new-post-mode (rf/subscribe [:subs.post/mode temp-id])
+           new-post-form (rf/subscribe [:subs.post.form/fields])
+           posts         (rf/subscribe [:subs.post/posts :home])
+           new-post      (assoc empty-post
+                                :post/md-content "#New Content 1")]
      ;;---------- AUTOFILL POST FORM
      ;; Toggle mode
-     (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
-     (testing "The post data got filled in the form."
-       (is (= empty-post @new-post-form)))
+       (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
+       (testing "The post data got filled in the form."
+         (is (= empty-post @new-post-form)))
 
      ;;---------- CANCEL POST FORM
      ;; Change md-content in the form
-     (rf/dispatch [:evt.post.form/set-field :post/md-content "#New Content 1"])
+       (rf/dispatch [:evt.post.form/set-field :post/md-content "#New Content 1"])
      ;; Toggle mode
-     (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
-     (testing "Form was cleared and edit mode switch back to read mode."
-       (is (= :read @new-post-mode)))
+       (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
+       (testing "Form was cleared and edit mode switch back to read mode."
+         (is (= :read @new-post-mode)))
 
      ;;---------- SEND POST SUCCESS
      ;; Toggle mode
-     (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
+       (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
      ;; Change md-content in the form
-     (rf/dispatch [:evt.post.form/set-field :post/md-content "#New Content 1"])
-     (rf/reg-fx :http-xhrio
-                (fn [_] (rf/dispatch
-                         [:fx.http/send-post-success
-                          {:posts {:new-post new-post}}])))
+       (rf/dispatch [:evt.post.form/set-field :post/md-content "#New Content 1"])
+       (rf/reg-fx :http-xhrio
+                  (fn [_] (rf/dispatch
+                           [:fx.http/send-post-success
+                            {:posts {:new-post new-post}}])))
      ;; Send post with new content to server
-     (rf/dispatch [:evt.post.form/send-post])
-     (testing "Post sent successfully."
-       (is (= [(assoc s/post-1 :post/mode :read)
-               (assoc s/post-2 :post/mode :read)
-               (assoc new-post :post/mode :read)]
-              @posts)))
-     (testing "Form cleared."
-       (is (not @new-post-form))))))
+       (rf/dispatch [:evt.post.form/send-post])
+       (testing "Post sent successfully."
+         (is (= [(assoc s/post-1 :post/mode :read)
+                 (assoc s/post-2 :post/mode :read)
+                 (assoc new-post :post/mode :read)]
+                @posts)))
+       (testing "Form cleared."
+         (is (not @new-post-form)))))))
 
 (deftest delete-post
   (rf-test/run-test-sync
