@@ -7,6 +7,7 @@ on:
 
 env:
   OAUTH2: ""
+  ADMIN_USER: ""
 
 jobs:
   build:

@@ -17,6 +17,7 @@
    {:pattern               (partial handler 407 "Invalid pattern provided")
     :user/login            (partial handler 408 "Cannot login because user does not exist")
     :user/delete           (partial handler 409 "Cannot delete because user does not exist")
+    :user/grand-admin      (partial handler 414 "User does not exist")
     :api.google/fetch-user (partial handler 412 "Could not fecth google user info")
     :authorization         (partial handler 413 "User does not have the required permission.")
     ::exception/default    (partial handler 500 "Default")}))
