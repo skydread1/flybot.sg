@@ -1,14 +1,15 @@
-(ns clj.flybot.dev-sample-data
+(ns clj.flybot.init-data
   "Realistic sample data that can be used for api or figwheel developement."
   (:require [cljc.flybot.utils :as u]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.edn :as edn]))
 
 ;; ---------- Initial Data ----------
 
 (defn slurp-md
   "Slurp the sample files with the markdown."
   [page-name file-name]
-  (-> (str "clj/flybot/dev_sample_data/md_content/" page-name "/" file-name)
+  (-> (str "clj/flybot/init_data/md_content/" page-name "/" file-name)
       io/resource
       slurp))
 
@@ -91,6 +92,9 @@
                         :image/src-dark "assets/binary-dark-mode.svg"
                         :image/alt "Love word written in base 2"}}])
 
+(def posts
+  (concat home-posts apply-posts about-posts blog-posts))
+
 (def pages
   [{:page/name :home
     :page/sorting-method {:sort/type :post/creation-date
@@ -104,3 +108,14 @@
    {:page/name :blog
     :page/sorting-method {:sort/type :post/creation-date
                           :sort/direction :ascending}}])
+
+(def users
+  (let [admin (edn/read-string (or (System/getenv "ADMIN_USER")
+                                   (slurp "config/admin.edn")))]
+    (-> admin
+        (assoc :user/roles [{:role/name :editor :role/date-granted (u/mk-date)}
+                            {:role/name :admin :role/date-granted (u/mk-date)}])
+        vector)))
+
+(def init-data
+  (concat posts pages users))
