@@ -14,8 +14,9 @@ build
 .clj-kondo
 .nrepl-port
 
-## oauth2
+## config
 OAUTH2.edn
+admin.edn
 
 ## build
 target

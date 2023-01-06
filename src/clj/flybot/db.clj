@@ -148,6 +148,17 @@
         user-pull-pattern)
        ffirst))
 
+(defn get-user-by-email
+  [db email]
+  (->> (d/q
+        '[:find (pull ?user pull-pattern)
+          :in $ ?email pull-pattern
+          :where [?user :user/email ?email]]
+        db
+        email
+        user-pull-pattern)
+       ffirst))
+
 (defn get-all-users
   [db]
   (->> (d/q

@@ -71,11 +71,13 @@
 (defn register-user
   [db user-id email name picture]
   (if-let [{:user/keys [id roles] :as user} (db/get-user db user-id)]
-    ;; already in db so just return user
-    {:response user
-     :session  {:user-id    id
-                :user-roles (map :role/name roles)}}
-    ;; first login so add to db
+    (let [updated-user (assoc user :user/name name :user/picture picture)]
+    ;; already in db so update user (name or picture could have changed).
+      {:response updated-user
+       :effects  {:db {:payload [updated-user]}}
+       :session  {:user-id    id
+                  :user-roles (map :role/name roles)}})
+    ;; first login so create user
     (let [user #:user{:id      user-id
                       :email   email
                       :name    name
@@ -93,6 +95,23 @@
      :effects  {:db {:payload [[:db.fn/retractEntity [:user/id id]]]}}}
     {:error {:type    :user/delete
              :user-id id}}))
+
+(defn grant-admin
+  [db email]
+  (let [{:user/keys [roles] :as user} (db/get-user-by-email db email)]
+    (cond (not user)
+          {:error {:type           :user.admin/not-found
+                   :user-email     email}}
+          
+          (some #{:admin} (map :role/name roles))
+          {:error {:type          :user.admin/already-admin
+                   :user-email    email}}
+          
+          :else
+          (let [new-user (update user :user/roles conj {:role/name         :admin
+                                                        :role/date-granted (utils/mk-date)})]
+            {:response new-user
+             :effects  {:db {:payload [new-user]}}}))))
 
 ;;---------- Pullable data ----------
 
@@ -112,4 +131,5 @@
            :user         (fn [id] (get-user db id))
            :removed-user (fn [id] (delete-user db id))
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
-                          :logged     (fn [] (login-user db (:user-id session)))}}})
+                          :logged     (fn [] (login-user db (:user-id session)))}
+           :new-role     {:admin (fn [email] (grant-admin db email))}}})

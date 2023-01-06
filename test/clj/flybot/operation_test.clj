@@ -12,7 +12,7 @@
   (-> (sys/system-config :test)
       core/system
       (dissoc :oauth2-config)
-      (assoc :db-conn (sys/db-conn-system sys/test-schemas))))
+      (assoc :db-conn (sys/db-conn-system sys/test-data))))
 
 (defn system-fixture [f]
   (touch test-system)
@@ -53,11 +53,13 @@
 
 (deftest register-user
   (let [db-conn (-> test-system :db-conn :conn)]
-    (testing "The user exists so returns it and add to session."
-      (is (= {:response s/bob-user
-              :session  {:user-id    s/bob-id
-                         :user-roles [:admin :editor]}}
-             (sut/register-user (d/db db-conn) s/bob-id ::NOUSE ::NOUSE ::NOUSE))))
+    (testing "The user exists so update it and add to session."
+      (let [new-bob (assoc s/bob-user :user/name "Bobby" :user/picture "bob-new-pic")]
+        (is (= {:response new-bob
+                :effects  {:db {:payload [new-bob]}}
+                :session  {:user-id    s/bob-id
+                           :user-roles [:admin :editor]}}
+               (sut/register-user (d/db db-conn) s/bob-id ::NOUSE "Bobby" "bob-new-pic")))))
     (testing "User does not exist so returns effect to add the user to db."
       (let [{:user/keys [email name picture]} s/joshua-user]
         (with-redefs [utils/mk-date (constantly s/joshua-date-granted)]
@@ -76,3 +78,21 @@
       (is (= {:error {:type    :user/delete
                       :user-id "unknown-user"}}
              (sut/delete-user (d/db db-conn) "unknown-user"))))))
+
+(deftest grant-admin
+  (let [db-conn (-> test-system :db-conn :conn)]
+    (testing "User exits so returns user with new admin role effect."
+      (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
+        (let [updated-alice (update s/alice-user :user/roles conj {:role/name :admin
+                                                                   :role/date-granted (utils/mk-date)})]
+          (is (= {:response updated-alice
+                  :effects  {:db {:payload [updated-alice]}}}
+                 (sut/grant-admin (d/db db-conn) "alice@mail.com"))))))
+    (testing "User does not exist so returns error map."
+      (is (= {:error {:type    :user.admin/not-found
+                      :user-email "unknown-email"}}
+             (sut/grant-admin (d/db db-conn) "unknown-email"))))
+    (testing "User is already admin so returns error."
+      (is (= {:error {:type    :user.admin/already-admin
+                      :user-email "bob@mail.com"}}
+             (sut/grant-admin (d/db db-conn) "bob@mail.com"))))))

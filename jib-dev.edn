@@ -2,9 +2,6 @@
 ;; defalut base image for this is gcr.io/distroless/java.
 {:main         clj.flybot.core
  :aliases      [:jvm-base]
- ;; to be provided at container start via -e for instance.
- :env-vars     {:SYSTEM "SYSTEM"
-                :OAUTH2 "OAUTH2"}
  :user          "root"
  :group         "root"
  :base-image   {:image-name "openjdk:11-slim-buster"

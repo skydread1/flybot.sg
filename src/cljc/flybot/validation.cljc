@@ -89,7 +89,9 @@
       [:removed-user user-schema]
       [:auth [:map
               [:registered user-schema]
-              [:logged user-schema]]]]]]))
+              [:logged user-schema]]]
+      [:new-role [:map
+                  [:admin user-schema]]]]]]))
 
 ;;---------- Front-end validation ----------
 

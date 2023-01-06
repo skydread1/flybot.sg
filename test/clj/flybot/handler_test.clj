@@ -15,7 +15,7 @@
   (-> (sys/system-config :test)
       core/system
       (dissoc :oauth2-config)
-      (assoc :db-conn (sys/db-conn-system sys/test-schemas))))
+      (assoc :db-conn (sys/db-conn-system sys/test-data))))
 
 (defn system-fixture [f]
   (touch test-system)
@@ -127,6 +127,25 @@
                               {(list :new-post :with [::POST])
                                {:post/id '?}}})]
       (is (= 413 (-> resp :status)))))
+  (testing "User is not found so returns 414."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [resp (http-request "/users/new-role/admin"
+                               {:users
+                                {:new-role
+                                 {(list :admin :with ["unknown-email"])
+                                  {:user/roles [{:role/name '?
+                                                 :role/date-granted '?}]}}}})]
+        (is (= 414 (-> resp :status))))))
+  (testing "User is already admin so returns 415."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [bob-email (:user/email s/bob-user)
+            resp (http-request "/users/new-role/admin"
+                               {:users
+                                {:new-role
+                                 {(list :admin :with [bob-email])
+                                  {:user/roles [{:role/name '?
+                                                 :role/date-granted '?}]}}}})]
+        (is (= 415 (-> resp :status))))))
   
   ;;---------- Pages
   (testing "Execute a request for all pages."
@@ -247,7 +266,18 @@
                   auth/redirect-302          (fn [resp _] resp)]
       (let [resp (http-request :get "/oauth/google/success" nil)]
         (is (= s/joshua-id
-               (-> resp :body :users :auth :registered :user/id))))))
+               (-> resp :body :users :auth :registered :user/id)))))) 
+  (testing "Execute a request to grant admin role to an existing user."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [joshua-email (:user/email s/joshua-user)
+            resp (http-request "/users/new-role/admin"
+                               {:users
+                                {:new-role
+                                 {(list :admin :with [joshua-email])
+                                  {:user/roles [{:role/name '?
+                                                 :role/date-granted '?}]}}}})]
+        (is (= [:editor :admin]
+               (->> resp :body :users :new-role :admin :user/roles (map :role/name)))))))
   (testing "Execute a request for a delete user."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/users/removed-user"

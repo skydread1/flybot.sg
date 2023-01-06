@@ -61,9 +61,13 @@ if main.js not yet generated:
 To run the uberjar
 ```
 OAUTH2="creds" \
+ADMIN_USER="user edn" \
 SYSTEM="{:http-port 8123, :db-uri \"datalevin/prod/flybotdb\", :oauth2-callback \"https://v2.flybot.sg/oauth/google/callback\"}" \
 java -jar target/flybot.sg-{version}-standalone.jar
 ```
+
+Note: the `ADMIN_USER` is only necessary if you are loading your initial-data to the db.
+
 ## CD
 
 ### Create a container image and push it to ECR
@@ -88,7 +92,8 @@ docker run \
 -it \
 -p 8123:8123 \
 -v db-volume:/datalevin/prod/flybotdb \
--e OAUTH2="creds" \
+-e OAUTH2="google creds edn" \
+-e ADMIN_USER="user edn" \
 -e SYSTEM="{:http-port 8123, :db-uri \"/datalevin/prod/flybotdb\", :oauth2-callback \"https://v2.flybot.sg/oauth/google/callback\"}" \
 some-image-uri:latest
 ```

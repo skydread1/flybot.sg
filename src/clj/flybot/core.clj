@@ -2,6 +2,7 @@
   (:require [aleph.http :as http]
             [clj.flybot.handler :as handler]
             [clj.flybot.db :as db]
+            [clj.flybot.init-data :as sample]
             [clojure.edn :as edn]
             [datalevin.core :as d]
             [ring.middleware.session.memory :refer [memory-store]]
@@ -18,6 +19,13 @@
     :launch-uri       "/oauth/google/login"
     :landing-uri      "/oauth/google/success"}})
 
+(defn load-initial-data
+  "Loads the initial posts and the admin-user to the db
+   If the db already has some content, do nothing."
+  [conn init-data]
+  (when-not (seq (db/get-all-posts (d/db conn)))
+    @(d/transact conn init-data)))
+
 ;;---------- System ----------
 
 (defn system
@@ -26,6 +34,7 @@
    {:db-uri         db-uri
     :db-conn        (fnk [db-uri]
                          (let [conn (d/get-conn db-uri db/initial-datalevin-schema)]
+                           (load-initial-data conn sample/init-data)
                            (closeable
                             {:conn conn}
                             #(d/close conn))))
