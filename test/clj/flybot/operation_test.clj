@@ -89,6 +89,10 @@
                   :effects  {:db {:payload [updated-alice]}}}
                  (sut/grant-admin (d/db db-conn) "alice@mail.com"))))))
     (testing "User does not exist so returns error map."
-      (is (= {:error {:type    :user/grand-admin
+      (is (= {:error {:type    :user.admin/not-found
                       :user-email "unknown-email"}}
-             (sut/grant-admin (d/db db-conn) "unknown-email"))))))
+             (sut/grant-admin (d/db db-conn) "unknown-email"))))
+    (testing "User is already admin so returns error."
+      (is (= {:error {:type    :user.admin/already-admin
+                      :user-email "bob@mail.com"}}
+             (sut/grant-admin (d/db db-conn) "bob@mail.com"))))))

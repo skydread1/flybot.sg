@@ -98,13 +98,20 @@
 
 (defn grant-admin
   [db email]
-  (if-let [user (db/get-user-by-email db email)]
-    (let [new-user (update user :user/roles conj {:role/name         :admin
-                                                  :role/date-granted (utils/mk-date)})]
-      {:response new-user
-       :effects  {:db {:payload [new-user]}}})
-    {:error {:type       :user/grand-admin
-             :user-email email}}))
+  (let [{:user/keys [roles] :as user} (db/get-user-by-email db email)]
+    (cond (not user)
+          {:error {:type           :user.admin/not-found
+                   :user-email     email}}
+          
+          (some #{:admin} (map :role/name roles))
+          {:error {:type          :user.admin/already-admin
+                   :user-email    email}}
+          
+          :else
+          (let [new-user (update user :user/roles conj {:role/name         :admin
+                                                        :role/date-granted (utils/mk-date)})]
+            {:response new-user
+             :effects  {:db {:payload [new-user]}}}))))
 
 ;;---------- Pullable data ----------
 

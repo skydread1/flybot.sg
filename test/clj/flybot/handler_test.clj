@@ -127,6 +127,25 @@
                               {(list :new-post :with [::POST])
                                {:post/id '?}}})]
       (is (= 413 (-> resp :status)))))
+  (testing "User is not found so returns 414."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [resp (http-request "/users/new-role/admin"
+                               {:users
+                                {:new-role
+                                 {(list :admin :with ["unknown-email"])
+                                  {:user/roles [{:role/name '?
+                                                 :role/date-granted '?}]}}}})]
+        (is (= 414 (-> resp :status))))))
+  (testing "User is already admin so returns 415."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [bob-email (:user/email s/bob-user)
+            resp (http-request "/users/new-role/admin"
+                               {:users
+                                {:new-role
+                                 {(list :admin :with [bob-email])
+                                  {:user/roles [{:role/name '?
+                                                 :role/date-granted '?}]}}}})]
+        (is (= 415 (-> resp :status))))))
   
   ;;---------- Pages
   (testing "Execute a request for all pages."
