@@ -1,5 +1,6 @@
 (ns cljs.flybot.core
   (:require [cljs.flybot.components.header :refer [header-comp]]
+            [cljs.flybot.components.admin-panel :refer [admin-section]]
             [cljs.flybot.components.page :refer [page]]
             [cljs.flybot.components.footer :refer [footer-comp]]
             [cljs.flybot.db]
@@ -18,6 +19,7 @@
 (defn app []
   [:div
    [header-comp]
+   [admin-section]
    [current-page]
    [footer-comp]])
 

@@ -94,6 +94,14 @@
    {:db (-> db (dissoc :app/user) (assoc :user/mode :reader))
     :fx [[:fx.log/message ["User logged out."]]]}))
 
+(rf/reg-event-fx
+ :fx.http/grant-admin-success
+ (fn [_ [_ {:keys [users]}]]
+   (let [{:user/keys [name roles]} (-> users :new-role :admin)]
+     {:fx [[:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.error/clear-errors]]
+           [:fx.log/message ["User " name " 's roles are now " (map :role/name roles)]]]})))
+
 ;; ---------- App ----------
 
 ;; Initialization
@@ -123,6 +131,7 @@
                    :app/current-view current-view
                    :app/theme        app-theme
                    :user/mode        :reader
+                   :admin/mode       :read
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
                    :uri             "/pages/all"
@@ -227,6 +236,19 @@
      (assoc db :user/mode new-mode))))
 
 (rf/reg-sub
+ :subs.user.admin/mode
+ (fn [db _]
+   (:admin/mode db)))
+
+(rf/reg-event-db
+ :evt.user.admin/toggle-mode
+ (fn [db _]
+   (let [new-mode (if (= :edit (:admin/mode db))
+                    :read
+                    :edit)]
+     (assoc db :admin/mode new-mode))))
+
+(rf/reg-sub
  :subs.user/user
  (fn [db _]
    (:app/user db)))
@@ -239,6 +261,25 @@
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/logout-success]
                  :on-failure      [:fx.http/failure]}}))
+
+(rf/reg-event-fx
+ :evt.user.form/grant-admin
+ (fn [{:keys [db]} _]
+   (let [new-admin-email (-> db :form/fields :new-admin/email (valid/validate valid/user-email-schema))]
+     (if (:errors new-admin-email)
+       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-admin-email)]]]}
+       {:http-xhrio {:method          :post
+                     :uri             "/users/new-role/admin"
+                     :params          {:users
+                                       {:new-role
+                                        {(list :admin :with [new-admin-email])
+                                         {:user/name '?
+                                          :user/roles [{:role/name '?
+                                                        :role/date-granted '?}]}}}}
+                     :format          (edn-request-format {:keywords? true})
+                     :response-format (edn-response-format {:keywords? true})
+                     :on-success      [:fx.http/grant-admin-success]
+                     :on-failure      [:fx.http/failure]}}))))
 
 ;; ---------- Page ----------
 
