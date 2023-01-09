@@ -44,9 +44,9 @@
 (defn admin-section
   []
   (when (and (= :editor @(rf/subscribe [:subs.user/mode]))
-             (->> @(rf/subscribe [:subs.user/user])
-                  :user/roles
-                  (map :role/name)))
+             (some #{:admin} (->> @(rf/subscribe [:subs.user/user])
+                                  :user/roles
+                                  (map :role/name))))
     [:section.container
      (if (= :edit @(rf/subscribe [:subs.user.admin/mode]))
        [:<>
