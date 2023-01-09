@@ -1,4 +1,4 @@
-(ns cljs.flybot.components.post
+(ns cljs.flybot.components.page.post
   (:require [cljc.flybot.utils :as utils]
             [cljs.flybot.lib.hiccup :as h]
             [cljs.flybot.components.header :refer [theme-logo]]
@@ -254,3 +254,20 @@
      [post-view
       (h/add-hiccup @(rf/subscribe [:subs.post.form/fields]))]
      [post-form])])
+
+(defn page-post
+  [page-name {:post/keys [id] :as post}]
+  (let [page-mode      @(rf/subscribe [:subs.page/mode page-name])
+        post-mode      @(rf/subscribe [:subs.post/mode id])
+        user-mode      @(rf/subscribe [:subs.user/mode])
+        active-post-id @(rf/subscribe [:subs.post.form/field :post/id])]
+    (cond (= :reader user-mode)
+          (post-read-only post)
+          (= :edit page-mode)
+          (post-read-only post)
+          (= :edit post-mode)
+          (post-edit id)
+          (and active-post-id (not= active-post-id id))
+          (post-read-only post)
+          :else
+          (post-read post))))

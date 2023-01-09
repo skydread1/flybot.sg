@@ -15,6 +15,9 @@
   [:map
    [:user/id :string]])
 
+(def user-email-schema
+  [:re #"^[a-zA-Z0-9]+@basecity.com$"])
+
 (def post-schema
   [:map {:closed true}
    [:post/id :uuid]
