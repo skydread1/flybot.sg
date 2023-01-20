@@ -1,26 +1,25 @@
 (ns cljs.flybot.components.page.page-config
   (:require [cljs.flybot.components.error :refer [errors]]
+            [cljs.flybot.components.svg :as svg]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
 
 (defn edit-page-button
   [page-name]
-  [:input.button
+  [:button
    {:type "button"
-    :value (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
-             "Cancel"
-             "Edit Page")
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.page/toggle-edit-mode page-name])}])
+    :on-click #(rf/dispatch [:evt.page/toggle-edit-mode page-name])}
+   (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
+     svg/close-icon
+     svg/pen-on-paper-post-icon)])
 
 (defn submit-page-button
   [page-name]
-  [:input.button
+  [:button
    {:type "button"
-    :value "Update Page"
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.page.form/send-page page-name])}])
+    :on-click #(rf/dispatch [:evt.page.form/send-page page-name])}
+   svg/done-icon])
 
 ;;---------- From ----------
 
@@ -51,12 +50,14 @@
   (when (= :editor @(rf/subscribe [:subs.user/mode]))
     [:div.page-header
      {:key (or page-name (str "config-of" page-name))}
-     (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
-       [:<>
-        [errors page-name [:validation-errors :failure-http-result]]
+     [:<>
+      [:h1 "Order Posts"]
+      (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
+        [:<>
+         [errors page-name [:validation-errors :failure-http-result]]
+         [:form
+          [edit-page-button page-name]
+          [submit-page-button page-name]]
+         [page-header-form page-name]]
         [:form
-         [edit-page-button page-name]
-         [submit-page-button page-name]]
-        [page-header-form page-name]]
-       [:form
-        [edit-page-button page-name]])]))
+         [edit-page-button page-name]])]]))

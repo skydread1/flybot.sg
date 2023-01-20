@@ -1,33 +1,32 @@
 (ns cljs.flybot.components.admin-panel
   (:require [cljs.flybot.components.error :refer [errors]]
+            [cljs.flybot.components.svg :as svg]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
 
 (defn edit-admin-button
   []
-  [:input.button
+  [:button
    {:type "button"
-    :value (if (= :edit @(rf/subscribe [:subs.user.admin/mode]))
-             "Cancel"
-             "Add Admin")
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.user.admin/toggle-mode])}])
+    :on-click #(rf/dispatch [:evt.user.admin/toggle-mode])}
+   (if (= :edit @(rf/subscribe [:subs.user.admin/mode]))
+     svg/close-icon
+     svg/plus-icon )])
 
 (defn submit-admin-button
   []
-  [:input.button
+  [:button
    {:type "button"
-    :value "Submit"
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.user.form/grant-admin])}])
+    :on-click #(rf/dispatch [:evt.user.form/grant-admin])}
+   svg/done-icon])
 
 ;;---------- From ----------
 
 (defn admin-form
   []
-  [:div.admin
-   [:form
+  [:form
+   [:fieldset
     [:label {:for "add-admin"} "Email of new admin:"]
     [:br]
     [:input
@@ -47,7 +46,8 @@
              (some #{:admin} (->> @(rf/subscribe [:subs.user/user])
                                   :user/roles
                                   (map :role/name))))
-    [:section.container
+    [:section.container.admin
+     [:h1 "Admin"]
      (if (= :edit @(rf/subscribe [:subs.user.admin/mode]))
        [:<>
         [errors "admin-page" [:validation-errors :failure-http-result]]
