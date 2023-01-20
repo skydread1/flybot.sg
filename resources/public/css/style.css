@@ -84,6 +84,7 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
     font-size: 1.7rem;
     color: var(--text-primary-color);
+    text-transform: uppercase;
 }
 
 h2 {
@@ -193,6 +194,7 @@ form {
 form fieldset {
     width: 100%;
     border: none;
+    margin: 0.3rem 0;
 }
 
 form legend {
@@ -254,7 +256,7 @@ input[type=button] {
     }
 }
 
-.header-logo {
+.header-logo, .post-header-icon{
     width: 32px;
     height: 32px;
 }
@@ -277,6 +279,14 @@ svg {
 
 svg:hover {
     fill: var(--text-secondary-color);
+}
+
+.done, .plus {
+    fill: var(--border-primary-color);
+}
+
+.close, .trash {
+    fill: var(--error-primary-color);
 }
 
 /* Header */
@@ -359,14 +369,8 @@ nav .active {
     color: var(--border-primary-color);
 }
 
-header button {
-    display: inline-block;
-    width: 54px;
-    height: 54px;
-}
-
 @media (max-width: 1024px) {
-    header .button {
+    header .burger-btn {
         display: block;
     }
 }
@@ -402,17 +406,13 @@ footer p {
     border-bottom-color: var(--border-primary-color);
 }
 
-@media (max-width: 1024px) {
-    section .page-header {
-        padding: 0.5rem;
-    }
+section .page-header h1 {
+    text-align: center;
 }
 
 @media (max-width: 1024px) {
-    .page-header>form {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
+    section .page-header {
+        padding: 0.5rem;
     }
 }
 
@@ -499,24 +499,8 @@ section .image>img {
     animation: var(--pulse-animation);
 }
 
-section .button  {
-    text-align: center;
-    cursor: pointer;
-    text-decoration: none;
-    border-radius: 0.3rem;
-    margin-top: 0.5rem;
-    padding: 1rem;
-    border-style: solid;
-    border-width: 2px;
-    border-color: var(--border-primary-color);
-    background-color: var(--button-primary-color);
-}
-
-@media (max-width: 1024px) {
-    section .button  {
-        width: 50%;
-        margin: 0.5rem auto;
-    }
+section button {
+    margin: 0.5rem;
 }
 
 /* Apply page */
@@ -550,27 +534,7 @@ section .team img {
     width: 3rem;
 }
 
-/* Blog page */
-
-section.blog h1 {
-    text-transform: uppercase;
-}
-
 /* Post */
-
-@media (max-width: 1024px) {
-    .post-header>form {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-    }
-}
-
-@media (min-width: 1024px) {
-    .post-header {
-        margin: 1rem;
-    }
-}
 
 .post-authors {
     border-bottom: groove;
@@ -593,13 +557,20 @@ section.blog h1 {
     padding: 0.3rem;
 }
 
-@media (min-width: 1024px) {
-    .post-header .button, .page-header .button {
-        min-width: 20%;
-        padding: 1rem;
-    }
+.post-header h1 {
+    text-align: center;
 }
 
 .error {
     color: var(--error-primary-color);
+}
+
+/* Admin */
+
+.admin {
+    padding-top: 1rem;
+}
+
+section.admin h1 {
+    text-align: center;
 }

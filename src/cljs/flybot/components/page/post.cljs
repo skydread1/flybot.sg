@@ -3,47 +3,44 @@
             [cljs.flybot.lib.hiccup :as h]
             [cljs.flybot.components.header :refer [theme-logo]]
             [cljs.flybot.components.error :refer [errors]]
+            [cljs.flybot.components.svg :as svg]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
 
 (defn preview-button
   []
-  [:input.button
+  [:button
    {:type "button"
-    :value (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
-             "Edit Post"
-             "Preview Post")
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.post.form/toggle-preview])}])
+    :on-click #(rf/dispatch [:evt.post.form/toggle-preview])}
+   (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
+     svg/pen-on-paper-post-icon
+     svg/eye-icon-post)])
 
 (defn submit-button
   []
-  [:input.button
+  [:button
    {:type "button"
-    :value "Submit Post"
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.post.form/send-post])}])
+    :on-click #(rf/dispatch [:evt.post.form/send-post])}
+   svg/done-icon])
 
 (defn edit-button
   [post-id]
-  [:input.button
+  [:button
    {:type "button"
-    :value (if (= :edit @(rf/subscribe [:subs.post/mode post-id]))
-             "Cancel"
-             (if (= post-id "new-post-temp-id")
-               "Create Post"
-               "Edit Post"))
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.post/toggle-edit-mode post-id])}])
+    :on-click #(rf/dispatch [:evt.post/toggle-edit-mode post-id])}
+   (if (= :edit @(rf/subscribe [:subs.post/mode post-id]))
+     svg/close-icon
+     (if (= post-id "new-post-temp-id")
+       svg/plus-icon
+       svg/pen-on-paper-post-icon))])
 
 (defn delete-button
   [post-id]
-  [:input.button
+  [:button
    {:type "button"
-    :value "Delete Post"
-    :on-change "ReadOnly"
-    :on-click #(rf/dispatch [:evt.post/remove-post post-id])}])
+    :on-click #(rf/dispatch [:evt.post/remove-post post-id])}
+   svg/trash-icon])
 
 ;;---------- Form ----------
 
@@ -136,19 +133,6 @@
 
 ;;---------- (pre)View ----------
 
-(def clock-icon
-  [:svg.post-icon
-   {:viewBox "0 0 32 32" :fill "none"}
-   [:circle {:cx "16" :cy "16" :r "13" :stroke "#535358" :stroke-width "2"}]
-   [:path {:stroke "#535358" :stroke-linecap "round" :stroke-linejoin "round" :stroke-width "2" :d "M16 8v8l4 4"}]])
-
-(def author-icon
-  [:svg.post-icon
-   {:stroke "#535358" :fill "none" :stroke-linejoin "miter" :viewBox "0 0 24 24" :xmlns "http://www.w3.org/2000/svg" :stroke-linecap "round" :stroke-width "1"}
-   [:polygon {:points "16 3 20 7 6 21 2 21 2 17 16 3" :fill "#059cf7" :opacity "0.1" :stroke-width "0"}]
-   [:polygon {:points "16 3 20 7 6 21 2 21 2 17 16 3"}]
-   [:line {:x1 "12" :y1 "21" :x2 "22" :y2 "21"}]])
-
 (defn format-date
   [date]
   (-> (js/Intl.DateTimeFormat. "en-GB")
@@ -159,10 +143,10 @@
   [:div.post-author
    (concat
     (when user-name
-      [[:div {:key "author-icon"} author-icon]
+      [[:div {:key "pen-icon"} svg/pen-icon]
        [:div {:key "user-name"} (str user-name)]])
     (when date
-      [[:div {:key "clock-icon"} clock-icon]
+      [[:div {:key "clock-icon"} svg/clock-icon]
        [:div {:key "date"} (format-date date)]])
     (when (or user-name date)
       [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
@@ -230,6 +214,8 @@
    {:key id
     :id id}
    [:div.post-header
+    (when (= id "new-post-temp-id")
+      [:h1 "New Post"])
     [:form
      [edit-button id]
      (when-not (utils/temporary-id? id)
