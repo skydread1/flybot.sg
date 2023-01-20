@@ -1,2 +1,2 @@
-{:main flybot.core
+{:main cljs.flybot.core
  :optimizations :advanced}

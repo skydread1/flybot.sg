@@ -7,6 +7,7 @@
     --border-primary-color: #22c55e;
     --pulse-animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
+    /* dark theme */
     --bg-primary-color: #18181b;
     --bg-secondary-color: #27272a;
 
@@ -14,6 +15,8 @@
     --text-secondary-color: #f0f9ff;
 
     --button-primary-color: black;
+
+    --error-primary-color: #f09295;
 }
 
 :root.light {
@@ -25,6 +28,8 @@
     --text-secondary-color: #18181b;
 
     --button-primary-color: white;
+
+    --error-primary-color: #991b1b;
 }
 
 /* General */
@@ -65,10 +70,6 @@ footer {
     margin: auto;
 }
 
-section {
-    background-color: var(--bg-primary-color);
-}
-
 h1, h2, h3, h4, h5, h6 {
     padding-bottom: 0.5rem;
     padding-top: 0.5rem;
@@ -83,6 +84,7 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
     font-size: 1.7rem;
     color: var(--text-primary-color);
+    text-transform: uppercase;
 }
 
 h2 {
@@ -173,6 +175,53 @@ svg {
     }
 }
 
+/* Form */
+
+form {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
+    text-align: center;
+}
+
+@media (max-width: 1024px) {
+    form {
+        display: block;
+    }
+}
+
+form fieldset {
+    width: 100%;
+    border: none;
+    margin: 0.3rem 0;
+}
+
+form legend {
+    font-size: 1.3rem;
+    color: var(--text-primary-color);
+}
+
+form input, textarea, select {
+    min-width: 30%;
+    margin: 1rem 0.5rem;
+    color: var(--text-secondary-color);
+    background-color: var(--bg-secondary-color);
+    padding: 0.3rem;
+}
+
+form textarea {
+    margin: 1rem 0rem;
+    width: 100%;
+    min-height: 50rem;
+}
+
+input[type=button] {
+    padding: 0.5rem;
+    color: var(--link-primary-color);
+    text-transform: uppercase;
+}
+
 /* Animation */
 
 @keyframes pulse {
@@ -193,30 +242,28 @@ svg {
     width: 4rem;
 }
 
+.user-pic {
+    width: 2rem;
+}
+
 @media (min-width: 1024px) {
     .flybotlogo {
         width: 7rem;
     }
+
+    .user-pic {
+        width: 4rem;
+    }
 }
 
-.moonlogo {
-    fill: var(--text-primary-color);
+.header-logo, .post-header-icon{
     width: 32px;
     height: 32px;
 }
 
-.moonlogo:hover {
-    fill: yellow;
-}
-
-.sunlogo {
-    fill: var(--link-primary-color);
-    width: 32px;
-    height: 32px;
-}
-
-.sunlogo:hover {
-    fill: red;
+.post-icon {
+    width: 22px;
+    height: 22px;
 }
 
 .burger {
@@ -226,8 +273,20 @@ svg {
 }
 
 svg {
-    fill: var(--text-primary-color);
+    fill: var(--link-primary-color);
     width: 250px;
+}
+
+svg:hover {
+    fill: var(--text-secondary-color);
+}
+
+.done, .plus {
+    fill: var(--border-primary-color);
+}
+
+.close, .trash {
+    fill: var(--error-primary-color);
 }
 
 /* Header */
@@ -245,12 +304,6 @@ header .top {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-@media (max-width: 1024px) {
-    header .top>* {
-        width: 20%;
-    }
 }
 
 .pointer {
@@ -316,14 +369,8 @@ nav .active {
     color: var(--border-primary-color);
 }
 
-header button {
-    display: inline-block;
-    width: 54px;
-    height: 54px;
-}
-
 @media (max-width: 1024px) {
-    header .button {
+    header .burger-btn {
         display: block;
     }
 }
@@ -352,44 +399,83 @@ footer p {
 
 /* Page - all pages */
 
-section .card {
-    display: flex;
+.page-header {
     padding: 2.5rem;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: var(--border-primary-color);
-    justify-content: space-evenly;
-    align-items: center;
 }
 
-section .card:nth-of-type(odd) {
+section .page-header h1 {
+    text-align: center;
+}
+
+@media (max-width: 1024px) {
+    section .page-header {
+        padding: 0.5rem;
+    }
+}
+
+section .post {
+    padding: 2.5rem;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--border-primary-color);
+}
+
+@media (max-width: 1024px) {
+    section .post {
+        padding: 0.5rem;
+    }
+}
+
+section .post:nth-of-type(odd) {
     background-color: var(--bg-secondary-color);
     border-right-width: 1px;
     border-right-color: var(--border-primary-color);
     border-right-style: solid;
 }
 
-section .card:nth-of-type(even) {
-    flex-direction: row-reverse;
+section .post:nth-of-type(even) {
     background-color: var(--bg-primary-color);
     border-left-width: 1px;
     border-left-color: var(--border-primary-color);
     border-left-style: solid;
 }
 
-section .card>div {
+section .post .post-body {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+section .post:nth-of-type(odd)>.post-body {
+    flex-direction: row;
+}
+
+section .post:nth-of-type(even)>.post-body {
+    flex-direction: row-reverse;
+}
+
+section .post-body>div {
     padding: 1.5rem;
 }
 
-section .card>.image {
+@media (max-width: 1024px) {
+    section .post-body>div {
+        padding: 0.5rem;
+    }
+}
+
+section .post-body>.image {
     width: 25%;
 }
 
-section .card>.text {
+section .post-body>.text {
     width: 50%;
 }
 
-section .card>.textonly {
+section .post-body>.textonly {
     width: 100%;
 }
 
@@ -398,31 +484,23 @@ section .image>img {
 }
 
 @media (max-width: 1024px) {
-    section .card {
+    section .post .post-body {
         padding: 0.5rem;
         display: block;
     }
-    section .card>.image, section .card>.text {
+    section .post .post-body>.image, section .post-body>.text {
         width: 100%;
         margin: auto;
-        padding: 1.5rem;
+        padding: 0.5rem;
     }
 }
 
-.card:hover img {
+.post-body:hover img {
     animation: var(--pulse-animation);
 }
 
-section a.button {
-    text-align: center;
-    text-decoration: none;
-    border-radius: 0.3rem;
-    margin-top: 0.5rem;
-    padding: 1rem 2rem;
-    border-style: solid;
-    border-width: 2px;
-    border-color: var(--border-primary-color);
-    background-color: var(--button-primary-color);
+section button {
+    margin: 0.5rem;
 }
 
 /* Apply page */
@@ -456,8 +534,43 @@ section .team img {
     width: 3rem;
 }
 
-/* Blog page */
+/* Post */
 
-section.blog h1 {
-    text-transform: uppercase;
+.post-authors {
+    border-bottom: groove;
+    border-bottom-width: thin;
+}
+
+.post-author {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 1024px) {
+    .post-author {
+        font-size: 0.7rem;
+    }
+}
+
+.post-author>div {
+    padding: 0.3rem;
+}
+
+.post-header h1 {
+    text-align: center;
+}
+
+.error {
+    color: var(--error-primary-color);
+}
+
+/* Admin */
+
+.admin {
+    padding-top: 1rem;
+}
+
+section.admin h1 {
+    text-align: center;
 }

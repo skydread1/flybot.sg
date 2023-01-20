@@ -1,22 +1,76 @@
-{:deps    {com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
-           org.clojure/clojurescript             {:mvn/version "1.11.57"}
-           reagent/reagent                       {:mvn/version "1.1.1"}
-           metosin/malli                         {:mvn/version "0.8.4"}
+{:deps    {;; both frontend and backend
+           org.clojure/clojure                   {:mvn/version "1.11.1"}
+           metosin/malli                         {:mvn/version "0.8.9"}
            metosin/reitit                        {:mvn/version "0.5.18"}
-           cljsjs/react                          {:mvn/version "18.0.0-rc.0-0"}
-           cljsjs/react-dom                      {:mvn/version "18.0.0-rc.0-0"}
-           markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}}
- ;; setup some development paths
- :paths   ["src" "target" "resources"]
- ;; setup a helpful alias to start the build
+           metosin/muuntaja                      {:mvn/version "0.6.8"}
+           flybot-sg/lasagna-pull                {:git/url "https://github.com/flybot-sg/lasagna-pull.git"
+                                                  :sha     "ed0258e6293e972ba2c886939cef59c4ebbd7f89"}
+
+           ;; backend
+           ring/ring-defaults                    {:mvn/version "0.3.4"}
+           aleph/aleph                           {:mvn/version "0.5.0"}
+           robertluo/fun-map                     {:mvn/version "0.5.109"}
+           datalevin/datalevin                   {:mvn/version "0.7.6"}
+           skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
+                                                  :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}}
+ :paths   ["src" "resources"]
  :aliases
- {:dev
-  {:main-opts ["--main"  "figwheel.main"
-               "--build" "dev"
-               "--repl"]}
-  :prod
-  {:main-opts ["--main"       "figwheel.main"
-               "--build-once" "prod"]}
-  :build
-  {:deps {io.github.clojure/tools.build {:git/tag "v0.8.2" :git/sha "ba1a2bf"}}
-   :ns-default build}}}
+ {;;---------- BACKEND (clj) aliases ----------
+  ;; JVM options to make datalevin work with java version > java8
+  :jvm-base {:jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
+                        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
+
+  ;; CLJ backend figwheel-system handler
+  :fig  {:extra-deps {;; frontend
+                      com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
+                      org.clojure/clojurescript             {:mvn/version "1.11.60"}
+                      reagent/reagent                       {:mvn/version "1.1.1"}
+                      cljsjs/react                          {:mvn/version "18.2.0-0"}
+                      cljsjs/react-dom                      {:mvn/version "18.2.0-0"}
+                      markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
+                      cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}
+                      re-frame/re-frame                     {:mvn/version "1.3.0"}
+                      day8.re-frame/http-fx                 {:mvn/version "0.2.4"}
+                      day8.re-frame/test                    {:mvn/version "0.1.5"}}
+         :extra-paths ["test" "dev/src" "config" "target"]}
+
+  ;; CLJ paths for the backend systems and tests
+  :clj/dev {:extra-paths ["test" "dev/src" "config" "target"]}
+
+  ;; Run clj tests
+  :clj/test {:extra-paths ["test" "dev/src" "config"]
+             :extra-deps  {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
+             :main-opts   ["-m" "kaocha.runner"]}
+
+  ;;---------- FRONTEND (cljs) aliases ----------
+  ;; cljs repl for figwheel hot reloading development/testing
+  ;; be sure to not have a js bundle in resources/public and used :fig alias for clj repl
+  :cljs/dev {:main-opts ["--main"  "figwheel.main"
+                         "--build" "dev"
+                         "--repl"]}
+
+  ;; build the optimised js bundle
+  :cljs/prod {:main-opts ["--main"       "figwheel.main"
+                          "--build-once" "prod"]}
+
+  ;; Run the cljs tests
+  :cljs/test {:main-opts ["-m" "figwheel.main"
+                          "-m" "cljs.flybot.test-runner"]}
+
+  ;; Run the cljs tests with chrome headless
+  :cljs/test-headless {:main-opts ["-m" "figwheel.main"
+                                   "-co" "tests.cljs.edn"
+                                   "-m" "cljs.flybot.test-runner"]}
+
+  ;;---------- CD aliases ----------
+  ;; build frontend js bundle : clj -T:build js-bundle
+  ;; build backend uberjar: clj -T:build uber
+  ;; build both js and jar : clj -T:build deploy
+  :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.8.3" :git/sha "0d20256"}}
+          :ns-default build}
+
+  ;; build image and push to image repo
+  ;; clj -T:jib build
+  :jib {:deps       {io.github.atomisthq/jibbit {:git/tag "v0.1.14" :git/sha "ca4f7d3"}}
+        :ns-default jibbit.core
+        :ns-aliases {jib jibbit.core}}}}

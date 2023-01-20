@@ -5,6 +5,10 @@ on:
     branches-ignore:
       - master
 
+env:
+  OAUTH2: ""
+  ADMIN_USER: ""
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,23 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Prepare java
-        uses: "actions/setup-java@v3"
-        with:
-          distribution: "zulu"
-          java-version: "8"
-
       - name: Install clojure tools
         uses: DeLaGuardo/setup-clojure@7.0
         with:
           cli: latest
+          
+      - name: Run the clj tests
+        run: clojure -A:jvm-base:test-clj
 
-      - name: Compile the ClojureScript code to the js bundle
-        run: clojure -T:build deploy
+      - name: Run the cljs tests
+        run: clojure -A:jvm-base:fig:cljs/test-headless
 
-      - uses: EndBug/add-and-commit@v9
-        with:
-          add: 'resources/public/main.js'
-          committer_name: GitHub Action
-          default_author: github_actions
-          message: 'Compiled the cljs to the js bundle: main.js'
+      - name: Build main.js
+        run: clojure -T:build js-bundle
+
+      - name: Build image and push to ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ECR_REPO: ${{ secrets.ECR_REPO }}
+        run: clojure -T:jib build
