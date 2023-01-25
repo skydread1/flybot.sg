@@ -537,9 +537,8 @@
  :evt.post-form/show-deletion
  [(rf/path :form/fields)]
  (fn [post [_ show?]]
-   (if show?
-     (assoc post :post/to-delete? true :post/view :preview) 
-     (assoc post :post/to-delete? false))))
+   (merge (assoc post :post/to-delete? show?)
+          (when show? {:post/view :preview}))))
 
 ;; ---------- Errors ----------
 
