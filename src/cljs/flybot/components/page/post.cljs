@@ -35,14 +35,37 @@
        svg/plus-icon
        svg/pen-on-paper-post-icon))])
 
+(defn trash-button
+  []
+  [:button
+   {:type "button"
+    :on-click #(rf/dispatch [:evt.post-form/show-deletion true])}
+   svg/trash-icon])
+
 (defn delete-button
   [post-id]
   [:button
    {:type "button"
     :on-click #(rf/dispatch [:evt.post/remove-post post-id])}
-   svg/trash-icon])
+   svg/done-icon])
+
+(defn cancel-delete-button
+  [post-id]
+  [:button
+   {:type "button"
+    :on-click #(rf/dispatch [:evt.post-form/show-deletion false])}
+   svg/close-icon])
 
 ;;---------- Form ----------
+
+(defn delete-form
+  [post-id]
+  [:form
+   [:fieldset
+    [:label "Are you sure you want to delete?"]
+    [:br]
+    [cancel-delete-button]
+    [delete-button post-id]]])
 
 (defn post-form
   []
@@ -218,8 +241,9 @@
       [:h1 "New Post"])
     [:form
      [edit-button id]
-     (when-not (utils/temporary-id? id)
-       [delete-button id])]]
+     (when (and (= :edit @(rf/subscribe [:subs.post/mode id]))
+                (not (utils/temporary-id? id)))
+       [trash-button])]]
    (when-not (utils/temporary-id? id)
      [post-view post])])
 
@@ -230,12 +254,16 @@
    {:key post-id
     :id  post-id}
    [:div.post-header
-    [:form
-     [preview-button]
-     [submit-button]
-     [edit-button post-id]
-     [delete-button post-id]]
+    (when-not @(rf/subscribe [:subs.post.form/field :post/to-delete?])
+      [:form
+       [preview-button]
+       [submit-button]
+       [edit-button post-id]
+       (when-not (utils/temporary-id? post-id)
+         [trash-button])])
     [errors post-id [:validation-errors :failure-http-result]]]
+   (when @(rf/subscribe [:subs.post.form/field :post/to-delete?])
+     [delete-form post-id])
    (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
      [post-view
       (h/add-hiccup @(rf/subscribe [:subs.post.form/fields]))]
