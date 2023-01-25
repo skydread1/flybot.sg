@@ -531,6 +531,16 @@
  (fn [image-fields [_ id]]
    (get image-fields id)))
 
+;; post deletion
+
+(rf/reg-event-db
+ :evt.post-form/show-deletion
+ [(rf/path :form/fields)]
+ (fn [post [_ show?]]
+   (if show?
+     (assoc post :post/to-delete? true :post/view :preview) 
+     (assoc post :post/to-delete? false))))
+
 ;; ---------- Errors ----------
 
 (rf/reg-event-db

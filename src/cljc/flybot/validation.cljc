@@ -123,7 +123,7 @@
         action       (if (:post/author post) :edition :creation)
         writer-field (if (= :creation action) :post/author :post/last-editor)]
     (-> post
-        (dissoc :post/view :post/mode)
+        (dissoc :post/view :post/mode :post/to-delete?)
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
         (assoc date-field (u/mk-date))
         (assoc-in [writer-field :user/id] user-id))))
