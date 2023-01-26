@@ -36,13 +36,13 @@
 (deftest initialize
   (rf-test/run-test-sync
    (test-fixtures)
-   (let [current-view (rf/subscribe [:subs.page/current-view])
-         theme        (rf/subscribe [:subs.app/theme])
-         mode         (rf/subscribe [:subs.user/mode])
-         user         (rf/subscribe [:subs.user/user])
-         navbar-open? (rf/subscribe [:subs.nav/navbar-open?])
+   (let [current-view (rf/subscribe [:subs/pattern '{:app/current-view ?} [:app/current-view :data]])
+         theme        (rf/subscribe [:subs/pattern '{:app/theme ?}])
+         mode         (rf/subscribe [:subs/pattern '{:user/mode ?}])
+         user         (rf/subscribe [:subs/pattern '{:app/user ?} [:app/user]])
+         navbar-open? (rf/subscribe [:subs/pattern '{:nav/navbar-open? ?}])
          posts        (rf/subscribe [:subs.post/posts :home])
-         http-error   (rf/subscribe [:subs.error/error :failure-http-result])]
+         http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?}}])]
      ;;---------- SERVER ERROR
      ;; Mock failure http request
      (rf/reg-fx :http-xhrio
@@ -73,7 +73,7 @@
 (deftest theme
   (rf-test/run-test-sync
    (test-fixtures)
-   (let [theme (rf/subscribe [:subs.app/theme])]
+   (let [theme (rf/subscribe [:subs/pattern '{:app/theme ?}])]
      (testing "Initial theme is :dark."
        (is (= :dark @theme)))
      
@@ -87,7 +87,7 @@
 (deftest navbar
   (rf-test/run-test-sync
    (test-fixtures)
-   (let [navbar-open? (rf/subscribe [:subs.nav/navbar-open?])]
+   (let [navbar-open? (rf/subscribe [:subs/pattern '{:nav/navbar-open? ?}])]
      (testing "navbar is closed."
        (is (false? @navbar-open?)))
      
@@ -106,7 +106,7 @@
 (deftest user
   (rf-test/run-test-sync
    (test-fixtures)
-   (let [mode (rf/subscribe [:subs.user/mode])]
+   (let [mode (rf/subscribe [:subs/pattern '{:user/mode ?}])]
      (testing "Initial mode is :reader."
        (is (= :reader @mode)))
      
@@ -120,9 +120,11 @@
 (deftest page
   (rf-test/run-test-sync
    (test-fixtures)
-   (let [mode               (rf/subscribe [:subs.page/mode :home])
-         sorting-method     (rf/subscribe [:subs.page.form/sorting-method :home])
-         validation-error   (rf/subscribe [:subs.error/error :validation-errors])
+   (let [mode               (rf/subscribe [:subs/pattern '{:app/pages {:home {:page/mode ?}}}])
+         sorting-method     (rf/subscribe [:subs/pattern
+                                           '{:app/pages {:home {:page/sorting-method ?}}}
+                                           [:app/pages :home :page/sorting-method]])
+         validation-error   (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?}}])
          new-sorting-method {:sort/type :post/last-edit-date :sort/direction :ascending}]
      (testing "Initial mode is :read."
        (is (= :read @mode)))
@@ -164,12 +166,12 @@
   (with-redefs [utils/mk-date (constantly s/post-1-edit-date)]
     (rf-test/run-test-sync
      (test-fixtures)
-     (let [p1-mode          (rf/subscribe [:subs.post/mode s/post-1-id])
-           p1-form          (rf/subscribe [:subs.post.form/fields])
-           p1-preview       (rf/subscribe [:subs.post.form/field :post/view])
+     (let [p1-mode          (rf/subscribe [:subs/pattern {:app/posts {s/post-1-id {:post/mode '?}}}])
+           p1-form          (rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]])
+           p1-preview       (rf/subscribe [:subs/pattern '{:form/fields {:post/view ?}}])
            posts            (rf/subscribe [:subs.post/posts :home])
-           errors           (rf/subscribe [:subs.error/errors])
-           validation-error (rf/subscribe [:subs.error/error :validation-errors])
+           errors           (rf/subscribe [:subs/pattern '{:app/errors ?} [:app/errors]])
+           validation-error (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?}}])
            new-post-1       (assoc s/post-1
                                    :post/md-content     "#New Content 1"
                                    :post/last-edit-date (utils/mk-date))]
@@ -230,8 +232,8 @@
                           :post/mode :edit
                           :post/author {:user/id "bob-id" :user/name "Bob"}
                           :post/creation-date (utils/mk-date)}
-           new-post-mode (rf/subscribe [:subs.post/mode temp-id])
-           new-post-form (rf/subscribe [:subs.post.form/fields])
+           new-post-mode (rf/subscribe [:subs/pattern {:app/posts {temp-id {:post/mode '?}}}])
+           new-post-form (rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]])
            posts         (rf/subscribe [:subs.post/posts :home])
            new-post      (assoc empty-post
                                 :post/md-content "#New Content 1")]
@@ -272,8 +274,8 @@
   (rf-test/run-test-sync
    (test-fixtures)
    (let [posts   (rf/subscribe [:subs.post/posts :home])
-         p1-form (rf/subscribe [:subs.post.form/fields])
-         p1-mode (rf/subscribe [:subs.post/mode s/post-1-id])]
+         p1-form (rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]])
+         p1-mode (rf/subscribe [:subs/pattern {:app/posts {s/post-1-id {:post/mode '?}}}])]
      ;;---------- DELETE POST - READ MODE
      (rf/reg-fx :http-xhrio
                 (fn [_]

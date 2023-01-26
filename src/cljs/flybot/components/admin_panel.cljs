@@ -10,7 +10,7 @@
   [:button
    {:type "button"
     :on-click #(rf/dispatch [:evt.user.admin/toggle-mode])}
-   (if (= :edit @(rf/subscribe [:subs.user.admin/mode]))
+   (if (= :edit @(rf/subscribe [:subs/pattern '{:admin/mode ?}]))
      svg/close-icon
      svg/plus-icon )])
 
@@ -33,7 +33,7 @@
      {:type "text"
       :name "add-admin"
       :placeholder "somebody@basecity.com"
-      :value @(rf/subscribe [:subs.post.form/field :new-admin/email])
+      :value @(rf/subscribe [:subs/pattern '{:form/fields {:new-admin/email ?}}])
       :on-change #(rf/dispatch [:evt.post.form/set-field
                                 :new-admin/email
                                 (.. % -target -value)])}]]])
@@ -42,13 +42,12 @@
 
 (defn admin-section
   []
-  (when (and (= :editor @(rf/subscribe [:subs.user/mode]))
-             (some #{:admin} (->> @(rf/subscribe [:subs.user/user])
-                                  :user/roles
+  (when (and (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?}]))
+             (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?}]}}])
                                   (map :role/name))))
     [:section.container.admin
      [:h1 "Admin"]
-     (if (= :edit @(rf/subscribe [:subs.user.admin/mode]))
+     (if (= :edit @(rf/subscribe [:subs/pattern '{:admin/mode ?}]))
        [:<>
         [errors "admin-page" [:validation-errors :failure-http-result]]
         [:form

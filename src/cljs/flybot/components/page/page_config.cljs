@@ -10,7 +10,7 @@
   [:button
    {:type "button"
     :on-click #(rf/dispatch [:evt.page/toggle-edit-mode page-name])}
-   (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
+   (if (= :edit @(rf/subscribe [:subs/pattern {:app/pages {page-name {:page/mode '?}}}]))
      svg/close-icon
      svg/pen-on-paper-post-icon)])
 
@@ -47,12 +47,12 @@
 
 (defn page-config
   [page-name]
-  (when (= :editor @(rf/subscribe [:subs.user/mode]))
+  (when (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?}]))
     [:div.page-header
      {:key (or page-name (str "config-of" page-name))}
      [:<>
       [:h1 "Order Posts"]
-      (if (= :edit @(rf/subscribe [:subs.page/mode page-name]))
+      (if (= :edit @(rf/subscribe [:subs/pattern {:app/pages {page-name {:page/mode '?}}}]))
         [:<>
          [errors page-name [:validation-errors :failure-http-result]]
          [:form
