@@ -13,7 +13,7 @@
   [:button
    {:type "button"
     :on-click #(rf/dispatch [:evt.post.form/toggle-preview])}
-   (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
+   (if (= :preview @(rf/subscribe [:subs/pattern '{:form/fields {:post/view ?}}]))
      svg/pen-on-paper-post-icon
      svg/eye-icon-post)])
 
@@ -29,7 +29,7 @@
   [:button
    {:type "button"
     :on-click #(rf/dispatch [:evt.post/toggle-edit-mode post-id])}
-   (if (= :edit @(rf/subscribe [:subs.post/mode post-id]))
+   (if (= :edit @(rf/subscribe [:subs/pattern {:app/posts {post-id {:post/mode '?}}}]))
      svg/close-icon
      (if (= post-id "new-post-temp-id")
        svg/plus-icon
@@ -50,7 +50,7 @@
    svg/done-icon])
 
 (defn cancel-delete-button
-  [post-id]
+  []
   [:button
    {:type "button"
     :on-click #(rf/dispatch [:evt.post-form/show-deletion false])}
@@ -80,7 +80,7 @@
       {:type "text"
        :name "css-class"
        :placeholder "my-post-1"
-       :value @(rf/subscribe [:subs.post.form/field :post/css-class])
+       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/css-class ?}}])
        :on-change #(rf/dispatch [:evt.post.form/set-field
                                  :post/css-class
                                  (.. % -target -value)])}]
@@ -91,7 +91,7 @@
       {:type "url"
        :name "img-src"
        :placeholder "https://my.image.com/photo-1"
-       :value @(rf/subscribe [:subs.form.image/field :image/src])
+       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?}}}])
        :on-change #(rf/dispatch [:evt.form.image/set-field
                                  :image/src
                                  (.. % -target -value)])}]
@@ -102,7 +102,7 @@
       {:type "url"
        :name "img-src-dark"
        :placeholder "https://my.image.com/photo-1"
-       :value @(rf/subscribe [:subs.form.image/field :image/src-dark])
+       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?}}}])
        :on-change #(rf/dispatch [:evt.form.image/set-field
                                  :image/src-dark
                                  (.. % -target -value)])}]
@@ -113,7 +113,7 @@
       {:type "text"
        :name "img-alt"
        :placeholder "Coffee on table"
-       :value @(rf/subscribe [:subs.form.image/field :image/alt])
+       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?}}}])
        :on-change #(rf/dispatch [:evt.form.image/set-field
                                  :image/alt
                                  (.. % -target -value)])}]
@@ -123,7 +123,7 @@
      [:input
       {:type "checkbox"
        :name "show-dates"
-       :default-checked (when @(rf/subscribe [:subs.post.form/field :post/show-dates?]) "checked")
+       :default-checked (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}]) "checked")
        :on-click #(rf/dispatch [:evt.post.form/set-field
                                 :post/show-dates?
                                 (.. % -target -checked)])}]
@@ -133,7 +133,7 @@
      [:input
       {:type "checkbox"
        :name "show-authors"
-       :default-checked (when @(rf/subscribe [:subs.post.form/field :post/show-authors?]) "checked")
+       :default-checked (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}]) "checked")
        :on-click #(rf/dispatch [:evt.post.form/set-field
                                 :post/show-authors?
                                 (.. % -target -checked)])}]
@@ -149,7 +149,7 @@
       {:name "md-content"
        :required "required"
        :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
-       :value @(rf/subscribe [:subs.post.form/field :post/md-content])
+       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?}}])
        :on-change #(rf/dispatch [:evt.post.form/set-field
                                  :post/md-content
                                  (.. % -target -value)])}]]]])
@@ -197,7 +197,7 @@
 (defn post-view
   [{:post/keys [css-class image-beside hiccup-content] :as post}]
   (let [{:image/keys [src src-dark alt]} image-beside
-        src (if (= :dark @(rf/subscribe [:subs.app/theme]))
+        src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?}]))
               src-dark src)]
     (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns
@@ -241,7 +241,7 @@
       [:h1 "New Post"])
     [:form
      [edit-button id]
-     (when (and (= :edit @(rf/subscribe [:subs.post/mode id]))
+     (when (and (= :edit @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?}}}]))
                 (not (utils/temporary-id? id)))
        [trash-button])]]
    (when-not (utils/temporary-id? id)
@@ -249,38 +249,38 @@
 
 (defn post-edit
   "Edit Post Form with preview feature."
-  [post-id]
+  [{:post/keys [id] :as post}]
   [:div.post
-   {:key post-id
-    :id  post-id}
+   {:key id
+    :id  id}
    [:div.post-header
-    (when-not @(rf/subscribe [:subs.post.form/field :post/to-delete?])
+    (when-not @(rf/subscribe [:subs/pattern '{:form/fields {:post/to-delete? ?}}])
       [:form
        [preview-button]
        [submit-button]
-       [edit-button post-id]
-       (when-not (utils/temporary-id? post-id)
+       [edit-button id]
+       (when-not (utils/temporary-id? id)
          [trash-button])])
-    [errors post-id [:validation-errors :failure-http-result]]]
-   (when @(rf/subscribe [:subs.post.form/field :post/to-delete?])
-     [delete-form post-id])
-   (if (= :preview @(rf/subscribe [:subs.post.form/field :post/view]))
-     [post-view
-      (h/add-hiccup @(rf/subscribe [:subs.post.form/fields]))]
+    [errors id [:validation-errors :failure-http-result]]]
+   (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/to-delete? ?}}])
+     [delete-form id])
+   (if (= :preview @(rf/subscribe [:subs/pattern '{:form/fields {:post/view ?}}]))
+     [post-view (assoc @(rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]])
+                       :post/hiccup-content (h/md->hiccup @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?}}])))]
      [post-form])])
 
 (defn page-post
   [page-name {:post/keys [id] :as post}]
-  (let [page-mode      @(rf/subscribe [:subs.page/mode page-name])
-        post-mode      @(rf/subscribe [:subs.post/mode id])
-        user-mode      @(rf/subscribe [:subs.user/mode])
-        active-post-id @(rf/subscribe [:subs.post.form/field :post/id])]
+  (let [page-mode      @(rf/subscribe [:subs/pattern {:app/pages {page-name {:page/mode '?}}}])
+        post-mode      @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?}}}])
+        user-mode      @(rf/subscribe [:subs/pattern '{:user/mode ?}])
+        active-post-id @(rf/subscribe [:subs/pattern '{:form/fields {:post/id ?}}])]
     (cond (= :reader user-mode)
           (post-read-only post)
           (= :edit page-mode)
           (post-read-only post)
           (= :edit post-mode)
-          (post-edit id)
+          (post-edit post)
           (and active-post-id (not= active-post-id id))
           (post-read-only post)
           :else

@@ -8,14 +8,32 @@
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-            [cljc.flybot.utils :as utils]
+            [cljc.flybot.utils :as utils :refer [toggle]]
             [cljc.flybot.validation :as valid]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
             [clojure.edn :as edn]
             [re-frame.core :as rf]
             [day8.re-frame.http-fx]
-            [reitit.frontend.easy :as rfe]))
+            [reitit.frontend.easy :as rfe]
+            [sg.flybot.pullable :as pull]))
+
+;; ---------- pattern ----------
+(rf/reg-sub
+ :subs/pattern
+ ;; `pattern` is the pull pattern
+ ;; By default, the first leaf is returned
+ ;; i.e: in case '? is 3: @(rf/subscribe [:subs/pattern {:a {:b {:c '?}}}]) => 3
+ ;; `path` can be provided to fetch the all data deep to a certain key
+ ;; i.e: @(rf/subscribe [:subs/pattern {:a {:b {:c '?}}} [:a]]) => {:b {:c 3}}
+ (fn [db [_ pattern path]]
+   (let [data (first ((pull/query pattern) db))]
+     (if path
+       (get-in data path)
+       (->> data
+            (iterate #(-> % vals first))
+            (drop-while map?)
+            first)))))
 
 ;; ---------- Logging ----------
 
@@ -174,11 +192,6 @@
 
 ;; Theme (dark/light)
 
-(rf/reg-sub
- :subs.app/theme
- (fn [db _]
-   (:app/theme db)))
-
 (rf/reg-fx
  :fx.app/set-theme-local-store
  (fn [next-theme]
@@ -196,7 +209,7 @@
  :evt.app/toggle-theme
  (fn [{:keys [db]} [_]]
    (let [cur-theme (:app/theme db)
-         next-theme (if (= :dark cur-theme) :light :dark)]
+         next-theme (toggle cur-theme [:light :dark])]
      {:db (assoc db :app/theme next-theme)
       :fx [[:fx.app/set-theme-local-store next-theme]
            [:fx.app/toggle-css-class [cur-theme next-theme]]]})))
@@ -206,52 +219,26 @@
 (rf/reg-event-db
  :evt.nav/toggle-navbar
  (fn [db [_]]
-   (-> db
-       (update :nav/navbar-open? not))))
-
-(rf/reg-sub
- :subs.nav/navbar-open?
- (fn [db _]
-   (:nav/navbar-open? db)))
+   (update db :nav/navbar-open? not)))
 
 (rf/reg-event-db
  :evt.nav/close-navbar
  (fn [db [_]]
-   (-> db
-       (assoc :nav/navbar-open? false))))
+   (assoc db :nav/navbar-open? false)))
 
 ;; ---------- User ----------
 
-(rf/reg-sub
- :subs.user/mode
- (fn [db _]
-   (:user/mode db)))
-
 (rf/reg-event-db
  :evt.user/toggle-mode
- (fn [db _]
-   (let [new-mode (if (= :editor (:user/mode db))
-                    :reader
-                    :editor)]
-     (assoc db :user/mode new-mode))))
-
-(rf/reg-sub
- :subs.user.admin/mode
- (fn [db _]
-   (:admin/mode db)))
+ [(rf/path :user/mode)]
+ (fn [user-mode _]
+   (toggle user-mode [:reader :editor])))
 
 (rf/reg-event-db
  :evt.user.admin/toggle-mode
- (fn [db _]
-   (let [new-mode (if (= :edit (:admin/mode db))
-                    :read
-                    :edit)]
-     (assoc db :admin/mode new-mode))))
-
-(rf/reg-sub
- :subs.user/user
- (fn [db _]
-   (:app/user db)))
+ [(rf/path :admin/mode)]
+ (fn [admin-mode _]
+   (toggle admin-mode [:read :edit])))
 
 (rf/reg-event-fx
  :evt.user/logout
@@ -285,32 +272,18 @@
 
 ;; Mode
 
-(rf/reg-sub
- :subs.page/mode
- (fn [db [_ page-name]]
-   (-> db :app/pages page-name :page/mode)))
-
 (rf/reg-event-db
  :evt.page/toggle-edit-mode
  [(rf/path :app/pages)]
  (fn [pages [_ page-name]]
-   (let [new-mode (if (= :edit (-> pages page-name :page/mode))
-                    :read
-                    :edit)]
-     (assoc-in pages [page-name :page/mode] new-mode))))
+   (update-in pages [page-name :page/mode] toggle [:read :edit])))
 
 ;; View
 
 (rf/reg-event-db
  :evt.page/set-current-view
  (fn [db [_ new-match]]
-   (-> db
-       (assoc :app/current-view new-match))))
-
-(rf/reg-sub
- :subs.page/current-view
- (fn [db _]
-   (-> db :app/current-view :data)))
+   (assoc db :app/current-view new-match)))
 
 ;; ---------- Page Header Form ----------
 
@@ -319,11 +292,6 @@
  [(rf/path :app/pages)]
  (fn [pages [_ page-name method]]
    (assoc-in pages [page-name :page/sorting-method] (edn/read-string method))))
-
-(rf/reg-sub
- :subs.page.form/sorting-method
- (fn [db [_ page-name]]
-   (-> db :app/pages page-name :page/sorting-method)))
 
 (rf/reg-event-fx
  :evt.page.form/send-page
@@ -344,11 +312,6 @@
 ;; ---------- Post ----------
 
 ;; Mode
-
-(rf/reg-sub
- :subs.post/mode
- (fn [db [_ post-id]]
-   (-> db :app/posts (get post-id) :post/mode)))
 
 (defn set-post-modes
   [posts mode]
@@ -417,12 +380,9 @@
 
 (rf/reg-event-db
  :evt.post.form/toggle-preview
- [(rf/path :form/fields)]
- (fn [post _]
-   (let [new-view (if (= :preview (:post/view post))
-                    :edit
-                    :preview)]
-     (assoc post :post/view new-view))))
+ [(rf/path :form/fields :post/view)]
+ (fn [post-view _]
+   (toggle post-view [:preview :edit])))
 
 (rf/reg-event-fx
  :evt.post.form/send-post
@@ -508,29 +468,6 @@
  (fn [db _]
    (dissoc db :form/fields)))
 
-(rf/reg-sub
- :subs.post.form/fields
- (fn [db _]
-   (:form/fields db)))
-
-(rf/reg-sub
- :subs.form.image/fields
- :<- [:subs.post.form/fields]
- (fn [post _]
-   (:post/image-beside post)))
-
-(rf/reg-sub
- :subs.post.form/field
- :<- [:subs.post.form/fields]
- (fn [post [_ id]]
-   (get post id)))
-
-(rf/reg-sub
- :subs.form.image/field
- :<- [:subs.form.image/fields]
- (fn [image-fields [_ id]]
-   (get image-fields id)))
-
 ;; post deletion
 
 (rf/reg-event-db
@@ -547,17 +484,6 @@
  [(rf/path :app/errors)]
  (fn [errors [_ validation-err]]
    (assoc errors :validation-errors validation-err)))
-
-(rf/reg-sub
- :subs.error/errors
- (fn [db _]
-   (-> db :app/errors)))
-
-(rf/reg-sub
- :subs.error/error
- :<- [:subs.error/errors]
- (fn [errors [_ id]]
-   (str (get errors id))))
 
 (rf/reg-event-db
  :evt.error/clear-errors

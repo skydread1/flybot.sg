@@ -13,9 +13,11 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [sorting-method @(rf/subscribe [:subs.page.form/sorting-method page-name])
+  (let [sorting-method @(rf/subscribe [:subs/pattern
+                                       {:app/pages {page-name {:page/sorting-method '?}}}
+                                       [:app/pages page-name :page/sorting-method]])
         ordered-posts (->> @(rf/subscribe [:subs.post/posts page-name])
-                           (map h/add-hiccup)
+                           (map #(assoc % :post/hiccup-content (h/md->hiccup (:post/md-content %))))
                            (sort-posts sorting-method))
         new-post      {:post/id "new-post-temp-id"}
         posts         (conj ordered-posts new-post)]

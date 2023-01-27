@@ -10,7 +10,7 @@
             [re-frame.core :as rf]))
 
 (defn current-page []
-  (if-let [view (:view @(rf/subscribe [:subs.page/current-view]))]
+  (if-let [view @(rf/subscribe [:subs/pattern '{:app/current-view {:data {:view ?}}}])]
     (view)
     (page :home)))
 

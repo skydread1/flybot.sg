@@ -20,3 +20,7 @@
   [k v]
   (into {} (map (juxt k identity) v)))
 
+(defn toggle
+  "Toggles 2 values."
+  [cur [v1 v2]]
+  (if (= cur v1) v2 v1))
