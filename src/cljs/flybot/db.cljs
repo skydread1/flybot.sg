@@ -8,7 +8,7 @@
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-            [cljc.flybot.utils :as utils]
+            [cljc.flybot.utils :as utils :refer [toggle]]
             [cljc.flybot.validation :as valid]
             [cljs.flybot.lib.localstorage :as l-storage]
             [cljs.flybot.lib.class-utils :as cu]
@@ -209,7 +209,7 @@
  :evt.app/toggle-theme
  (fn [{:keys [db]} [_]]
    (let [cur-theme (:app/theme db)
-         next-theme (if (= :dark cur-theme) :light :dark)]
+         next-theme (toggle cur-theme [:light :dark])]
      {:db (assoc db :app/theme next-theme)
       :fx [[:fx.app/set-theme-local-store next-theme]
            [:fx.app/toggle-css-class [cur-theme next-theme]]]})))
@@ -219,32 +219,26 @@
 (rf/reg-event-db
  :evt.nav/toggle-navbar
  (fn [db [_]]
-   (-> db
-       (update :nav/navbar-open? not))))
+   (update db :nav/navbar-open? not)))
 
 (rf/reg-event-db
  :evt.nav/close-navbar
  (fn [db [_]]
-   (-> db
-       (assoc :nav/navbar-open? false))))
+   (assoc db :nav/navbar-open? false)))
 
 ;; ---------- User ----------
 
 (rf/reg-event-db
  :evt.user/toggle-mode
- (fn [db _]
-   (let [new-mode (if (= :editor (:user/mode db))
-                    :reader
-                    :editor)]
-     (assoc db :user/mode new-mode))))
+ [(rf/path :user/mode)]
+ (fn [user-mode _]
+   (toggle user-mode [:reader :editor])))
 
 (rf/reg-event-db
  :evt.user.admin/toggle-mode
- (fn [db _]
-   (let [new-mode (if (= :edit (:admin/mode db))
-                    :read
-                    :edit)]
-     (assoc db :admin/mode new-mode))))
+ [(rf/path :admin/mode)]
+ (fn [admin-mode _]
+   (toggle admin-mode [:read :edit])))
 
 (rf/reg-event-fx
  :evt.user/logout
@@ -282,18 +276,14 @@
  :evt.page/toggle-edit-mode
  [(rf/path :app/pages)]
  (fn [pages [_ page-name]]
-   (let [new-mode (if (= :edit (-> pages page-name :page/mode))
-                    :read
-                    :edit)]
-     (assoc-in pages [page-name :page/mode] new-mode))))
+   (update-in pages [page-name :page/mode] toggle [:read :edit])))
 
 ;; View
 
 (rf/reg-event-db
  :evt.page/set-current-view
  (fn [db [_ new-match]]
-   (-> db
-       (assoc :app/current-view new-match))))
+   (assoc db :app/current-view new-match)))
 
 ;; ---------- Page Header Form ----------
 
@@ -390,12 +380,9 @@
 
 (rf/reg-event-db
  :evt.post.form/toggle-preview
- [(rf/path :form/fields)]
- (fn [post _]
-   (let [new-view (if (= :preview (:post/view post))
-                    :edit
-                    :preview)]
-     (assoc post :post/view new-view))))
+ [(rf/path :form/fields :post/view)]
+ (fn [post-view _]
+   (toggle post-view [:preview :edit])))
 
 (rf/reg-event-fx
  :evt.post.form/send-post
