@@ -1,11 +1,11 @@
 # flybot.sg
-Full stack implementation of flybot.sg website : IN PROGRESS
+Full stack implementation of flybot.sg website
 
-## frontend
+## frontend : WEB
 
 ### DEV
 
-To work on the frontend:
+To work on the web frontend:
 1) Jack-in `deps+figwheel` and tick the aliases `jvm-base` and `fig` to load all the necessary backend and frontend deps and enter.
 2) When prompt to chose between `cljs/dev` or `cljs/prod`, tick `cljs/dev` for hot reloading development experience
 3) It will open the browser on port `9500` automatically
@@ -27,6 +27,19 @@ Regression tests are run on every save and the results are displayed at http://l
 
 To generate the optimized js bundle for production:
 - `clj T:build js-bundle`
+
+## frontend : MOBILE
+
+To be able to work on react native app, you need to [prepare your environment](https://reactnative.dev/docs/next/environment-setup).
+
+### DEV
+
+To work on the react native frontend:
+1) Jack-in `deps+figwheel` and tick the aliases `jvm-base`, `fig` and `rn` to load all the necessary backend and frontend deps and enter.
+2) When prompt to chose the cljs alias, tick `cljs/ios` for hot reloading development experience on Xcode simulator
+3) The backend server will be running on port 9500.
+4) In an external terminal, run `npm run ios` to start the simulator and start the cljs repl alongside your clj repl.
+5) After you made sone changes on cljs file, just save and the phone simulator will reflect the changes
 
 ## backend
 
