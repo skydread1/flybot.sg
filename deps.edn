@@ -33,6 +33,12 @@
                       day8.re-frame/http-fx                 {:mvn/version "0.2.4"}
                       day8.re-frame/test                    {:mvn/version "0.1.5"}}
          :extra-paths ["test" "dev/src" "config" "target"]}
+  
+  ;; React Native
+  :rn {:extra-deps {org.clojure/clojurescript     {:mvn/version "1.10.773"}
+                    io.vouch/reagent-react-native {:git/url "https://github.com/vouch-opensource/reagent-react-native.git"
+                                                   :sha     "0fe1c600c9b81180f76b94ef6004c2f85e7d4aa0"}}
+       :extra-paths ["mobile/src"]}
 
   ;; CLJ paths for the backend systems and tests
   :clj/dev {:extra-paths ["test" "dev/src" "config" "target"]}
@@ -42,7 +48,7 @@
              :extra-deps  {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
              :main-opts   ["-m" "kaocha.runner"]}
 
-  ;;---------- FRONTEND (cljs) aliases ----------
+  ;;---------- FRONTEND WEB (cljs) aliases ----------
   ;; cljs repl for figwheel hot reloading development/testing
   ;; be sure to not have a js bundle in resources/public and used :fig alias for clj repl
   :cljs/dev {:main-opts ["--main"  "figwheel.main"
@@ -61,6 +67,13 @@
   :cljs/test-headless {:main-opts ["-m" "figwheel.main"
                                    "-co" "tests.cljs.edn"
                                    "-m" "cljs.flybot.test-runner"]}
+  
+  ;;---------- FRONTEND MOBILE (cljs) aliases ----------
+  ;; cljs repl for figwheel hot reloading development/testing
+  ;; Run `npm run ios` in another terminal to start the simulator
+  :cljs/ios {:main-opts ["--main"  "figwheel.main"
+                         "--build" "ios"
+                         "--repl"]}
 
   ;;---------- CD aliases ----------
   ;; build frontend js bundle : clj -T:build js-bundle
