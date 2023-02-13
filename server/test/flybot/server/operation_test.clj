@@ -8,11 +8,14 @@
             [datalevin.core :as d]
             [robertluo.fun-map :refer [halt! touch]]))
 
+(def test-data [s/post-1 s/post-2
+                s/home-page s/apply-page
+                s/bob-user s/alice-user])
 (def test-system
   (-> (sys/system-config :test)
       core/system
       (dissoc :oauth2-config)
-      (assoc :db-conn (sys/db-conn-system sys/test-data))))
+      (assoc :db-conn (sys/db-conn-system test-data))))
 
 (defn system-fixture [f]
   (touch test-system)

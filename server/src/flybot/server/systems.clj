@@ -5,7 +5,6 @@
             [clojure.edn :as edn]
             [datalevin.core :as d]
             [flybot.server.init-data :as ds]
-            [flybot.common.test-sample-data :as ts]
             [robertluo.fun-map :refer [fnk closeable touch halt!]]))
 
 (defn system-config
@@ -53,9 +52,7 @@
 ;;---------- System for backend tests ----------
 ;; It uses some dumy data
 
-(def test-data [ts/post-1 ts/post-2
-                ts/home-page ts/apply-page
-                ts/bob-user ts/alice-user])
+
 
 (comment
   (touch figwheel-system)
