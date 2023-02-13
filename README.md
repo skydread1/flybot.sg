@@ -52,7 +52,7 @@ To work on the backend:
 For development with UI:
 1) Be sure to have a `main.js` in the resources. if not present, you can generate it via `clj T:build js-bundle`
 2) Check if `main.js` is the script source in `index.html`
-3) Start the dev-system in the `clj.flybot.systems` namespace to get the website running on port `8123`
+3) Start the dev-system in the `flybot.server.systems` namespace to get the website running on port `8123`
 
 ### TEST in terminal
 

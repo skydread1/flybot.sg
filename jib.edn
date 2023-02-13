@@ -1,5 +1,5 @@
 ;; Image config to create the image and push it to ECR
-{:main           clj.flybot.core
+{:main           flybot.server.core
  :aliases        [:jvm-base]
  :user          "root"
  :group         "root"

@@ -13,67 +13,69 @@
            datalevin/datalevin                   {:mvn/version "0.7.6"}
            skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
                                                   :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}}
- :paths   ["src" "resources"]
+ :paths   ["server/src" "common/src" "resources"]
  :aliases
  {;;---------- BACKEND (clj) aliases ----------
   ;; JVM options to make datalevin work with java version > java8
   :jvm-base {:jvm-opts ["--add-opens=java.base/java.nio=ALL-UNNAMED"
                         "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED"]}
-
-  ;; CLJ backend figwheel-system handler
-  :fig  {:extra-deps {;; frontend
-                      com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
-                      org.clojure/clojurescript             {:mvn/version "1.11.60"}
-                      reagent/reagent                       {:mvn/version "1.1.1"}
-                      cljsjs/react                          {:mvn/version "18.2.0-0"}
-                      cljsjs/react-dom                      {:mvn/version "18.2.0-0"}
-                      markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
-                      cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}
-                      re-frame/re-frame                     {:mvn/version "1.3.0"}
-                      day8.re-frame/http-fx                 {:mvn/version "0.2.4"}
-                      day8.re-frame/test                    {:mvn/version "0.1.5"}}
-         :extra-paths ["test" "dev/src" "config" "target"]}
   
+  ;; CLJ backend figwheel-system handler
+  :client  {:extra-deps {;; frontend
+                         com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
+                         org.clojure/clojurescript             {:mvn/version "1.11.60"}
+                         reagent/reagent                       {:mvn/version "1.1.1"}
+                         cljsjs/react                          {:mvn/version "18.2.0-0"}
+                         cljsjs/react-dom                      {:mvn/version "18.2.0-0"}
+                         markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
+                         cljs-ajax/cljs-ajax                   {:mvn/version "0.8.4"}
+                         re-frame/re-frame                     {:mvn/version "1.3.0"}
+                         day8.re-frame/http-fx                 {:mvn/version "0.2.4"}
+                         day8.re-frame/test                    {:mvn/version "0.1.5"}}
+            :extra-paths ["client/web/src" "client/web/test" 
+                          "common/test"
+                          "config" "target"]}
+
   ;; React Native
-  :rn {:extra-deps {org.clojure/clojurescript     {:mvn/version "1.10.773"}
-                    io.vouch/reagent-react-native {:git/url "https://github.com/vouch-opensource/reagent-react-native.git"
-                                                   :sha     "0fe1c600c9b81180f76b94ef6004c2f85e7d4aa0"}}
-       :extra-paths ["mobile/src"]}
+  :mobile/rn {:extra-deps {org.clojure/clojurescript     {:mvn/version "1.10.773"}
+                           io.vouch/reagent-react-native {:git/url "https://github.com/vouch-opensource/reagent-react-native.git"
+                                                          :sha     "0fe1c600c9b81180f76b94ef6004c2f85e7d4aa0"}}
+              :extra-paths ["client/mobile/src"]}
 
   ;; CLJ paths for the backend systems and tests
-  :clj/dev {:extra-paths ["test" "dev/src" "config" "target"]}
+  :server/dev {:extra-paths ["config" "target" "common/test" "server/test"]}
 
-  ;; Run clj tests
-  :clj/test {:extra-paths ["test" "dev/src" "config"]
-             :extra-deps  {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
-             :main-opts   ["-m" "kaocha.runner"]}
+  ;; Run clj tests - use with :server/dev
+  :server/test {:extra-paths ["common/test" "server/test"]
+                :extra-deps  {lambdaisland/kaocha {:mvn/version "1.71.1119"}}
+                :main-opts   ["-m" "kaocha.runner"]}
 
   ;;---------- FRONTEND WEB (cljs) aliases ----------
   ;; cljs repl for figwheel hot reloading development/testing
   ;; be sure to not have a js bundle in resources/public and used :fig alias for clj repl
-  :cljs/dev {:main-opts ["--main"  "figwheel.main"
-                         "--build" "dev"
-                         "--repl"]}
+  :web/dev {:main-opts ["--main"  "figwheel.main"
+                        "--build" "dev"
+                        "--repl"]}
 
   ;; build the optimised js bundle
-  :cljs/prod {:main-opts ["--main"       "figwheel.main"
-                          "--build-once" "prod"]}
+  :web/prod {:main-opts ["--main"       "figwheel.main"
+                         "--build-once" "prod"]}
 
   ;; Run the cljs tests
-  :cljs/test {:main-opts ["-m" "figwheel.main"
-                          "-m" "cljs.flybot.test-runner"]}
+  :web/test {:main-opts ["-m" "figwheel.main"
+                         "-m" "flybot.client.web.test-runner"]}
 
   ;; Run the cljs tests with chrome headless
-  :cljs/test-headless {:main-opts ["-m" "figwheel.main"
-                                   "-co" "tests.cljs.edn"
-                                   "-m" "cljs.flybot.test-runner"]}
-  
+  :web/test-headless {:main-opts ["-m" "figwheel.main"
+                                  "-co" "tests.cljs.edn"
+                                  "-m" "flybot.client.web.test-runner"]}
+
   ;;---------- FRONTEND MOBILE (cljs) aliases ----------
   ;; cljs repl for figwheel hot reloading development/testing
   ;; Run `npm run ios` in another terminal to start the simulator
-  :cljs/ios {:main-opts ["--main"  "figwheel.main"
-                         "--build" "ios"
-                         "--repl"]}
+  :mobile/ios {:main-opts ["--main"  "figwheel.main"
+                           "--build" "ios"
+                           "--repl"]}
 
   ;;---------- CD aliases ----------
   ;; build frontend js bundle : clj -T:build js-bundle
