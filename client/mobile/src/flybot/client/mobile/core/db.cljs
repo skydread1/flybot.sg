@@ -1,4 +1,4 @@
-(ns flybot.client.web.core.db
+(ns flybot.client.mobile.core.db
   "State management using re-frame.
    
    ## Naming convention (inspired by Ivan Fedorov)
@@ -7,7 +7,6 @@
    :domain/key-id for db keys
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
-  (:require [flybot.client.web.core.db.event]
-            [flybot.client.web.core.db.fx]
-            [flybot.client.web.core.db.sub]))
-
+  (:require [flybot.client.mobile.core.db.event]
+            [flybot.client.mobile.core.db.fx]
+            [flybot.client.mobile.core.db.sub]))
