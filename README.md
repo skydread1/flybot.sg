@@ -5,81 +5,93 @@ Full stack implementation of flybot.sg website
 
 ### DEV
 
-To work on the web frontend:
-1) Jack-in `deps+figwheel` and tick the aliases `jvm-base` and `fig` to load all the necessary backend and frontend deps and enter.
-2) When prompt to chose between `cljs/dev` or `cljs/prod`, tick `cljs/dev` for hot reloading development experience
-3) It will open the browser on port `9500` automatically
-4) If there is a `main.js` in the resources folder, remove it, so your dev js is picked up by figwheel
-5) Check if `cljs-out/dev-main.js` is the script source in `index.html`
-5) After you made sone changes on cljs file or css, just save and the browser will reflect the changes
+If you use VSCode, the jack-in is done in 2 steps to be able to start the REPL in VSCode instead of terminal:
+- first chose the aliases for the deps and enter
+- then chose the cljs repl you want to launch then enter
+
+Prerequisites:
+- delete any `main.js` in the resources folder
+- delete `node_modules` at the root because no need for the web
+- Check if `cljs-out/dev-main.js` is the script source in `index.html`
+
+Features:
+- It will open the browser on port `9500` automatically
+- Just save a file to trigger hot reloading in the browser
+
+Jack-in `deps+figwheel`:
+- DEPS: `:jvm-base`, `:client`
+- REPL: `:web/dev`
 
 ### TEST in terminal
 
 ```
-clj -A:jvm-base:fig:cljs/test
+clj -A:jvm-base:client:web/test
 ```
 
 ### Regression tests on save
 
 Regression tests are run on every save and the results are displayed at http://localhost:9500/figwheel-extra-main/auto-testing
 
-### build js bundle
-
-To generate the optimized js bundle for production:
-- `clj T:build js-bundle`
-
 ## frontend : MOBILE
-
-To be able to work on react native app, you need to [prepare your environment](https://reactnative.dev/docs/next/environment-setup).
 
 ### DEV
 
-To work on the react native frontend:
-1) Jack-in `deps+figwheel` and tick the aliases `jvm-base`, `fig` and `rn` to load all the necessary backend and frontend deps and enter.
-2) When prompt to chose the cljs alias, tick `cljs/ios` for hot reloading development experience on Xcode simulator
-3) The backend server will be running on port 9500.
-4) In an external terminal, run `npm run ios` to start the simulator and start the cljs repl alongside your clj repl.
-5) After you made sone changes on cljs file, just save and the phone simulator will reflect the changes
+Prerequisites:
+- [prepare your environment](https://reactnative.dev/docs/next/environment-setup)
+- if no `node_modules`, run `npm install` at the root
+- only tested with Xcode simulator
+
+Features:
+- Server will be launched on port 9500
+- Just save a file to trigger hot reloading on your Xcode simulator
+
+Jack-in `deps+figwheel`:
+- DEPS: `:jvm-base`, `:client`, `:mobile/rn`
+- REPL: `:mobile/ios`
+- Simulator: run `npm run ios` in an external terminal - once done it will star the cljs repl in VSCode
 
 ## backend
 
 ### DEV
 
-To work on the backend:
-1) Jack-in `deps.edn` and tick the aliases `:jvm-base` and `:clj/test` to load the test namespaces and dev systems
-2) Running the tests will use a dedicated test-system, it will be start and stop via the fixture so you can just run your tests normally
+Prerequisites:
+- if you want to have a UI, you can generate the `main.js` bundle via `clj T:build js-bundle`
 
-For development with UI:
-1) Be sure to have a `main.js` in the resources. if not present, you can generate it via `clj T:build js-bundle`
-2) Check if `main.js` is the script source in `index.html`
-3) Start the dev-system in the `flybot.server.systems` namespace to get the website running on port `8123`
+Features:
+- the `system` ns provide you a dev system to start server on port 8123 with sample data for db
+- the tests use a dedicated test system
+
+Jack-in `deps+figwheel`:
+- DEPS: `:jvm-base`, `:server/dev`
 
 ### TEST in terminal
 
 ```
-clj -A:jvm-base:clj/test
+clj -A:jvm-base:server/test
 ```
 
 ### Package to uberjar
-Be sure to have generated the `main.js` in the resources folder.
 
-To package the app to a uberjar, you can use:
+Prerequisites:
+- delete `node_modules` at the root because no need for the web
+- Check if `main.js` is the script source in `index.html` 
 
-if main.js already generated:
+Features:
+- build js bundle
+- build uberjar
+
+Build:
+- `clj T:build js-bundle`
 - `clj T:build uber`
-
-if main.js not yet generated:
- - `clj T:build deploy` (js-bundle + uber)
+- `clj T:build uber+js`
 
 To run the uberjar
 ```
-OAUTH2="creds" \
-ADMIN_USER="user edn" \
-SYSTEM="{:http-port 8123, :db-uri \"datalevin/prod/flybotdb\", :oauth2-callback \"https://v2.flybot.sg/oauth/google/callback\"}" \
+OAUTH2="secret" \
+ADMIN_USER="secret" \
+SYSTEM="{:http-port 8123, :db-uri \"datalevin/prod/flybotdb\", :oauth2-callback \"https://localhost:8123/oauth/google/callback\"}" \
 java -jar target/flybot.sg-{version}-standalone.jar
 ```
-
-Note: the `ADMIN_USER` is only necessary if you are loading your initial-data to the db.
 
 ## CD
 
@@ -105,8 +117,8 @@ docker run \
 -it \
 -p 8123:8123 \
 -v db-volume:/datalevin/prod/flybotdb \
--e OAUTH2="google creds edn" \
--e ADMIN_USER="user edn" \
--e SYSTEM="{:http-port 8123, :db-uri \"/datalevin/prod/flybotdb\", :oauth2-callback \"https://v2.flybot.sg/oauth/google/callback\"}" \
+-e OAUTH2="secret" \
+-e ADMIN_USER="secret" \
+-e SYSTEM="{:http-port 8123, :db-uri \"/datalevin/prod/flybotdb\", :oauth2-callback \"https://localhost:8123/oauth/google/callback\"}" \
 some-image-uri:latest
 ```
