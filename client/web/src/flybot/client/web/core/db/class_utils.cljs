@@ -1,4 +1,4 @@
-(ns flybot.client.web.lib.class-utils
+(ns flybot.client.web.core.db.class-utils
   (:require [clojure.string :as string]))
 
 (defn classes-of

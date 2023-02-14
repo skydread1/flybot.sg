@@ -1,4 +1,4 @@
-(ns flybot.client.web.db
+(ns flybot.client.web.core.db
   "State management using re-frame.
    
    ## Naming convention (inspired by Ivan Fedorov)
@@ -7,14 +7,14 @@
    :domain/key-id for db keys
    :fx.domain/fx-id for effects
    :cofx.domain/cofx-id for coeffects"
-  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
+  (:require [flybot.client.web.core.db.class-utils :as cu]
+            [flybot.client.web.core.db.localstorage :as l-storage]
             [flybot.common.utils :as utils :refer [toggle]]
             [flybot.common.validation :as valid]
-            [flybot.client.web.lib.localstorage :as l-storage]
-            [flybot.client.web.lib.class-utils :as cu]
+            [ajax.edn :refer [edn-request-format edn-response-format]]
             [clojure.edn :as edn]
-            [re-frame.core :as rf]
             [day8.re-frame.http-fx]
+            [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]
             [sg.flybot.pullable :as pull]))
 

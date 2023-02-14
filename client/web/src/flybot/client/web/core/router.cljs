@@ -1,5 +1,5 @@
-(ns flybot.client.web.lib.router
-  (:require [flybot.client.web.components.page :refer [page]] 
+(ns flybot.client.web.core.router
+  (:require [flybot.client.web.core.dom.page :refer [page]] 
             [goog.object :as gobj]
             [reitit.frontend :as rei]
             [reitit.frontend.easy :as rfe]

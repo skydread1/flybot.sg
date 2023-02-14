@@ -1,15 +1,15 @@
-(ns flybot.client.web.db-test
+(ns flybot.client.web.core.db-test
   "Hot reloading regression tests for the re-frame logic.
    The tests are executed everytime a cljs file is saved.
    The results are displayed in http://localhost:9500/figwheel-extra-main/auto-testing"
-  (:require [flybot.common.test-sample-data :as s]
-            [flybot.client.web.db]
-            [flybot.client.web.lib.router :as router]
+  (:require [flybot.client.web.core.db]
+            [flybot.client.web.core.router :as router]
+            [flybot.common.test-sample-data :as s]
+            [flybot.common.utils :as utils]
             [cljs.test :refer-macros [deftest is testing use-fixtures]]
             [day8.re-frame.test :as rf-test]
             [re-frame.core :as rf]
-            [re-frame.db :as rf.db]
-            [flybot.common.utils :as utils]))
+            [re-frame.db :as rf.db]))
 
 ;; ---------- Fixtures ----------
 

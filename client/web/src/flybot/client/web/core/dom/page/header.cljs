@@ -1,6 +1,6 @@
-(ns flybot.client.web.components.page.page-config
-  (:require [flybot.client.web.components.error :refer [errors]]
-            [flybot.client.web.components.svg :as svg]
+(ns flybot.client.web.core.dom.page.header
+  (:require [flybot.client.web.core.dom.common.error :refer [errors]]
+            [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
@@ -45,7 +45,7 @@
      [:option {:value "{:sort/type :post/last-edit-date :sort/direction :descending}"}
       "Last Edit Date (Descending)"]]]])
 
-(defn page-config
+(defn page-header
   [page-name]
   (when (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?}]))
     [:div.page-header

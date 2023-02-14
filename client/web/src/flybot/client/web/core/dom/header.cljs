@@ -1,7 +1,7 @@
-(ns flybot.client.web.components.header 
-  (:require [flybot.client.web.components.svg :as svg]
-            [reitit.frontend.easy :as rfe]
-            [re-frame.core :as rf]))
+(ns flybot.client.web.core.dom.header 
+  (:require [flybot.client.web.core.dom.common.svg :as svg]
+            [re-frame.core :as rf]
+            [reitit.frontend.easy :as rfe]))
 
 (defn internal-link
   "Reitit internal link for the navbar.
@@ -39,22 +39,6 @@
     (->> (navbar-content) (cons :nav.show) vec)
     (->> (navbar-content) (cons :nav.hidden) vec)))
 
-(defn theme-logo
-  []
-  [:div.pointer
-   {:on-click #(rf/dispatch [:evt.app/toggle-theme])}
-   (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?}]))
-     svg/sun-icon
-     svg/moon-icon)])
-
-(defn user-mode-logo
-  []
-  [:div.pointer
-   {:on-click #(rf/dispatch [:evt.user/toggle-mode])}
-   (if (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?}]))
-     svg/eye-icon
-     svg/pen-on-paper-icon)])
-
 (defn header-comp []
   [:header.container
    [:div.top
@@ -62,9 +46,9 @@
      [:img.flybotlogo
       {:alt "Flybot logo"
        :src "assets/flybot-logo.png"}]]
-    [theme-logo]
+    [svg/theme-logo]
     (when @(rf/subscribe [:subs/pattern '{:app/user ?}])
-      [user-mode-logo])
+      [svg/user-mode-logo])
     [navbar-web]
     (when-let [{:user/keys [name picture]} @(rf/subscribe [:subs/pattern
                                                            '{:app/user {:user/name ? :user/picture ?}}

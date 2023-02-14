@@ -1,4 +1,4 @@
-(ns flybot.client.web.lib.hiccup
+(ns flybot.client.web.core.dom.hiccup
   (:require [clojure.walk :refer [postwalk]]
             [markdown-to-hiccup.core :as mth]
             [re-frame.core :as rf]))

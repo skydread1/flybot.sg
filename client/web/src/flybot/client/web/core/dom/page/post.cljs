@@ -1,9 +1,8 @@
-(ns flybot.client.web.components.page.post
+(ns flybot.client.web.core.dom.page.post
   (:require [flybot.common.utils :as utils]
-            [flybot.client.web.lib.hiccup :as h]
-            [flybot.client.web.components.header :refer [theme-logo]]
-            [flybot.client.web.components.error :refer [errors]]
-            [flybot.client.web.components.svg :as svg]
+            [flybot.client.web.core.dom.hiccup :as h]
+            [flybot.client.web.core.dom.common.error :refer [errors]]
+            [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
@@ -138,7 +137,7 @@
                                 :post/show-authors?
                                 (.. % -target -checked)])}]
      [:br]
-     [theme-logo]]
+     [svg/theme-logo]]
     [:br]
     [:fieldset
      [:legend "Post Content (Required)"]

@@ -1,4 +1,4 @@
-(ns flybot.client.web.components.footer)
+(ns flybot.client.web.core.dom.footer)
 
 (defn footer-comp []
   [:footer#footer-contact.container

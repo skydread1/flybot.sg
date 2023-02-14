@@ -1,4 +1,4 @@
-(ns flybot.client.web.lib.localstorage)
+(ns flybot.client.web.core.db.localstorage)
 
 (defn set-item
   "Set `key' in browser's localStorage to `val`."

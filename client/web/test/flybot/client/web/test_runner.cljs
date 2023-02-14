@@ -2,7 +2,7 @@
   (:require
     [figwheel.main.testing :refer-macros [run-tests-async]]
     ;; require all the namespaces that have tests in them
-    [flybot.client.web.db-test]))
+    [flybot.client.web.core.db-test]))
 
 (defn -main [& args]
   ;; this needs to be the last statement in the main function so that it can

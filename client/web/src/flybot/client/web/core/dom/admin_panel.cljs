@@ -1,6 +1,6 @@
-(ns flybot.client.web.components.admin-panel
-  (:require [flybot.client.web.components.error :refer [errors]]
-            [flybot.client.web.components.svg :as svg]
+(ns flybot.client.web.core.dom.admin-panel
+  (:require [flybot.client.web.core.dom.common.error :refer [errors]]
+            [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
@@ -40,7 +40,7 @@
 
 ;;---------- Admin div ----------
 
-(defn admin-section
+(defn  admin-section
   []
   (when (and (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?}]))
              (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?}]}}])

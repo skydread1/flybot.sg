@@ -1,4 +1,4 @@
-(ns flybot.client.web.components.error
+(ns flybot.client.web.core.dom.common.error
   (:require [re-frame.core :as rf]))
 
 (defn errors

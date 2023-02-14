@@ -1,7 +1,7 @@
-(ns flybot.client.web.components.page
-  (:require [flybot.client.web.lib.hiccup :as h]
-            [flybot.client.web.components.page.post :refer [page-post]]
-            [flybot.client.web.components.page.page-config :refer [page-config]]
+(ns flybot.client.web.core.dom.page
+  (:require [flybot.client.web.core.dom.hiccup :as h]
+            [flybot.client.web.core.dom.page.header :refer [page-header]]
+            [flybot.client.web.core.dom.page.post :refer [page-post]]
             [re-frame.core :as rf]))
 
 (defn sort-posts
@@ -24,7 +24,7 @@
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
-     [page-config page-name]
+     [page-header page-name]
      (doall
       (for [post posts]
         (page-post page-name post)))]))
