@@ -1,10 +1,10 @@
 (ns flybot.server.systems
   "Systems for backend dev and frontend dev/test with figwheel"
   (:require [flybot.server.core :as core]
-            [flybot.server.db :as db]
+            [flybot.server.core.handler.operation.db :as db]
+            [flybot.server.core.init-data :as ds]
             [clojure.edn :as edn]
             [datalevin.core :as d]
-            [flybot.server.init-data :as ds]
             [robertluo.fun-map :refer [fnk closeable touch halt!]]))
 
 (defn system-config
@@ -48,11 +48,6 @@
 (def dev-system
   (-> (core/system (system-config :dev))
       (assoc :db-conn (db-conn-system ds/init-data))))
-
-;;---------- System for backend tests ----------
-;; It uses some dumy data
-
-
 
 (comment
   (touch figwheel-system)

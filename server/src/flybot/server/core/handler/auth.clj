@@ -1,4 +1,4 @@
-(ns flybot.server.auth
+(ns flybot.server.core.handler.auth
   (:require [aleph.http :as http]
             [cheshire.core :as cheshire]
             [clj-commons.byte-streams :as bs]

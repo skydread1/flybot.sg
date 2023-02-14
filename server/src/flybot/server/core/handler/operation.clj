@@ -1,5 +1,5 @@
-(ns flybot.server.operation
-  (:require [flybot.server.db :as db]
+(ns flybot.server.core.handler.operation
+  (:require [flybot.server.core.handler.operation.db :as db]
             [flybot.common.utils :as utils]))
 
 ;;---------- No Effect Ops ----------

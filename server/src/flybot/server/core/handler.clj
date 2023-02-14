@@ -1,7 +1,7 @@
-(ns flybot.server.handler
-  (:require [flybot.server.middleware :as mw]
-            [flybot.server.operation :as op]
-            [flybot.server.auth :as auth]
+(ns flybot.server.core.handler
+  (:require [flybot.server.core.handler.middleware :as mw]
+            [flybot.server.core.handler.operation :as op]
+            [flybot.server.core.handler.auth :as auth]
             [flybot.common.validation :as v]
             [clojure.java.io :as io]
             [datalevin.core :as d]

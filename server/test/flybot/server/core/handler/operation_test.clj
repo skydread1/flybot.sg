@@ -1,6 +1,6 @@
-(ns flybot.server.operation-test
-  (:require [flybot.server.operation :as sut]
-            [flybot.server.core :as core]
+(ns flybot.server.core.handler.operation-test
+  (:require [flybot.server.core :as core]
+            [flybot.server.core.handler.operation :as sut] 
             [flybot.server.systems :as sys]
             [flybot.common.test-sample-data :as s]
             [flybot.common.utils :as utils]

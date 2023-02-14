@@ -1,15 +1,15 @@
-(ns flybot.server.init-data
+(ns flybot.server.core.init-data
   "Realistic sample data that can be used for api or figwheel developement."
   (:require [flybot.common.utils :as u]
-            [clojure.java.io :as io]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [clojure.java.io :as io]))
 
 ;; ---------- Initial Data ----------
 
 (defn slurp-md
   "Slurp the sample files with the markdown."
   [page-name file-name]
-  (-> (str "flybot/server/init_data/md_content/" page-name "/" file-name)
+  (-> (str "flybot/server/core/init_data/md_content/" page-name "/" file-name)
       io/resource
       slurp))
 

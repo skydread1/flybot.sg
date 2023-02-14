@@ -1,4 +1,4 @@
-(ns flybot.server.middleware
+(ns flybot.server.core.handler.middleware
   (:require [reitit.ring.middleware.exception :as exception]
             [ring.middleware.defaults :refer [site-defaults wrap-defaults]]
             [ring.middleware.ssl :refer [wrap-forwarded-scheme]]))

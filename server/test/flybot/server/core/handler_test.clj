@@ -1,15 +1,15 @@
-(ns flybot.server.handler-test
-  (:require [aleph.http :as http]
-            [clj-commons.byte-streams :as bs]
-            [flybot.server.core :as core]
+(ns flybot.server.core.handler-test
+  (:require [flybot.server.core :as core]
             [flybot.server.systems :as sys]
-            [flybot.server.handler :as sut]
-            [flybot.server.auth :as auth]
+            [flybot.server.core.handler :as sut]
+            [flybot.server.core.handler.auth :as auth]
             [flybot.common.test-sample-data :as s]
+            [aleph.http :as http]
+            [clj-commons.byte-streams :as bs]
+            [clojure.edn :as edn]
             [clojure.test :refer [deftest is testing use-fixtures]]
             [datalevin.core :as d]
-            [robertluo.fun-map :refer [halt! touch]]
-            [clojure.edn :as edn]))
+            [robertluo.fun-map :refer [halt! touch]]))
 
 (def test-data [s/post-1 s/post-2
                 s/home-page s/apply-page
