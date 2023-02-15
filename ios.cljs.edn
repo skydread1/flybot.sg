@@ -1,2 +1,2 @@
 ^{:react-native :cli}
-{:main flybot.mobile.main}
+{:main flybot.client.mobile.core}

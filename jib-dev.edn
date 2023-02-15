@@ -1,6 +1,6 @@
 ;; Image config to test de containerised app locally.
 ;; defalut base image for this is gcr.io/distroless/java.
-{:main         clj.flybot.core
+{:main         flybot.server.core
  :aliases      [:jvm-base]
  :user          "root"
  :group         "root"

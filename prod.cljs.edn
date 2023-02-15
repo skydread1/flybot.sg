@@ -1,2 +1,3 @@
-{:main cljs.flybot.core
- :optimizations :advanced}
+{:main flybot.client.web.core
+ :optimizations :advanced
+ :output-to     "resources/public/main.js"}

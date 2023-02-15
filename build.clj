@@ -1,32 +1,22 @@
 (ns build
   (:require [clojure.tools.build.api :as b]))
 
-;; ---------- Deploy Client ----------
+;; ---------- Build Client ----------
 
 (def build-dir "target")
 (def static-dir "resources/public")
 
 (defn clean [_]
-  (b/delete {:path build-dir})
-  (println "Deleted build dir: " build-dir))
-
-(defn move-js [_]
-  (b/copy-file {:src    "target/public/cljs-out/prod-main.js"
-                :target "resources/public/main.js"})
-  (println "Copied js bundle to the static dir: " static-dir))
+  (b/delete {:path build-dir}))
 
 (defn js-bundle
-  "- Compiles the sources cljs to a single prod-main.js
-   - Moves the prod-main.js from target/public to resources/public."
+  "Compiles the sources cljs to a single main.js"
   [_]
-  (println "[START] -> Client : Generate js bundle")
   (clean nil)
-  (b/process {:command-args ["clojure" "-M:jvm-base:fig:cljs/prod"]})
-  (move-js nil)
-  (clean nil)
-  (println "[END] -> Client : Generate js bundle"))
+  (b/process {:command-args ["clojure" "-M:jvm-base:client:web/prod"]})
+  (clean nil))
 
-;; ---------- Deploy Server ----------
+;; ---------- Build Server ----------
 
 (def lib 'flybot.sg)
 (def version (format "1.2.%s" (b/git-count-revs nil)))
@@ -36,23 +26,21 @@
 
 (defn uber
   "Creates the uberjar in target.
-   Assumes the client main.js has been created an placed in the resource."
+   Assumes the client main.js has been created."
   [_]
-  (println "[START] -> Server : Generate uberjar")
   (clean nil)
-  (b/copy-dir {:src-dirs   ["src/clj" "src/cljc" "resources"]
+  (b/copy-dir {:src-dirs   ["server/src" "common/src" "resources" "datalevin"]
                :target-dir class-dir})
   (b/compile-clj {:basis     basis
-                  :src-dirs  ["src/clj" "src/cljc"]
+                  :src-dirs  ["server/src" "common/src"]
                   :class-dir class-dir})
   (b/uber {:class-dir class-dir
            :uber-file uber-file
            :basis     basis
-           :main      'clj.flybot.core})
-  (println "[END] -> Server : Generate uberjar"))
+           :main      'flybot.server.core}))
 
-;; ---------- Deploy Client+Server----------
+;; ---------- Build Server+Client----------
 
-(defn deploy [_]
+(defn uber+js [_]
   (js-bundle nil)
   (uber nil))

@@ -1,0 +1,3 @@
+#kaocha/v1
+ #meta-merge [{:tests [{:id         :unit
+                        :test-paths ["common/test" "server/test"]}]}]

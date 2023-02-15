@@ -1,2 +1,2 @@
-{:ring-handler clj.flybot.systems/figwheel-handler
+{:ring-handler flybot.server.systems/figwheel-handler
  :auto-testing true}
