@@ -56,7 +56,13 @@
     :post/css-class "welcome"
     :post/creation-date (u/mk-date)
     :post/show-dates? true
-    :post/md-content (slurp-md "blog" "welcome.md")}])
+    :post/md-content (slurp-md "blog" "welcome.md")}
+   {:post/id (u/mk-uuid)
+    :post/page :blog
+    :post/css-class "md-example"
+    :post/creation-date (u/mk-date)
+    :post/show-dates? true
+    :post/md-content (slurp-md "blog" "mdsample.md")}])
 
 (def home-posts
   [{:post/id (u/mk-uuid)
