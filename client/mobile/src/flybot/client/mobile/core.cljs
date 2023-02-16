@@ -6,28 +6,35 @@
             [reagent.react-native :as rrn]
             ["@react-navigation/native" :refer [NavigationContainer]]
             ["@react-navigation/bottom-tabs" :as tab-nav]
-            ["react-native-vector-icons/Ionicons" :as icon]))
+            ["react-native-vector-icons/Ionicons" :as icon]
+            ["react-native-markdown-package" :as Markdown]))
 
 (def bottom-tab-nav (tab-nav/createBottomTabNavigator))
+(def bg-light-color "#fafafa")
+(def bg-dark-color "#18181b")
+(def text-blue-color "#0ea5e9")
+(def text-dark-color "#18181b")
+(def green-color "#22c55e")
 
-(def background-color "#18181b")
+(def default-icon (.-default icon))
+(def markdown (.-default Markdown))
 
 (defn tab-icon
   [route-name]
-  [:> (. icon -default)
+  [:> default-icon
    (case route-name
      "home" {:name "ios-home"
              :size 30
-             :color background-color}
+             :color text-blue-color}
      "blog" {:name "create"
              :size 30
-             :color background-color}
+             :color text-blue-color}
      :default)])
 
 (defn home
   []
   [rrn/view
-   {:style {:background-color background-color
+   {:style {:background-color bg-light-color
             :flex 1
             :justify-content "center"}}
    [rrn/image
@@ -36,39 +43,51 @@
      :source {:uri "https://www.flybot.sg/assets/flybot-logo.png"}
      :alt "flybot-logo"}]])
 
+(defn blog-post
+  [{:keys [md-content]}]
+  [rrn/view
+   {}
+   (when md-content
+     [:> markdown
+      {:styles {:text {:color text-dark-color}
+                :view {:align-self "stretch"}}}
+      md-content])])
+
 (defn blog
   []
-  (let [posts-ids (->> @(rf/subscribe [:subs.post/posts :blog])
-                       (map :post/id))]
-       [rrn/view
-        {:style {:background-color background-color
-                 :flex 1
-                 :justify-content "center"}}
-        (for [id posts-ids]
-          [rrn/text
-           {:key id
-            :style {:color "#bae6fd"
-                    :text-align "center"}}
-           id])]))
+  [rrn/view
+   {:style {:background-color bg-light-color
+            :flex 1
+            :justify-content "center"}}
+   [rrn/flat-list
+    {:data @(rf/subscribe [:subs.post/posts :blog])
+     :key-extractor (fn [item]
+                      (-> item (js->clj :keywordize-keys true) :id))
+     :render-item (fn [item]
+                    (let [post (-> item (js->clj :keywordize-keys true) :item)]
+                      (r/as-element
+                       [blog-post post])))}]])
 
 (defn screen-otpions
   [options]
-  (clj->js
+  (clj->js ;; need to use camelCase here because clj->js
    {:title "Flybot App"
-    :header-style {:background-color background-color
-                   :height 100}
-    :header-tint-color "#fff"
-    :header-title-style {:font-size 30
-                         :text-align "center"}
-    :tabBarIcon ;; need to use camelCase here because clj->js
-    (fn [_]
-      (let [route-name (-> options js->clj (get-in ["route" "name"]))]
-        (r/as-element [tab-icon route-name])))
-    :tab-bar-active-tint-color "green"}))
+    :headerStyle {:backgroundColor bg-dark-color
+                  :height 100}
+    :tabBarStyle {:backgroundColor bg-dark-color}
+    :tabBarLabelStyle {:fontSize 15}
+    :tabBarActiveTintColor green-color
+    :headerTintColor text-blue-color
+    :headerTitleStyle {:fontSize 30
+                       :textAlign "center"}
+    :tabBarIcon (fn [_]
+                  (let [route-name (-> options js->clj (get-in ["route" "name"]))]
+                    (r/as-element [tab-icon route-name])))}))
 
 (defn app []
-  [:> NavigationContainer {:initial-route-name "home"}
-   [:> (.-Navigator bottom-tab-nav) {:screen-options screen-otpions}
+  [:> NavigationContainer
+   [:> (.-Navigator bottom-tab-nav) {:screen-options screen-otpions
+                                     :initial-route-name "blog"}
     [:> (.-Screen bottom-tab-nav) {:name "home" :component (r/reactify-component home)
                                    :options {:title "Home"}}]
     [:> (.-Screen bottom-tab-nav) {:name "blog" :component (r/reactify-component blog)
