@@ -1,5 +1,6 @@
 (ns flybot.client.mobile.core
   (:require [flybot.client.mobile.core.db]
+            [clojure.string :as str]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]
             [reagent.core :as r]
@@ -9,13 +10,20 @@
             ["react-native-vector-icons/Ionicons" :as icon]
             ["react-native-markdown-package" :as Markdown]))
 
-(def bottom-tab-nav (tab-nav/createBottomTabNavigator))
+;; LogBox.ignoreLogs is not working as for now so we redifine js/console.warn
+(defonce warn js/console.warn)
+(set! js/console.warn
+      (fn [& args]
+        (when-not (str/includes? (first args) "React Components must start with an uppercase letter")
+          (apply warn args))))
+
 (def bg-light-color "#fafafa")
 (def bg-dark-color "#18181b")
 (def text-blue-color "#0ea5e9")
 (def text-dark-color "#18181b")
 (def green-color "#22c55e")
 
+(def bottom-tab-nav (tab-nav/createBottomTabNavigator))
 (def default-icon (.-default icon))
 (def markdown (.-default Markdown))
 
