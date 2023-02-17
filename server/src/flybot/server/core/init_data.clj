@@ -6,6 +6,16 @@
 
 ;; ---------- Initial Data ----------
 
+(def users
+  (let [admin (edn/read-string (or (System/getenv "ADMIN_USER")
+                                   (slurp "config/admin.edn")))]
+    (-> admin
+        (assoc :user/roles [#:role{:name :editor
+                                   :date-granted (u/mk-date)}
+                            #:role{:name :admin
+                                   :date-granted (u/mk-date)}])
+        vector)))
+
 (defn slurp-md
   "Slurp the sample files with the markdown."
   [page-name file-name]
@@ -55,13 +65,21 @@
           :page :blog
           :css-class "welcome"
           :creation-date (u/mk-date)
+          :last-edit-date (u/mk-date)
           :show-dates? true
+          :show-authors? true
+          :author (first users)
+          :last-editor (first users)
           :md-content (slurp-md "blog" "welcome.md")}
    #:post{:id (u/mk-uuid)
           :page :blog
           :css-class "md-example"
           :creation-date (u/mk-date)
+          :last-edit-date (u/mk-date)
           :show-dates? true
+          :show-authors? true
+          :author (first users)
+          :last-editor (first users)
           :md-content (slurp-md "blog" "mdsample.md")}])
 
 (def home-posts
@@ -114,16 +132,6 @@
    #:page{:name :blog
           :sorting-method #:sort{:type :creation-date
                                  :direction :ascending}}])
-
-(def users
-  (let [admin (edn/read-string (or (System/getenv "ADMIN_USER")
-                                   (slurp "config/admin.edn")))]
-    (-> admin
-        (assoc :user/roles [#:role{:name :editor
-                                   :date-granted (u/mk-date)}
-                            #:role{:name :admin
-                                   :date-granted (u/mk-date)}])
-        vector)))
 
 (def init-data
   (concat posts pages users))

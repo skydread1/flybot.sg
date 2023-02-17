@@ -8,10 +8,7 @@
 
 (def blog-post-styles
   "Styles props to be used with the Markdown object."
-  {:view {:align-self "stretch"
-          :padding 10
-          :border-width 3
-          :border-color (:green colors)}
+  {:view {:align-self "stretch"}
    :text {:color (:dark colors)}
    :heading-1 {:color (:blue colors)
                :text-align "center"

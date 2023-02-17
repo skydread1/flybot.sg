@@ -18,3 +18,8 @@
   (->> data
        js->clj
        (cske/transform-keys csk/->kebab-case-keyword)))
+
+(defn format-date
+  [date]
+  (-> (js/Intl.DateTimeFormat. "en-GB")
+      (.format date)))

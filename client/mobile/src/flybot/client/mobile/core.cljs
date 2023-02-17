@@ -1,6 +1,6 @@
 (ns flybot.client.mobile.core
   (:require [flybot.client.mobile.core.db]
-            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs]]
+            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs format-date]]
             [flybot.client.mobile.core.styles :refer [colors blog-post-styles]]
             [clojure.string :as str]
             [day8.re-frame.http-fx]
@@ -48,11 +48,51 @@
      :source {:uri "https://www.flybot.sg/assets/flybot-logo.png"}
      :alt "flybot-logo"}]])
 
+(defn post-author
+  [show-authors? author show-dates? date authored?]
+  [rrn/view
+   {:style {:flex-direction "row"
+            :align-items "center"}}
+   (when (or show-authors? show-dates?)
+     [:> default-icon
+      {:name "create"
+       :size 30
+       :color (:green colors)}])
+   (when show-authors?
+     [rrn/text
+      {:style {:color (:green colors)
+               :padding 5}}
+      (:name author)])
+   (when show-dates?
+     [rrn/text
+      {:style {:color (:green colors)
+               :padding 5}}
+      (format-date date)])
+   (when (or show-authors? show-dates?)
+     [rrn/text
+      {:style {:color (:green colors)
+               :padding 5}}
+      (if authored? "[Authored]" "[Edited]")])])
+
 (defn blog-post
-  [{:keys [md-content]}]
-  [:> markdown
-   {:styles blog-post-styles}
-   md-content])
+  [{:keys [md-content
+           show-dates? creation-date last-edit-date
+           show-authors? author last-editor]}]
+  [rrn/view
+   {:style {:padding 10
+            :border-width 3
+            :border-color (:green colors)}}
+   [rrn/view
+    {:style {:padding 10
+             :border-bottom-width 1
+             :border-bottom-color (:blue colors)}}
+    [post-author show-authors? author show-dates? creation-date true]
+    [post-author show-authors? last-editor show-dates? last-edit-date false]]
+   [rrn/view
+    {}
+    [:> markdown
+     {:styles blog-post-styles}
+     md-content]]])
 
 (defn blog
   []
