@@ -1,5 +1,6 @@
 (ns flybot.client.mobile.core
   (:require [flybot.client.mobile.core.db]
+            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs]]
             [clojure.string :as str]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]
@@ -70,27 +71,27 @@
    [rrn/flat-list
     {:data @(rf/subscribe [:subs.post/posts :blog])
      :key-extractor (fn [item]
-                      (-> item (js->clj :keywordize-keys true) :id))
+                      (-> item js->cljs :id))
      :render-item (fn [item]
-                    (let [post (-> item (js->clj :keywordize-keys true) :item)]
+                    (let [post (-> item js->cljs :item)]
                       (r/as-element
                        [blog-post post])))}]])
 
 (defn screen-otpions
   [options]
-  (clj->js ;; need to use camelCase here because clj->js
+  (cljs->js
    {:title "Flybot App"
-    :headerStyle {:backgroundColor bg-dark-color
-                  :height 100}
-    :tabBarStyle {:backgroundColor bg-dark-color}
-    :tabBarLabelStyle {:fontSize 15}
-    :tabBarActiveTintColor green-color
-    :headerTintColor text-blue-color
-    :headerTitleStyle {:fontSize 30
-                       :textAlign "center"}
-    :tabBarIcon (fn [_]
-                  (let [route-name (-> options js->clj (get-in ["route" "name"]))]
-                    (r/as-element [tab-icon route-name])))}))
+    :header-style {:background-color bg-dark-color
+                   :height 100}
+    :tab-bar-style {:background-color bg-dark-color}
+    :tab-bar-label-style {:font-size 15}
+    :tab-bar-active-tint-color green-color
+    :header-tint-color text-blue-color
+    :header-title-style {:font-size 30
+                         :text-align "center"}
+    :tab-bar-icon (fn [_]
+                    (let [route-name (-> options js->cljs :route :name)]
+                      (r/as-element [tab-icon route-name])))}))
 
 (defn app []
   [:> NavigationContainer
