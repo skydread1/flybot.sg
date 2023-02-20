@@ -70,7 +70,10 @@
           :show-authors? true
           :author (first users)
           :last-editor (first users)
-          :md-content (slurp-md "blog" "welcome.md")}
+          :md-content (slurp-md "blog" "welcome.md")
+          :image-beside #:image{:src "assets/flybot-logo.png"
+                                :src-dark "assets/flybot-logo.png"
+                                :alt "Flybot Logo"}}
    #:post{:id (u/mk-uuid)
           :page :blog
           :css-class "md-example"
@@ -80,7 +83,10 @@
           :show-authors? true
           :author (first users)
           :last-editor (first users)
-          :md-content (slurp-md "blog" "mdsample.md")}])
+          :md-content (slurp-md "blog" "mdsample.md")
+          :image-beside #:image{:src "https://octodex.github.com/images/dojocat.jpg"
+                                :src-dark "https://octodex.github.com/images/stormtroopocat.jpg"
+                                :alt "Cat Logo"}}])
 
 (def home-posts
   [#:post{:id (u/mk-uuid)

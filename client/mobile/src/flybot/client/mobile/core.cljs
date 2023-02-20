@@ -1,6 +1,6 @@
 (ns flybot.client.mobile.core
   (:require [flybot.client.mobile.core.db]
-            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs format-date]]
+            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
             [flybot.client.mobile.core.styles :refer [colors blog-post-styles]]
             [clojure.string :as str]
             [day8.re-frame.http-fx]
@@ -67,7 +67,7 @@
      [rrn/text
       {:style {:color (:green colors)
                :padding 5}}
-      (format-date date)])
+      (utils/format-date date)])
    (when (or show-authors? show-dates?)
      [rrn/text
       {:style {:color (:green colors)
@@ -75,15 +75,22 @@
       (if authored? "[Authored]" "[Edited]")])])
 
 (defn blog-post
-  [{:keys [md-content
+  [{:keys [md-content image-beside
            show-dates? creation-date last-edit-date
            show-authors? author last-editor]}]
   [rrn/view
    {:style {:padding 10
             :border-width 3
             :border-color (:green colors)}}
+   [rrn/image
+    {:style {:resize-mode "contain"
+             :height 200}
+     :source {:uri (-> image-beside :src utils/format-image)}
+     :alt (-> image-beside :alt)}]
    [rrn/view
     {:style {:padding 10
+             :border-top-width 1
+             :border-top-color (:blue colors)
              :border-bottom-width 1
              :border-bottom-color (:blue colors)}}
     [post-author show-authors? author show-dates? creation-date true]
