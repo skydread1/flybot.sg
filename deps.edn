@@ -47,9 +47,10 @@
 
   ;;---------- MOBILE ----------
   ;; deps for react native - use with :client
-  :mobile/rn {:extra-deps {org.clojure/clojurescript     {:mvn/version "1.10.773"}
-                           io.vouch/reagent-react-native {:git/url "https://github.com/vouch-opensource/reagent-react-native.git"
-                                                          :sha     "0fe1c600c9b81180f76b94ef6004c2f85e7d4aa0"}}
+  :mobile/rn {:extra-deps {org.clojure/clojurescript           {:mvn/version "1.10.773"}
+                           camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
+                           io.vouch/reagent-react-native       {:git/url "https://github.com/vouch-opensource/reagent-react-native.git"
+                                                                :sha     "0fe1c600c9b81180f76b94ef6004c2f85e7d4aa0"}}
               :extra-paths ["client/mobile/src"]}
   
   ;; cljs repl for figwheel hot reloading development/testing
