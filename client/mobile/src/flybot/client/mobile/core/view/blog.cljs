@@ -2,6 +2,7 @@
   (:require ["@react-navigation/native-stack" :as stack-nav]
             ["react-native-markdown-package" :as Markdown]
             ["react-native-vector-icons/Ionicons" :as icon]
+            ["react-native-bouncy-checkbox" :as BouncyCheckbox]
             [clojure.string :as str]
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [js->cljs] :as utils]
@@ -11,6 +12,7 @@
 
 (def markdown (.-default Markdown))
 (def default-icon (.-default icon))
+(def check-box (.-default BouncyCheckbox))
 (def stack-nav (stack-nav/createNativeStackNavigator))
 
 ;;---------- Read Post Screen -----------
@@ -98,7 +100,8 @@
   [post]
   [rrn/button
    {:title "Edit Post"
-    :on-press #(rf/dispatch [:evt.nav/navigate (str "post-edit-" (:post/id post))])}])
+    :on-press #(do (rf/dispatch [:evt.nav/navigate (str "post-edit-" (:post/id post))])
+                   (rf/dispatch [:evt.post.form/autofill (:post/id post)]))}])
 
 (defn post-read-screen
   [post]
@@ -113,13 +116,59 @@
 ;;---------- Edit Post Screen -----------
 
 (defn post-edit
-  [{:post/keys [md-content]}]
+  [_]
   [rrn/scroll-view
    {:style {:padding 10
             :border-width 3
-            :border-color (:green colors)}}
-   ;; TODO
-   [rrn/text {} (md-title md-content)]])
+            :border-color (:green colors)}
+    :content-container-style {:gap 10}}
+   [rrn/text
+    {:style {:text-align "center"}}
+    "Side Image source for LIGHT mode:"]
+   [rrn/text-input
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?}}}])
+     :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src %])
+     :style {:border-width 1
+             :padding 10}}]
+   [rrn/text
+    {:style {:text-align "center"}}
+    "Side Image source for DARK mode:"]
+   [rrn/text-input
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?}}}])
+     :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src-dark %])
+     :style {:border-width 1
+             :padding 10}}]
+   [rrn/text
+    {:style {:text-align "center"}}
+    "Side Image description:"]
+   [rrn/text-input
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?}}}])
+     :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/alt %])
+     :style {:border-width 1
+             :padding 10}}]
+   [:> check-box
+    {:text "Show Dates"
+     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}])
+     :text-style {:text-decoration-line "none"}
+     :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
+     :fill-color (:green colors)
+     :style {:padding 10}}]
+   [:> check-box
+    {:text "Show Authors"
+     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}])
+     :text-style {:text-decoration-line "none"}
+     :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
+     :fill-color (:green colors)
+     :style {:padding 10}}]
+   [rrn/text
+    {:style {:text-align "center"}}
+    "Post Content in Markdown:"]
+   [rrn/text-input
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?}}])
+     :on-change-text #(rf/dispatch [:evt.post.form/set-field :post/md-content %])
+     :multiline true
+     :style {:border-width 1
+             :padding 10}}]])
 
 (defn post-edit-screen
   [post]

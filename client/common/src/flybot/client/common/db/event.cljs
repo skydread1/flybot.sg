@@ -270,7 +270,7 @@
                           :post/author (-> db :app/user (select-keys [:user/id :user/name]))
                           :post/creation-date (utils/mk-date)})}
      {:http-xhrio {:method          :post
-                   :uri             "/posts/post"
+                   :uri             "/posts/post" ;; use "http://localhost:9500/posts/post" for RN as for now
                    :params          {:posts
                                      {(list :post :with [post-id])
                                       {:post/id '?
