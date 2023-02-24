@@ -1,7 +1,7 @@
 (ns flybot.client.mobile.core.view.blog
-  (:require ["react-native-markdown-package" :as Markdown]
+  (:require ["@react-navigation/native-stack" :as stack-nav]
+            ["react-native-markdown-package" :as Markdown]
             ["react-native-vector-icons/Ionicons" :as icon]
-            ["@react-navigation/native-stack" :as stack-nav]
             [clojure.string :as str]
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [js->cljs] :as utils]
@@ -12,6 +12,8 @@
 (def markdown (.-default Markdown))
 (def default-icon (.-default icon))
 (def stack-nav (stack-nav/createNativeStackNavigator))
+
+;;---------- Read Post Screen -----------
 
 (def post-styles
   "Styles props to be used with the Markdown object."
@@ -59,7 +61,13 @@
                :padding 5}}
       (if authored? "[Authored]" "[Edited]")])])
 
-(defn post-full
+(defn md-title
+  "Returns the title # of the given markdown
+   Assume that `md` starts with the title."
+  [md]
+  (-> md (str/split #"#" 3) second (str/split #"\n") first str/trim))
+
+(defn post-read
   [{:post/keys [md-content image-beside
                 show-dates? creation-date last-edit-date
                 show-authors? author last-editor]}]
@@ -86,17 +94,48 @@
      {:styles post-styles}
      md-content]]])
 
-(defn md-title
-  "Returns the title # of the given markdown
-   Assume that `md` starts with the title."
-  [md]
-  (-> md (str/split #"#" 3) second (str/split #"\n") first str/trim))
+(defn edit-post-btn
+  [post]
+  [rrn/button
+   {:title "Edit Post"
+    :on-press #(rf/dispatch [:evt.nav/navigate (str "post-edit-" (:post/id post))])}])
+
+(defn post-read-screen
+  [post]
+  [:> (.-Screen stack-nav) {:name (str "post-read-" (:post/id post))
+                            :options {:title "Read Mode"
+                                      :animation "slide_from_right"
+                                      :header-right (fn [_]
+                                                      (r/as-element [edit-post-btn post]))}
+                            :component (r/reactify-component
+                                        (fn [] (post-read post)))}])
+
+;;---------- Edit Post Screen -----------
+
+(defn post-edit
+  [{:post/keys [md-content]}]
+  [rrn/scroll-view
+   {:style {:padding 10
+            :border-width 3
+            :border-color (:green colors)}}
+   ;; TODO
+   [rrn/text {} (md-title md-content)]])
+
+(defn post-edit-screen
+  [post]
+  [:> (.-Screen stack-nav) {:name (str "post-edit-" (:post/id post))
+                            :options {:title "Edit Mode"
+                                      :animation "slide_from_right"}
+                            :component (r/reactify-component
+                                        (fn [] (post-edit post)))}])
+
+;;---------- List of all Posts Screen -----------
 
 (defn post-short
   "Display a short version of the post"
   [{:keys [id md-content image-beside creation-date author]}]
   [rrn/touchable-highlight
-   {:on-press #(rf/dispatch [:evt.nav/navigate (str "post-" id)])
+   {:on-press #(rf/dispatch [:evt.nav/navigate (str "post-read-" id)])
     :underlay-color (:blue colors)}
    [rrn/view
     {:style {:flex-direction "row"
@@ -138,20 +177,18 @@
 (defn posts-list-screen
   []
   [:> (.-Screen stack-nav) {:name "posts-list"
+                            :options {:title "All Posts"
+                                      :animation "slide_from_right"}
                             :component (r/reactify-component posts-list)}])
 
-(defn post-screen
-  [post]
-  [:> (.-Screen stack-nav) {:name (str "post-" (:post/id post))
-                            :component (r/reactify-component
-                                        (fn [] (post-full post)))}])
+;;---------- Stack Navigator ----------
 
 (defn blog
   []
   (let [posts @(rf/subscribe [:subs.post/posts :blog])]
     (vec
      (concat
-      [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"
-                                   :screen-options {:animation "slide_from_right"}}]
+      [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}]
       [(posts-list-screen)]
-      (map post-screen posts)))))
+      (map post-read-screen posts)
+      (map post-edit-screen posts)))))
