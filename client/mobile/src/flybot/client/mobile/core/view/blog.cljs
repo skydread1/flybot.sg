@@ -49,7 +49,7 @@
      [rrn/text
       {:style {:color (:green colors)
                :padding 5}}
-      (:author/name author)])
+      (:user/name author)])
    (when show-dates?
      [rrn/text
       {:style {:color (:green colors)
