@@ -9,9 +9,9 @@
    nav-ref
    (cljs->js
     {:name route-name
-     :params params})))
+     :params (if (uuid? params) (str params) params)})))
 
 (rf/reg-fx
  :fx.nav/react-navigate
- (fn [[nav-ref view-id]]
-   (navigate nav-ref view-id nil)))
+ (fn [[nav-ref view-id params]]
+   (navigate nav-ref view-id params)))

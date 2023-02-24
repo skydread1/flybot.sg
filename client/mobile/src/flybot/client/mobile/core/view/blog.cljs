@@ -1,8 +1,8 @@
 (ns flybot.client.mobile.core.view.blog
   (:require ["@react-navigation/native-stack" :as stack-nav]
+            ["react-native-bouncy-checkbox" :as BouncyCheckbox]
             ["react-native-markdown-package" :as Markdown]
             ["react-native-vector-icons/Ionicons" :as icon]
-            ["react-native-bouncy-checkbox" :as BouncyCheckbox]
             [clojure.string :as str]
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [js->cljs] :as utils]
@@ -70,48 +70,51 @@
   (-> md (str/split #"#" 3) second (str/split #"\n") first str/trim))
 
 (defn post-read
-  [{:post/keys [md-content image-beside
-                show-dates? creation-date last-edit-date
-                show-authors? author last-editor]}]
-  [rrn/scroll-view
-   {:style {:padding 10
-            :border-width 3
-            :border-color (:green colors)}}
-   [rrn/image
-    {:style {:resize-mode "contain"
-             :height 200}
-     :source {:uri (-> image-beside :image/src utils/format-image)}
-     :alt (-> image-beside :image/alt)}]
-   [rrn/view
-    {:style {:padding 10
-             :border-top-width 1
-             :border-top-color (:blue colors)
-             :border-bottom-width 1
-             :border-bottom-color (:blue colors)}}
-    [post-author show-authors? author show-dates? creation-date true]
-    [post-author show-authors? last-editor show-dates? last-edit-date false]]
-   [rrn/view
-    {}
-    [:> markdown
-     {:styles post-styles}
-     md-content]]])
+  [post-id]
+  (let [{:post/keys [md-content image-beside
+                     show-dates? creation-date last-edit-date
+                     show-authors? author last-editor]}
+        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
+    [rrn/scroll-view
+     {:style {:padding 10
+              :border-width 3
+              :border-color (:green colors)}}
+     [rrn/image
+      {:style {:resize-mode "contain"
+               :height 200}
+       :source {:uri (-> image-beside :image/src utils/format-image)}
+       :alt (-> image-beside :image/alt)}]
+     [rrn/view
+      {:style {:padding 10
+               :border-top-width 1
+               :border-top-color (:blue colors)
+               :border-bottom-width 1
+               :border-bottom-color (:blue colors)}}
+      [post-author show-authors? author show-dates? creation-date true]
+      [post-author show-authors? last-editor show-dates? last-edit-date false]]
+     [rrn/view
+      {}
+      [:> markdown
+       {:styles post-styles}
+       md-content]]]))
 
 (defn edit-post-btn
-  [post]
+  [post-id]
   [rrn/button
    {:title "Edit Post"
-    :on-press #(do (rf/dispatch [:evt.nav/navigate (str "post-edit-" (:post/id post))])
-                   (rf/dispatch [:evt.post.form/autofill (:post/id post)]))}])
+    :on-press #(do (rf/dispatch [:evt.nav/navigate "post-edit" post-id])
+                   (rf/dispatch [:evt.post.form/autofill post-id]))}])
 
 (defn post-read-screen
-  [post]
-  [:> (.-Screen stack-nav) {:name (str "post-read-" (:post/id post))
-                            :options {:title "Read Mode"
-                                      :animation "slide_from_right"
-                                      :header-right (fn [_]
-                                                      (r/as-element [edit-post-btn post]))}
-                            :component (r/reactify-component
-                                        (fn [] (post-read post)))}])
+  []
+  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
+    [:> (.-Screen stack-nav) {:name "post-read"
+                              :options {:title "Read Mode"
+                                        :animation "slide_from_right"
+                                        :header-right (fn [_]
+                                                        (r/as-element [edit-post-btn post-id]))}
+                              :component (r/reactify-component
+                                          (fn [] (post-read post-id)))}]))
 
 ;;---------- Edit Post Screen -----------
 
@@ -171,42 +174,46 @@
              :padding 10}}]])
 
 (defn post-edit-screen
-  [post]
-  [:> (.-Screen stack-nav) {:name (str "post-edit-" (:post/id post))
-                            :options {:title "Edit Mode"
-                                      :animation "slide_from_right"}
-                            :component (r/reactify-component
-                                        (fn [] (post-edit post)))}])
+  []
+  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
+    [:> (.-Screen stack-nav) {:name "post-edit"
+                              :options {:title "Edit Mode"
+                                        :animation "slide_from_right"}
+                              :component (r/reactify-component
+                                          (fn [] (post-edit post-id)))}]))
 
 ;;---------- List of all Posts Screen -----------
 
 (defn post-short
   "Display a short version of the post"
-  [{:keys [id md-content image-beside creation-date author]}]
-  [rrn/touchable-highlight
-   {:on-press #(rf/dispatch [:evt.nav/navigate (str "post-read-" id)])
-    :underlay-color (:blue colors)}
-   [rrn/view
-    {:style {:flex-direction "row"
-             :gap 10
-             :align-items "center"
-             :padding 10
-             :border-bottom-width 3
-             :border-bottom-color (:green colors)}}
-    [rrn/image
-     {:style {:resize-mode "contain"
-              :height 50
-              :width 50}
-      :source {:uri (-> image-beside :src utils/format-image)}
-      :alt (-> image-beside :alt)}]
-    [rrn/view
-     {:style {:gap 5}}
-     [rrn/text
-      {:style {:font-size 20}}
-      (md-title md-content)]
-     [rrn/text
-      {:style {:color (:green colors)}}
-      (str (:name author) " - " (utils/format-date creation-date))]]]])
+  [post-id]
+  (let [{:post/keys [id md-content image-beside creation-date author]}
+        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
+    [rrn/touchable-highlight
+     {:on-press #(do (rf/dispatch [:evt.nav/navigate "post-read" id])
+                     (rf/dispatch [:evt.post.form/autofill id]))
+      :underlay-color (:blue colors)}
+     [rrn/view
+      {:style {:flex-direction "row"
+               :gap 10
+               :align-items "center"
+               :padding 10
+               :border-bottom-width 3
+               :border-bottom-color (:green colors)}}
+      [rrn/image
+       {:style {:resize-mode "contain"
+                :height 50
+                :width 50}
+        :source {:uri (-> image-beside :image/src utils/format-image)}
+        :alt (-> image-beside :image/alt)}]
+      [rrn/view
+       {:style {:gap 5}}
+       [rrn/text
+        {:style {:font-size 20}}
+        (md-title md-content)]
+       [rrn/text
+        {:style {:color (:green colors)}}
+        (str (:user/name author) " - " (utils/format-date creation-date))]]]]))
 
 (defn posts-list
   []
@@ -219,9 +226,9 @@
      :key-extractor (fn [item]
                       (-> item js->cljs :id))
      :render-item (fn [item]
-                    (let [post (-> item js->cljs :item)]
+                    (let [post-id (-> item js->cljs :item :id)]
                       (r/as-element
-                       [post-short post])))}]])
+                       [post-short post-id])))}]])
 
 (defn posts-list-screen
   []
@@ -234,10 +241,7 @@
 
 (defn blog
   []
-  (let [posts @(rf/subscribe [:subs.post/posts :blog])]
-    (vec
-     (concat
-      [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}]
-      [(posts-list-screen)]
-      (map post-read-screen posts)
-      (map post-edit-screen posts)))))
+  [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}
+   (posts-list-screen)
+   (post-read-screen)
+   (post-edit-screen)])

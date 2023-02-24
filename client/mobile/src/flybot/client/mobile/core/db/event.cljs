@@ -13,7 +13,6 @@
                    :user/mode        :reader
                    :admin/mode       :read
                    :navigator/ref    nil
-                   :screen-params    nil
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
                    :uri             "http://localhost:9500/pages/all"
@@ -56,8 +55,7 @@
 (rf/reg-event-fx
  :evt.nav/navigate
  (fn [{:keys [db]} [_ view-id params]]
-   {:db (assoc-in db [:screen-params] params)
-    :fx [[:fx.nav/react-navigate [(:navigator/ref db) view-id]]]}))
+   {:fx [[:fx.nav/react-navigate [(:navigator/ref db) view-id params]]]}))
 
 (rf/reg-event-db
  :evt.nav/set-ref

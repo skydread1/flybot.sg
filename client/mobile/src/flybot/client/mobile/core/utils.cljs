@@ -33,3 +33,9 @@
   (if (str/starts-with? path "http")
     path
     (str "https://www.flybot.sg/" path)))
+
+(defn nav-params
+  "Given the navigator object ref, returns the current params"
+  [nav-ref]
+  (let [params (when nav-ref (js->cljs (.-params (. nav-ref getCurrentRoute))))]
+    (if (string? params) (uuid params) params)))
