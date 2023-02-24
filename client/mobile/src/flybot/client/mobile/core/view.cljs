@@ -55,8 +55,18 @@
                     (let [route-name (-> options js->cljs :route :name)]
                       (r/as-element [tab-icon route-name])))}))
 
+(defonce nav-state (atom nil))
+
+(defn- persist-state! [state-obj]
+  (js/Promise.
+   (fn [resolve _]
+     (reset! nav-state state-obj)
+     (resolve true))))
+
 (defn app []
-  [:> NavigationContainer {:ref (fn [el] (rf/dispatch [:evt.nav/set-ref el]))}
+  [:> NavigationContainer {:ref (fn [el] (rf/dispatch [:evt.nav/set-ref el]))
+                           :on-state-change persist-state!
+                           :initial-state @nav-state}
    [:> (.-Navigator bottom-tab-nav) {:screen-options screen-otpions
                                      :initial-route-name "blog"}
     [:> (.-Screen bottom-tab-nav) {:name "home"
