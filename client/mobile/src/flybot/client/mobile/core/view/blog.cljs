@@ -3,12 +3,15 @@
             ["react-native-bouncy-checkbox" :as BouncyCheckbox]
             ["react-native-markdown-package" :as Markdown]
             ["react-native-vector-icons/Ionicons" :as icon]
+            ["react-native" :refer [Alert]]
             [clojure.string :as str]
             [flybot.client.mobile.core.styles :refer [colors]]
-            [flybot.client.mobile.core.utils :refer [js->cljs] :as utils]
+            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
             [re-frame.core :as rf]
             [reagent.core :as r]
             [reagent.react-native :as rrn]))
+
+
 
 (def markdown (.-default Markdown))
 (def default-icon (.-default icon))
@@ -135,59 +138,83 @@
 ;;---------- Edit Post Screen -----------
 
 (defn post-edit
-  [_]
-  [rrn/scroll-view
-   {:style {:padding 10
-            :border-width 3
-            :border-color (:green colors)}
-    :content-container-style {:gap 10}}
-   [rrn/text
-    {:style {:text-align "center"}}
-    "Side Image source for LIGHT mode:"]
-   [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?}}}])
-     :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src %])
-     :style {:border-width 1
-             :padding 10}}]
-   [rrn/text
-    {:style {:text-align "center"}}
-    "Side Image source for DARK mode:"]
-   [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?}}}])
-     :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src-dark %])
-     :style {:border-width 1
-             :padding 10}}]
-   [rrn/text
-    {:style {:text-align "center"}}
-    "Side Image description:"]
-   [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?}}}])
-     :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/alt %])
-     :style {:border-width 1
-             :padding 10}}]
-   [:> check-box
-    {:text "Show Dates"
-     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}])
-     :text-style {:text-decoration-line "none"}
-     :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
-     :fill-color (:green colors)
-     :style {:padding 10}}]
-   [:> check-box
-    {:text "Show Authors"
-     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}])
-     :text-style {:text-decoration-line "none"}
-     :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
-     :fill-color (:green colors)
-     :style {:padding 10}}]
-   [rrn/text
-    {:style {:text-align "center"}}
-    "Post Content in Markdown:"]
-   [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?}}])
-     :on-change-text #(rf/dispatch [:evt.post.form/set-field :post/md-content %])
-     :multiline true
-     :style {:border-width 1
-             :padding 10}}]])
+  [post-id]
+  [rrn/view
+   [rrn/view
+    {:style {:flex-direction "row"
+             :align-items "center"
+             :justify-content "center"
+             :background-color "white"}}
+    [rrn/button
+     {:title "Submit"
+      :on-press (fn []
+                  (.alert Alert
+                          "Confirmation"
+                          "Are you sure you want to save your changes?"
+                          (cljs->js [{:text "Cancel"}
+                                     {:text "Submit"
+                                      :on-press #(rf/dispatch [:evt.post.form/send-post])}])))}]
+    [rrn/button
+     {:title "Delete"
+      :on-press (fn []
+                  (.alert Alert
+                          "Confirmation"
+                          "Are you sure you want to delete this post?"
+                          (cljs->js [{:text "Cancel"}
+                                     {:text "Delete"
+                                      :on-press #(rf/dispatch [:evt.post/remove-post post-id])}])))}]]
+   [rrn/scroll-view
+    {:style {:padding 10
+             :border-width 3
+             :border-color (:green colors)}
+     :content-container-style {:gap 10}}
+    [rrn/text
+     {:style {:text-align "center"}}
+     "Side Image source for LIGHT mode:"]
+    [rrn/text-input
+     {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?}}}])
+      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src %])
+      :style {:border-width 1
+              :padding 10}}]
+    [rrn/text
+     {:style {:text-align "center"}}
+     "Side Image source for DARK mode:"]
+    [rrn/text-input
+     {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?}}}])
+      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src-dark %])
+      :style {:border-width 1
+              :padding 10}}]
+    [rrn/text
+     {:style {:text-align "center"}}
+     "Side Image description:"]
+    [rrn/text-input
+     {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?}}}])
+      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/alt %])
+      :style {:border-width 1
+              :padding 10}}]
+    [:> check-box
+     {:text "Show Dates"
+      :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}])
+      :text-style {:text-decoration-line "none"}
+      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
+      :fill-color (:green colors)
+      :style {:padding 10}}]
+    [:> check-box
+     {:text "Show Authors"
+      :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}])
+      :text-style {:text-decoration-line "none"}
+      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
+      :fill-color (:green colors)
+      :style {:padding 10}}]
+    [rrn/text
+     {:style {:text-align "center"}}
+     "Post Content in Markdown:"]
+    [rrn/text-input
+     {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?}}])
+      :on-change-text #(rf/dispatch [:evt.post.form/set-field :post/md-content %])
+      :multiline true
+      :style {:border-width 1
+              :padding 10}}]]])
 
 (defn preview-post-btn
   []
