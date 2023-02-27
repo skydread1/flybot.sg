@@ -1,2 +1,4 @@
 ^{:react-native :cli}
-{:main flybot.client.mobile.core}
+{:main flybot.client.mobile.core
+ :closure-defines {flybot.client.common.db.event/BASE-URI "http://localhost:9500"
+                   flybot.client.mobile.core.db.event/BASE-URI "http://localhost:9500"}}

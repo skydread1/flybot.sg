@@ -3,6 +3,9 @@
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [re-frame.core :as rf]))
 
+;; Overridden by the figwheel config option :closure-defines
+(goog-define BASE-URI "")
+
 (rf/reg-event-fx
  :evt.app/initialize
  (fn [{:keys [db local-store-theme]} _]
@@ -15,7 +18,7 @@
                    :navigator/ref    nil
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
-                   :uri             "http://localhost:9500/pages/all"
+                   :uri             (str BASE-URI "/pages/all")
                    :params {:pages
                             {(list :all :with [])
                              [{:page/name '?
