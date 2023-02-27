@@ -6,6 +6,14 @@
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]))
 
+;; Overridden by the figwheel config option :closure-defines
+(goog-define BASE-URI "")
+
+(defn base-uri
+  "Given the relative `path`, use the BASE-URI to build the absolute path uri."
+  [path]
+  (str BASE-URI path))
+
 ;; ---------- http ----------
 
 (rf/reg-event-db
@@ -102,7 +110,7 @@
  :evt.user/logout
  (fn [_ _]
    {:http-xhrio {:method          :get
-                 :uri             "/users/logout"
+                 :uri             (base-uri "/users/logout")
                  :response-format (edn-response-format {:keywords? true})
                  :on-success      [:fx.http/logout-success]
                  :on-failure      [:fx.http/failure]}}))
@@ -114,7 +122,7 @@
      (if (:errors new-admin-email)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-admin-email)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/users/new-role/admin"
+                     :uri             (base-uri "/users/new-role/admin")
                      :params          {:users
                                        {:new-role
                                         {(list :admin :with [new-admin-email])
@@ -151,7 +159,7 @@
      (if (:errors page)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg page)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/pages/new-page"
+                     :uri             (base-uri "/pages/new-page")
                      :params          {:pages
                                        {(list :new-page :with [page])
                                         {:page/name '?}}}
@@ -207,7 +215,7 @@
  (fn [{:keys [db]} [_ post-id]]
    (let [user-id (-> db :app/user :user/id)]
      {:http-xhrio {:method          :post
-                   :uri             "/posts/removed-post"
+                   :uri             (base-uri "/posts/removed-post")
                    :params          {:posts
                                      {(list :removed-post :with [post-id user-id])
                                       {:post/id '?}}}
@@ -234,7 +242,7 @@
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
-                     :uri             "/posts/new-post"
+                     :uri             (base-uri "/posts/new-post")
                      :params          {:posts
                                        {(list :new-post :with [post])
                                         {:post/id '?
@@ -270,7 +278,7 @@
                           :post/author (-> db :app/user (select-keys [:user/id :user/name]))
                           :post/creation-date (utils/mk-date)})}
      {:http-xhrio {:method          :post
-                   :uri             "/posts/post" ;; use "http://localhost:9500/posts/post" for RN as for now
+                   :uri             (base-uri "/posts/post")
                    :params          {:posts
                                      {(list :post :with [post-id])
                                       {:post/id '?

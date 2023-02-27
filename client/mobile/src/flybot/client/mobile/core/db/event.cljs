@@ -1,5 +1,5 @@
 (ns flybot.client.mobile.core.db.event
-  (:require [flybot.client.common.db.event]
+  (:require [flybot.client.common.db.event :refer [base-uri]]
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [re-frame.core :as rf]))
 
@@ -15,7 +15,7 @@
                    :navigator/ref    nil
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
-                   :uri             "http://localhost:9500/pages/all"
+                   :uri             (base-uri "/pages/all")
                    :params {:pages
                             {(list :all :with [])
                              [{:page/name '?
