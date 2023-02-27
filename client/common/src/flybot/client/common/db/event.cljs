@@ -299,7 +299,8 @@
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/post-success]
-                   :on-failure      [:fx.http/failure]}})))
+                   :on-failure      [:fx.http/failure]}
+      :fx [[:dispatch [:evt.error/clear-errors]]]})))
 
 (rf/reg-event-db
  :evt.post.form/set-field
