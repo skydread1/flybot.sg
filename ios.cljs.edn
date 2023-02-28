@@ -1,3 +1,4 @@
-^{:react-native :cli}
+^{:react-native :cli
+  :watch-dirs ["client/mobile/src" "client/common/src"]}
 {:main flybot.client.mobile.core
  :closure-defines {flybot.client.common.db.event/BASE-URI "http://localhost:9500"}}

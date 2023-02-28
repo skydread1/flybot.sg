@@ -3,17 +3,45 @@
             ["react-native-bouncy-checkbox" :as BouncyCheckbox]
             ["react-native-markdown-package" :as Markdown]
             ["react-native-vector-icons/Ionicons" :as icon]
+            ["react-native" :refer [Alert]]
             [clojure.string :as str]
+            [flybot.client.mobile.core.navigation :as nav]
             [flybot.client.mobile.core.styles :refer [colors]]
-            [flybot.client.mobile.core.utils :refer [js->cljs] :as utils]
+            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
             [re-frame.core :as rf]
             [reagent.core :as r]
             [reagent.react-native :as rrn]))
+
+
 
 (def markdown (.-default Markdown))
 (def default-icon (.-default icon))
 (def check-box (.-default BouncyCheckbox))
 (def stack-nav (stack-nav/createNativeStackNavigator))
+
+;;---------- alerts ----------
+
+(defn rn-alert
+  [title msg v-btns]
+  (.alert Alert title msg (cljs->js v-btns)))
+
+;;---------- errors ----------
+
+(defn errors
+  []
+  [rrn/view
+   {:style {:background-color "white"
+            :color "red"
+            :justify-content "center"
+            :align-items "center"}}
+   (when-let [http-error @(rf/subscribe [:subs/pattern {:app/errors {:failure-http-result '?}} [:app/errors :failure-http-result]])]
+     [rrn/text
+      {:style {:color "red"}}
+      (str "server error:" (-> http-error :response :message))])
+   (when-let [validation-error @(rf/subscribe [:subs/pattern {:app/errors {:validation-errors '?}} [:app/errors :validation-errors]])]
+     [rrn/text
+      {:style {:color "red"}}
+      (str "validation error: " validation-error)])])
 
 ;;---------- Read Post Screen -----------
 
@@ -70,33 +98,33 @@
   (-> md (str/split #"#" 3) second (str/split #"\n") first str/trim))
 
 (defn post-read
-  [post-id]
-  (let [{:post/keys [md-content image-beside
-                     show-dates? creation-date last-edit-date
-                     show-authors? author last-editor]}
-        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
-    [rrn/scroll-view
-     {:style {:padding 10
-              :border-width 3
-              :border-color (:green colors)}}
-     [rrn/image
-      {:style {:resize-mode "contain"
-               :height 200}
-       :source {:uri (-> image-beside :image/src utils/format-image)}
-       :alt (-> image-beside :image/alt)}]
-     [rrn/view
-      {:style {:padding 10
-               :border-top-width 1
-               :border-top-color (:blue colors)
-               :border-bottom-width 1
-               :border-bottom-color (:blue colors)}}
-      [post-author show-authors? author show-dates? creation-date true]
-      [post-author show-authors? last-editor show-dates? last-edit-date false]]
-     [rrn/view
-      {}
-      [:> markdown
-       {:styles post-styles}
-       md-content]]]))
+  "Given a post, display it as read only.
+   Works for both read and preview."
+  [{:post/keys [md-content image-beside
+                show-dates? creation-date last-edit-date
+                show-authors? author last-editor]}]
+  [rrn/scroll-view
+   {:style {:padding 10
+            :border-width 3
+            :border-color (:green colors)}}
+   [rrn/image
+    {:style {:resize-mode "contain"
+             :height 200}
+     :source {:uri (-> image-beside :image/src utils/format-image)}
+     :alt (-> image-beside :image/alt)}]
+   [rrn/view
+    {:style {:padding 10
+             :border-top-width 1
+             :border-top-color (:blue colors)
+             :border-bottom-width 1
+             :border-bottom-color (:blue colors)}}
+    [post-author show-authors? author show-dates? creation-date true]
+    [post-author show-authors? last-editor show-dates? last-edit-date false]]
+   [rrn/view
+    {}
+    [:> markdown
+     {:styles post-styles}
+     md-content]]])
 
 (defn edit-post-btn
   [post-id]
@@ -107,19 +135,57 @@
 
 (defn post-read-screen
   []
-  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
+        post    @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
     [:> (.-Screen stack-nav) {:name "post-read"
                               :options {:title "Read Mode"
                                         :animation "slide_from_right"
                                         :header-right (fn [_]
-                                                        (r/as-element [edit-post-btn post-id]))}
+                                                        (r/as-element [edit-post-btn (:post/id post)]))}
                               :component (r/reactify-component
-                                          (fn [] (post-read post-id)))}]))
+                                          (fn [] (when-not (= (uuid "post-in-preview") post-id)
+                                                   (post-read post))))}]))
+
+;;---------- Preview Post Screen -----------
+
+(defn post-preview-screen
+  []
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
+        post (when (= (uuid "post-in-preview") post-id)
+               @(rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]]))]
+    [:> (.-Screen stack-nav) {:name "post-preview"
+                              :options {:title "Preview"
+                                        :animation "slide_from_right"}
+                              :component (r/reactify-component
+                                          (fn [] (when (= (uuid "post-in-preview") post-id)
+                                                   (post-read post))))}]))
 
 ;;---------- Edit Post Screen -----------
 
-(defn post-edit
-  [_]
+(defn edit-post-btns
+  [post-id]
+  [rrn/view
+   {:style {:flex-direction "row"
+            :align-items "center"
+            :justify-content "center"
+            :background-color "white"}}
+   [rrn/button
+    {:title "Submit"
+     :on-press (fn []
+                 (rn-alert "Confirmation" "Are you sure you want to save your changes?"
+                           [{:text "Cancel"}
+                            {:text "Submit"
+                             :on-press #(rf/dispatch [:evt.post.form/send-post])}]))}]
+   [rrn/button
+    {:title "Delete"
+     :on-press (fn []
+                 (rn-alert "Confirmation" "Are you sure you want to delete this post?"
+                           [{:text "Cancel"}
+                            {:text "Delete"
+                             :on-press #(rf/dispatch [:evt.post/remove-post post-id])}]))}]])
+
+(defn edit-post-form
+  []
   [rrn/scroll-view
    {:style {:padding 10
             :border-width 3
@@ -173,12 +239,27 @@
      :style {:border-width 1
              :padding 10}}]])
 
+(defn post-edit
+  [post-id]
+  [rrn/view
+   [edit-post-btns post-id]
+   [errors]
+   [edit-post-form]])
+
+(defn preview-post-btn
+  []
+  [rrn/button
+   {:title "Preview"
+    :on-press #(rf/dispatch [:evt.nav/navigate "post-preview" "post-in-preview"])}])
+
 (defn post-edit-screen
   []
-  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
     [:> (.-Screen stack-nav) {:name "post-edit"
                               :options {:title "Edit Mode"
-                                        :animation "slide_from_right"}
+                                        :animation "slide_from_right"
+                                        :header-right (fn [_]
+                                                        (r/as-element [preview-post-btn]))}
                               :component (r/reactify-component
                                           (fn [] (post-edit post-id)))}]))
 
@@ -244,4 +325,5 @@
   [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}
    (posts-list-screen)
    (post-read-screen)
-   (post-edit-screen)])
+   (post-edit-screen)
+   (post-preview-screen)])
