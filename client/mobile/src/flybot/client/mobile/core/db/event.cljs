@@ -1,5 +1,6 @@
 (ns flybot.client.mobile.core.db.event
   (:require [flybot.client.common.db.event :refer [base-uri]]
+            [flybot.client.mobile.core.navigation :as nav]
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [re-frame.core :as rf]))
 
@@ -12,7 +13,7 @@
                    :app/theme        app-theme
                    :user/mode        :reader
                    :admin/mode       :read
-                   :navigator/ref    nil
+                   :navigator/ref    @nav/nav-ref
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
                    :uri             (base-uri "/pages/all")

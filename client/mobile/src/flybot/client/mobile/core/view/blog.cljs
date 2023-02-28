@@ -5,6 +5,7 @@
             ["react-native-vector-icons/Ionicons" :as icon]
             ["react-native" :refer [Alert]]
             [clojure.string :as str]
+            [flybot.client.mobile.core.navigation :as nav]
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
             [re-frame.core :as rf]
@@ -134,7 +135,7 @@
 
 (defn post-read-screen
   []
-  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
         post    @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
     [:> (.-Screen stack-nav) {:name "post-read"
                               :options {:title "Read Mode"
@@ -149,7 +150,7 @@
 
 (defn post-preview-screen
   []
-  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
         post (when (= (uuid "post-in-preview") post-id)
                @(rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]]))]
     [:> (.-Screen stack-nav) {:name "post-preview"
@@ -253,7 +254,7 @@
 
 (defn post-edit-screen
   []
-  (let [post-id (utils/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
     [:> (.-Screen stack-nav) {:name "post-edit"
                               :options {:title "Edit Mode"
                                         :animation "slide_from_right"
