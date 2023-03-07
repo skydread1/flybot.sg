@@ -81,7 +81,7 @@
 (rf/reg-event-fx
  :fx.http/logout-success
  (fn [{:keys [db]} [_ _]]
-   {:db (-> db (dissoc :app/user) (assoc :user/mode :reader))
+   {:db (-> db (dissoc :app/user :user/cookie) (assoc :user/mode :reader))
     :fx [[:fx.log/message ["User logged out."]]]}))
 
 (rf/reg-event-fx
@@ -123,6 +123,7 @@
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-admin-email)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/users/new-role/admin")
+                     :headers         {:cookie (:user/cookie db)}
                      :params          {:users
                                        {:new-role
                                         {(list :admin :with [new-admin-email])
@@ -160,6 +161,7 @@
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg page)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pages/new-page")
+                     :headers         {:cookie (:user/cookie db)}
                      :params          {:pages
                                        {(list :new-page :with [page])
                                         {:page/name '?}}}
@@ -216,6 +218,7 @@
    (let [user-id (-> db :app/user :user/id)]
      {:http-xhrio {:method          :post
                    :uri             (base-uri "/posts/removed-post")
+                   :headers         {:cookie (:user/cookie db)}
                    :params          {:posts
                                      {(list :removed-post :with [post-id user-id])
                                       {:post/id '?}}}
@@ -243,6 +246,7 @@
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/posts/new-post")
+                     :headers         {:cookie (:user/cookie db)}
                      :params          {:posts
                                        {(list :new-post :with [post])
                                         {:post/id '?

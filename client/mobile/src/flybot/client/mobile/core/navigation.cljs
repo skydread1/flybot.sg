@@ -6,7 +6,12 @@
   (atom nil))
 
 ;; To preserve state when hot reloading
-(defonce state (atom nil))
+(defonce state
+  (atom nil))
+
+;; To preserve cookie when hot reloading
+(defonce user-cookie
+  (atom nil))
 
 (defn persist-state!
   "Retains state of the app when hot reloading performed"

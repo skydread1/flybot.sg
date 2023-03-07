@@ -12,11 +12,13 @@
                    db
                    :app/theme        app-theme
                    :user/mode        :reader
+                   :user/cookie      @nav/user-cookie
                    :admin/mode       :read
                    :navigator/ref    @nav/nav-ref
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
                    :uri             (base-uri "/pages/all")
+                   :headers {:cookie (:user/cookie db)}
                    :params {:pages
                             {(list :all :with [])
                              [{:page/name '?
@@ -62,3 +64,9 @@
  :evt.nav/set-ref
  (fn [db [_ r]]
    (assoc db :navigator/ref r)))
+
+(rf/reg-event-db
+ :evt.cookie/add
+ (fn [db [_ cookie]]
+   (reset! nav/user-cookie cookie)
+   (assoc db :user/cookie cookie)))
