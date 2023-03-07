@@ -30,9 +30,21 @@
       (assoc-in [:session :store] session-store)
       (assoc-in [:session :cookie-attrs :same-site] :lax)))
 
+(defn add-mobile-cookie
+  "In case of redirect to the mobile app, passes the ring-session cookie
+   as a param in the url."
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (if (= "flybot-app://" (-> response :headers (get "Location")))
+        (let [ring-session (-> request :cookies (get "ring-session") :value)]
+          (assoc-in response [:headers "Location"] (str "flybot-app://?ring-session=" ring-session)))
+        response))))
+
 (defn wrap-defaults-custom
   [handler session-store]
   (-> handler
       (wrap-defaults
        (ring-cfg session-store))
-      (wrap-forwarded-scheme)))
+      (wrap-forwarded-scheme)
+      (add-mobile-cookie)))

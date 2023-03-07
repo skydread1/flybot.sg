@@ -104,7 +104,7 @@
 
 (defn app-routes
   "API routes, returns a ring-handler."
-  [ring-handler oauth2-config session-store]
+  [ring-handler {{:keys [client-root-path]} :google :as oauth2-config} session-store]
   (reitit/ring-handler
    (reitit/router
     (into (auth/auth-routes oauth2-config)
@@ -121,7 +121,7 @@
             ["/new-page"     {:post       ring-handler
                               :middleware [[auth/authorization-middleware [:editor]]]}]]
            ["/users"
-            ["/logout"         {:get auth/logout-handler}]
+            ["/logout"         {:get (auth/logout-handler client-root-path)}]
             ["/all"            {:post ring-handler}]
             ["/user"           {:post ring-handler}]
             ["/logged-in-user" {:post ring-handler}]
@@ -130,7 +130,7 @@
             ["/new-role/admin" {:post       ring-handler
                                 :middleware [[auth/authorization-middleware [:admin]]]}]]
            ["/oauth/google/success" {:get        ring-handler
-                                     :middleware [[auth/authentification-middleware]]}]
+                                     :middleware [[auth/authentification-middleware client-root-path]]}]
            ["/*" {:get {:handler index-handler}}]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance
