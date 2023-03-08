@@ -9,9 +9,9 @@
 
 (.addEventListener Linking "url"
                    (fn [url]
-                     (let [cookie (-> url js->cljs :url (str/split "?") second)]
+                     (let [cookie (-> url js->cljs :url (str/split "?") second)] 
                        (when cookie
-                         (rf/dispatch [:evt.cookie/add cookie])
+                         (rf/dispatch [:evt.cookie/set "ring-session" cookie])
                          (rf/dispatch [:evt.app/initialize])))))
 
 (defn login
