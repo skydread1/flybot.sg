@@ -12,7 +12,6 @@
                    db
                    :app/theme        app-theme
                    :user/mode        :reader
-                   :user/cookie      nil
                    :admin/mode       :read
                    :navigator/ref    @nav/nav-ref
                    :nav/navbar-open? false)
@@ -53,8 +52,7 @@
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/all-success]
-                   :on-failure      [:fx.http/failure]}
-      :fx [[:fx.app/get-cookie-async-store "ring-session"]]})))
+                   :on-failure      [:fx.http/failure]}})))
 
 (rf/reg-event-fx
  :evt.nav/navigate
@@ -66,10 +64,16 @@
  (fn [db [_ r]]
    (assoc db :navigator/ref r)))
 
-(rf/reg-event-db
+(rf/reg-event-fx
+ :evt.app/initialize-with-cookie
+ (fn [_ [_ cookie-name]]
+   {:fx [[:fx.app/get-cookie-async-store cookie-name]]}))
+
+(rf/reg-event-fx
  :evt.cookie/get
- (fn [db [_ cookie-value]]
-   (assoc db :user/cookie cookie-value)))
+ (fn [{:keys [db]} [_ cookie-value]]
+   {:db (assoc db :user/cookie cookie-value)
+    :fx [[:dispatch [:evt.app/initialize]]]}))
 
 (rf/reg-event-fx
  :evt.cookie/set
