@@ -79,7 +79,7 @@
 (defn logout-handler
   [client-root-path]
   (fn [_]
-    (-> {} ;; delete session
+    (-> {:session nil} ;; delete session
         (redirect-302 client-root-path))))
 
 (defn auth-routes
