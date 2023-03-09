@@ -1,5 +1,6 @@
 (ns flybot.client.mobile.core.db.event
-  (:require [flybot.client.common.db.event :refer [base-uri]]
+  (:require [flybot.common.utils :refer [temporary-id?]]
+            [flybot.client.common.db.event :refer [base-uri]] 
             [flybot.client.mobile.core.navigation :as nav]
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [re-frame.core :as rf]))
@@ -111,9 +112,10 @@
 (rf/reg-event-fx
  :evt.post.edit/cancel
  (fn [_ [_ post-id]]
-   {:fx [[:dispatch [:evt.post.form/clear-form]]
-         [:dispatch [:evt.error/clear-errors]]
-         [:dispatch [:evt.nav/navigate "post-read" post-id]]]}))
+   (let [go-back-screen (if (temporary-id? (str post-id)) "posts-list" "post-read")]
+     {:fx [[:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.error/clear-errors]]
+           [:dispatch [:evt.nav/navigate go-back-screen post-id]]]})))
 
 (rf/reg-event-fx
  :evt.post.edit/delete
