@@ -6,6 +6,18 @@
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]))
 
+;; ---------- http success/failure ----------
+
+(rf/reg-event-fx
+ :fx.http/send-post-success
+ (fn [_ [_ {:keys [posts]}]]
+   (let [{:post/keys [id] :as post} (:new-post posts)]
+     {:fx [[:dispatch [:evt.post/add-post post]]
+           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.error/clear-errors]]
+           [:dispatch [:evt.post/set-modes :read]]
+           [:fx.log/message ["Post " id " sent."]]]})))
+
 ;; ---------- App ----------
 
 ;; Initialization
