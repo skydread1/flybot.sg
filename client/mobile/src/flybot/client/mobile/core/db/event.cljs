@@ -104,6 +104,6 @@
 
 (rf/reg-event-fx
  :evt.post.edit/autofill
- (fn [_ [_ post-id]]
+ (fn [_ [_ screen-name post-id]]
    {:fx [[:dispatch [:evt.post.form/autofill post-id]]
-         [:dispatch [:evt.nav/navigate "post-edit" post-id]]]}))
+         [:dispatch [:evt.nav/navigate screen-name post-id]]]}))

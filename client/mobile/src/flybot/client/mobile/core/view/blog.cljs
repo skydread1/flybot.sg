@@ -135,7 +135,7 @@
   [post-id]
   [rrn/button
    {:title "Edit Post"
-    :on-press #(rf/dispatch [:evt.post.edit/autofill post-id])}])
+    :on-press #(rf/dispatch [:evt.post.edit/autofill "post-edit" post-id])}])
 
 (defn post-read-screen
   []
@@ -275,7 +275,7 @@
   (let [{:post/keys [md-content image-beside creation-date author]}
         @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
     [rrn/touchable-highlight
-     {:on-press #(rf/dispatch [:evt.post.edit/autofill post-id])
+     {:on-press #(rf/dispatch [:evt.post.edit/autofill "post-read" post-id])
       :underlay-color (:blue colors)}
      [rrn/view
       {:style {:flex-direction "row"
