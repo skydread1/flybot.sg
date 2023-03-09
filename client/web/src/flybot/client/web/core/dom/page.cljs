@@ -1,14 +1,9 @@
 (ns flybot.client.web.core.dom.page
-  (:require [flybot.client.web.core.dom.hiccup :as h]
+  (:require [flybot.client.common.utils :as utils]
+            [flybot.client.web.core.dom.hiccup :as h]
             [flybot.client.web.core.dom.page.header :refer [page-header]]
             [flybot.client.web.core.dom.page.post :refer [page-post]]
             [re-frame.core :as rf]))
-
-(defn sort-posts
-  [{:sort/keys [type direction]} posts]
-  (if (= :ascending direction)
-    (sort-by type posts)
-    (reverse (sort-by type posts))))
 
 (defn page
   "Given the `page-name`, returns the page content."
@@ -18,7 +13,7 @@
                                        [:app/pages page-name :page/sorting-method]])
         ordered-posts (->> @(rf/subscribe [:subs.post/posts page-name])
                            (map #(assoc % :post/hiccup-content (h/md->hiccup (:post/md-content %))))
-                           (sort-posts sorting-method))
+                           (utils/sort-posts sorting-method))
         new-post      {:post/id "new-post-temp-id"}
         posts         (conj ordered-posts new-post)]
     [:section.container
