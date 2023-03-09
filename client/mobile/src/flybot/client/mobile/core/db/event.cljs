@@ -114,3 +114,9 @@
    {:fx [[:dispatch [:evt.post.form/clear-form]]
          [:dispatch [:evt.error/clear-errors]]
          [:dispatch [:evt.nav/navigate "post-read" post-id]]]}))
+
+(rf/reg-event-fx
+ :evt.post.edit/delete
+ (fn [_ [_ post-id]]
+   {:fx [[:dispatch [:evt.post/remove-post post-id]]
+         [:dispatch [:evt.nav/navigate "posts-list"]]]}))

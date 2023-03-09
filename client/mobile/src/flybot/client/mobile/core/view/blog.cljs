@@ -188,7 +188,7 @@
                  (rn-alert "Confirmation" "Are you sure you want to delete this post?"
                            [{:text "Cancel"}
                             {:text "Delete"
-                             :on-press #(rf/dispatch [:evt.post/remove-post post-id])}]))}]])
+                             :on-press #(rf/dispatch [:evt.post.edit/delete post-id])}]))}]])
 
 (defn edit-post-form
   []
