@@ -4,6 +4,21 @@
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [re-frame.core :as rf]))
 
+;; ---------- http success/failure ----------
+
+(rf/reg-event-fx
+ :fx.http/send-post-success
+ (fn [_ [_ {:keys [posts]}]]
+   (let [{:post/keys [id] :as post} (:new-post posts)]
+     {:fx [[:dispatch [:evt.post/add-post post]]
+           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.error/clear-errors]]
+           [:dispatch [:evt.post/set-modes :read]]
+           [:fx.log/message ["Post " id " sent."]]
+           [:dispatch [:evt.nav/navigate "post-read" id]]]})))
+
+;; ---------- App ----------
+
 (rf/reg-event-fx
  :evt.app/initialize
  (fn [{:keys [db local-store-theme]} _]
@@ -55,6 +70,13 @@
                    :on-failure      [:fx.http/failure]}})))
 
 (rf/reg-event-fx
+ :evt.app/initialize-with-cookie
+ (fn [_ [_ cookie-name]]
+   {:fx [[:fx.app/get-cookie-async-store cookie-name]]}))
+
+;; ---------- Navigation ----------
+
+(rf/reg-event-fx
  :evt.nav/navigate
  (fn [{:keys [db]} [_ view-id params]]
    {:fx [[:fx.nav/react-navigate [(:navigator/ref db) view-id params]]]}))
@@ -64,10 +86,7 @@
  (fn [db [_ r]]
    (assoc db :navigator/ref r)))
 
-(rf/reg-event-fx
- :evt.app/initialize-with-cookie
- (fn [_ [_ cookie-name]]
-   {:fx [[:fx.app/get-cookie-async-store cookie-name]]}))
+;; ---------- Cookie ----------
 
 (rf/reg-event-fx
  :evt.cookie/get
@@ -80,3 +99,11 @@
  (fn [{:keys [db]} [_ cookie-name cookie-value]]
    {:db (assoc db :user/cookie cookie-value)
     :fx [[:fx.app/set-cookie-async-store [cookie-name cookie-value]]]}))
+
+;; ---------- Edit Post ----------
+
+(rf/reg-event-fx
+ :evt.post.edit/autofill
+ (fn [_ [_ post-id]]
+   {:fx [[:dispatch [:evt.post.form/autofill post-id]]
+         [:dispatch [:evt.nav/navigate "post-edit" post-id]]]}))

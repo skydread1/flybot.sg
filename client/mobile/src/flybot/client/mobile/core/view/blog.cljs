@@ -130,8 +130,7 @@
   [post-id]
   [rrn/button
    {:title "Edit Post"
-    :on-press #(do (rf/dispatch [:evt.nav/navigate "post-edit" post-id])
-                   (rf/dispatch [:evt.post.form/autofill post-id]))}])
+    :on-press #(rf/dispatch [:evt.post.edit/autofill post-id])}])
 
 (defn post-read-screen
   []
@@ -175,7 +174,7 @@
                  (rn-alert "Confirmation" "Are you sure you want to save your changes?"
                            [{:text "Cancel"}
                             {:text "Submit"
-                             :on-press #(rf/dispatch [:evt.post.form/send-post])}]))}]
+                             :on-press #(rf/dispatch [:evt.post.form/send-post post-id])}]))}]
    [rrn/button
     {:title "Delete"
      :on-press (fn []
@@ -218,6 +217,7 @@
    [:> check-box
     {:text "Show Dates"
      :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}])
+     :disableBuiltInState true
      :text-style {:text-decoration-line "none"}
      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
      :fill-color (:green colors)
@@ -225,6 +225,7 @@
    [:> check-box
     {:text "Show Authors"
      :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}])
+     :disableBuiltInState true
      :text-style {:text-decoration-line "none"}
      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
      :fill-color (:green colors)
@@ -271,8 +272,7 @@
   (let [{:post/keys [id md-content image-beside creation-date author]}
         @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
     [rrn/touchable-highlight
-     {:on-press #(do (rf/dispatch [:evt.nav/navigate "post-read" id])
-                     (rf/dispatch [:evt.post.form/autofill id]))
+     {:on-press #(rf/dispatch [:evt.post.edit/autofill id])
       :underlay-color (:blue colors)}
      [rrn/view
       {:style {:flex-direction "row"

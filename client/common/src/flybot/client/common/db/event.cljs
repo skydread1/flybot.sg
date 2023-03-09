@@ -14,7 +14,7 @@
   [path]
   (str BASE-URI path))
 
-;; ---------- http ----------
+;; ---------- http success/failure ----------
 
 (rf/reg-event-db
  :fx.http/failure
@@ -50,16 +50,6 @@
                                         :post/last-editor last-editor
                                         :post/last-edit-date (utils/mk-date)))
       :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
-
-(rf/reg-event-fx
- :fx.http/send-post-success
- (fn [_ [_ {:keys [posts]}]]
-   (let [{:post/keys [id] :as post} (:new-post posts)]
-     {:fx [[:dispatch [:evt.post/add-post post]]
-           [:dispatch [:evt.post.form/clear-form]]
-           [:dispatch [:evt.error/clear-errors]]
-           [:dispatch [:evt.post/set-modes :read]]
-           [:fx.log/message ["Post " id " sent."]]]})))
 
 (rf/reg-event-fx
  :fx.http/send-page-success
