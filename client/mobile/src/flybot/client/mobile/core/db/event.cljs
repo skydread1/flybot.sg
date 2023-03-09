@@ -107,3 +107,10 @@
  (fn [_ [_ screen-name post-id]]
    {:fx [[:dispatch [:evt.post.form/autofill post-id]]
          [:dispatch [:evt.nav/navigate screen-name post-id]]]}))
+
+(rf/reg-event-fx
+ :evt.post.edit/cancel
+ (fn [_ [_ post-id]]
+   {:fx [[:dispatch [:evt.post.form/clear-form]]
+         [:dispatch [:evt.error/clear-errors]]
+         [:dispatch [:evt.nav/navigate "post-read" post-id]]]}))

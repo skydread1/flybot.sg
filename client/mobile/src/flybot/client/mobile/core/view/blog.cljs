@@ -256,12 +256,24 @@
    {:title "Preview"
     :on-press #(rf/dispatch [:evt.nav/navigate "post-preview" "post-in-preview"])}])
 
+(defn cancel-edit-btn
+  [post-id]
+  [rrn/button
+   {:title "Cancel"
+    :on-press (fn []
+                (rn-alert "Confirmation" "Are you sure you want to go back? Your changes won't be saved."
+                          [{:text "Keep Editing"}
+                           {:text "Back to Read Mode"
+                            :on-press #(rf/dispatch [:evt.post.edit/cancel post-id])}]))}])
+
 (defn post-edit-screen
   []
   (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
     [:> (.-Screen stack-nav) {:name "post-edit"
                               :options {:title "Edit Mode"
                                         :animation "slide_from_right"
+                                        :header-left (fn [_]
+                                                       (r/as-element [cancel-edit-btn post-id]))
                                         :header-right (fn [_]
                                                         (r/as-element [preview-post-btn]))}
                               :component (r/reactify-component
