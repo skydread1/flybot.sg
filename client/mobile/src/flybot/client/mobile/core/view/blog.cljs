@@ -111,7 +111,8 @@
    (when image-beside
      [rrn/image
       {:style {:resize-mode "contain"
-                :height 200}
+               :height 200
+               :margin 10}
        :source {:uri (-> image-beside :image/src utils/format-image)}
        :alt (-> image-beside :image/alt)}])
    [rrn/view
@@ -287,7 +288,9 @@
   (let [{:post/keys [md-content image-beside creation-date author]}
         @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
     [rrn/touchable-highlight
-     {:on-press #(rf/dispatch [:evt.post.edit/autofill "post-read" post-id])
+     {:on-press #(if (temporary-id? post-id)
+                   (rf/dispatch [:evt.post.edit/autofill "post-edit" post-id])
+                   (rf/dispatch [:evt.post.edit/autofill "post-read" post-id]))
       :underlay-color (:blue colors)}
      [rrn/view
       {:style {:flex-direction "row"

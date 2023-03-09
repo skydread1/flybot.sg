@@ -15,7 +15,7 @@
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]
-           [:dispatch [:evt.nav/navigate "post-read" id]]]})))
+           [:dispatch [:evt.nav/navigate "posts-list"]]]})))
 
 ;; ---------- App ----------
 
