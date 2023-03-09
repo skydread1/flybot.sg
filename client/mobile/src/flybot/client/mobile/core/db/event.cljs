@@ -17,6 +17,7 @@
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
                    :uri             (base-uri "/pages/all")
+                   :headers {:cookie (:user/cookie db)}
                    :params {:pages
                             {(list :all :with [])
                              [{:page/name '?
@@ -62,3 +63,20 @@
  :evt.nav/set-ref
  (fn [db [_ r]]
    (assoc db :navigator/ref r)))
+
+(rf/reg-event-fx
+ :evt.app/initialize-with-cookie
+ (fn [_ [_ cookie-name]]
+   {:fx [[:fx.app/get-cookie-async-store cookie-name]]}))
+
+(rf/reg-event-fx
+ :evt.cookie/get
+ (fn [{:keys [db]} [_ cookie-value]]
+   {:db (assoc db :user/cookie cookie-value)
+    :fx [[:dispatch [:evt.app/initialize]]]}))
+
+(rf/reg-event-fx
+ :evt.cookie/set
+ (fn [{:keys [db]} [_ cookie-name cookie-value]]
+   {:db (assoc db :user/cookie cookie-value)
+    :fx [[:fx.app/set-cookie-async-store [cookie-name cookie-value]]]}))

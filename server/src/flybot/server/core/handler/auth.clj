@@ -5,8 +5,7 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
-            [reitit.oauth2 :as reitit]
-            [ring.util.response :as response]))
+            [reitit.oauth2 :as reitit]))
 
 (defn decode-key
   "Converts a train case string/keyword into a snake case keyword."
@@ -52,7 +51,7 @@
 
 (defn authentification-middleware
   "Uses the access token returned from google oauth2 to fetch the user-info"
-  [ring-handler]
+  [ring-handler client-root-path]
   (fn [{:keys [session] :as request}]
     (let [user-info (google-api-fetch-user (-> session :oauth2/access-tokens))
           {:keys [id email name picture]} user-info
@@ -61,7 +60,7 @@
                     {(list :registered :with [id email name picture])
                      {:user/id '?}}}}
           resp (ring-handler (assoc request :params pattern))]
-      (redirect-302 resp "/"))))
+      (redirect-302 resp client-root-path))))
 
 (defn has-permission?
   [session-permissions required-permissions]
@@ -78,9 +77,10 @@
                                                :need-permission required-permissions}))))))
 
 (defn logout-handler
-  [_]
-  (-> (response/redirect "/")
-      (update :session dissoc :oauth2/access-tokens :user-id :user-roles)))
+  [client-root-path]
+  (fn [_]
+    (-> {:session nil} ;; delete session
+        (redirect-302 client-root-path))))
 
 (defn auth-routes
   [oauth2-config]

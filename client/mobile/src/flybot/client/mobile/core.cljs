@@ -14,10 +14,9 @@
                       (str/includes? (first args) "Subscribe was called outside of a reactive context"))
           (apply warn args))))
 
-
 (defn renderfn
   [props]
-  (rf/dispatch [:evt.app/initialize])
+  (rf/dispatch [:evt.app/initialize-with-cookie "ring-session"])
   (r/as-element [app]))
 
 ;; the function figwheel-rn-root MUST be provided. It will be called by 

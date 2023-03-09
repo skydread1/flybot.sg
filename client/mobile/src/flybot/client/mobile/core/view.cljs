@@ -6,9 +6,9 @@
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [cljs->js js->cljs]]
             [flybot.client.mobile.core.view.blog :refer [blog]]
+            [flybot.client.mobile.core.view.login :refer [login]]
             [re-frame.core :as rf]
-            [reagent.core :as r]
-            [reagent.react-native :as rrn]))
+            [reagent.core :as r]))
 
 (def bottom-tab-nav (tab-nav/createBottomTabNavigator))
 (def default-icon (.-default icon))
@@ -17,28 +17,13 @@
   [route-name]
   [:> default-icon
    (case route-name
-     "home" {:name "ios-home"
-             :size 30
-             :color (:blue colors)}
+     "login" {:name "ios-home"
+              :size 30
+              :color (:blue colors)}
      "blog" {:name "create"
              :size 30
              :color (:blue colors)}
      :default)])
-
-(defn home
-  []
-  [rrn/view
-   {:style {:background-color (:light colors)
-            :border-color (:green colors)
-            :flex 1
-            :justify-content "center"}}
-   [rrn/image
-    {:style {:flex 1
-             :resize-mode "contain"}
-     :source {:uri "https://www.flybot.sg/assets/flybot-logo.png"}
-     :alt "flybot-logo"}]])
-
-
 
 (defn screen-otpions
   [options]
@@ -57,16 +42,16 @@
                       (r/as-element [tab-icon route-name])))}))
 
 (defn app []
-  [:> NavigationContainer {:ref (fn [el] 
+  [:> NavigationContainer {:ref (fn [el]
                                   (reset! nav/nav-ref el)
                                   (rf/dispatch [:evt.nav/set-ref el]))
                            :on-state-change nav/persist-state!
                            :initial-state @nav/state}
    [:> (.-Navigator bottom-tab-nav) {:screen-options screen-otpions
-                                     :initial-route-name "blog"}
-    [:> (.-Screen bottom-tab-nav) {:name "home"
-                                   :component (r/reactify-component home)
-                                   :options {:title "Home"}}]
+                                     :initial-route-name "login"}
+    [:> (.-Screen bottom-tab-nav) {:name "login"
+                                   :component (r/reactify-component login)
+                                   :options {:title "Login"}}]
     [:> (.-Screen bottom-tab-nav) {:name "blog"
                                    :component (r/reactify-component blog)
                                    :options {:title "Blog"}}]]])

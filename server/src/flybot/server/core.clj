@@ -17,7 +17,8 @@
     :access-token-uri "https://oauth2.googleapis.com/token",
     :authorize-uri    "https://accounts.google.com/o/oauth2/auth",
     :launch-uri       "/oauth/google/login"
-    :landing-uri      "/oauth/google/success"}})
+    :landing-uri      "/oauth/google/success"
+    :client-root-path "/"}})
 
 (defn load-initial-data
   "Loads the initial posts and the admin-user to the db
@@ -29,7 +30,7 @@
 ;;---------- System ----------
 
 (defn system
-  [{:keys [http-port db-uri google-creds oauth2-callback]}]
+  [{:keys [http-port db-uri google-creds oauth2-callback client-root-path]}]
   (life-cycle-map
    {:db-uri         db-uri
     :db-conn        (fnk [db-uri]
@@ -42,7 +43,8 @@
                       (-> oauth2-default-config
                           (assoc-in [:google :client-id] client-id)
                           (assoc-in [:google :client-secret] client-secret)
-                          (assoc-in [:google :redirect-uri] oauth2-callback)))
+                          (assoc-in [:google :redirect-uri] oauth2-callback)
+                          (assoc-in [:google :client-root-path] client-root-path)))
     :session-store  (memory-store)
     :injectors      (fnk [db-conn]
                          [(fn [] {:db (d/db (:conn db-conn))})])
