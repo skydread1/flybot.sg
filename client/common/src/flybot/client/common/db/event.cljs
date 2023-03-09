@@ -267,7 +267,9 @@
    (if (utils/temporary-id? post-id)
      {:db         (assoc db :form/fields
                          {:post/id   post-id
-                          :post/page (-> db :app/current-view :data :page-name)
+                          :post/page (or (-> db :app/current-view :data :page-name) ;; web page
+                                         :blog ;; mobile screen
+                                         )
                           :post/mode :edit
                           :post/author (-> db :app/user (select-keys [:user/id :user/name]))
                           :post/creation-date (utils/mk-date)})}

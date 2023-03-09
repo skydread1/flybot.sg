@@ -5,6 +5,7 @@
             ["react-native-vector-icons/Ionicons" :as icon]
             ["react-native" :refer [Alert]]
             [clojure.string :as str]
+            [flybot.common.utils :refer [temporary-id?]]
             [flybot.client.mobile.core.navigation :as nav]
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
@@ -100,26 +101,30 @@
 (defn post-read
   "Given a post, display it as read only.
    Works for both read and preview."
-  [{:post/keys [md-content image-beside
+  [{:post/keys [id md-content image-beside
                 show-dates? creation-date last-edit-date
                 show-authors? author last-editor]}]
   [rrn/scroll-view
    {:style {:padding 10
             :border-width 3
             :border-color (:green colors)}}
-   [rrn/image
-    {:style {:resize-mode "contain"
-             :height 200}
-     :source {:uri (-> image-beside :image/src utils/format-image)}
-     :alt (-> image-beside :image/alt)}]
+   (when image-beside
+     [rrn/image
+      {:style {:resize-mode "contain"
+                :height 200}
+       :source {:uri (-> image-beside :image/src utils/format-image)}
+       :alt (-> image-beside :image/alt)}])
    [rrn/view
-    {:style {:padding 10
-             :border-top-width 1
-             :border-top-color (:blue colors)
-             :border-bottom-width 1
-             :border-bottom-color (:blue colors)}}
+    {:style (if (or show-authors? show-dates?)
+              {:padding 10
+               :border-top-width 1
+               :border-top-color (:blue colors)
+               :border-bottom-width 1
+               :border-bottom-color (:blue colors)}
+              {:padding 10})}
     [post-author show-authors? author show-dates? creation-date true]
-    [post-author show-authors? last-editor show-dates? last-edit-date false]]
+    (when-not (temporary-id? id)
+      [post-author show-authors? last-editor show-dates? last-edit-date false])]
    [rrn/view
     {}
     [:> markdown
@@ -217,7 +222,6 @@
    [:> check-box
     {:text "Show Dates"
      :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}])
-     :disableBuiltInState true
      :text-style {:text-decoration-line "none"}
      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
      :fill-color (:green colors)
@@ -225,7 +229,6 @@
    [:> check-box
     {:text "Show Authors"
      :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}])
-     :disableBuiltInState true
      :text-style {:text-decoration-line "none"}
      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
      :fill-color (:green colors)
@@ -269,47 +272,70 @@
 (defn post-short
   "Display a short version of the post"
   [post-id]
-  (let [{:post/keys [id md-content image-beside creation-date author]}
+  (let [{:post/keys [md-content image-beside creation-date author]}
         @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
     [rrn/touchable-highlight
-     {:on-press #(rf/dispatch [:evt.post.edit/autofill id])
+     {:on-press #(rf/dispatch [:evt.post.edit/autofill post-id])
       :underlay-color (:blue colors)}
      [rrn/view
       {:style {:flex-direction "row"
+               :background-color (if (temporary-id? post-id)
+                                   (:light-blue colors)
+                                   (:light colors))
                :gap 10
                :align-items "center"
                :padding 10
-               :border-bottom-width 3
+               :border-bottom-width 2
                :border-bottom-color (:green colors)}}
-      [rrn/image
-       {:style {:resize-mode "contain"
-                :height 50
-                :width 50}
-        :source {:uri (-> image-beside :image/src utils/format-image)}
-        :alt (-> image-beside :image/alt)}]
+      (cond (temporary-id? post-id) 
+            [:> default-icon
+             {:name "add"
+              :size 50
+              :color (:green colors)}]
+            
+            image-beside
+            [rrn/image
+             {:style {:resize-mode "contain"
+                      :height 50
+                      :width 50}
+              :source {:uri (-> image-beside :image/src utils/format-image)}
+              :alt (-> image-beside :image/alt)}]
+            
+            :else
+            [:> default-icon
+             {:name "ellipsis-horizontal-outline"
+              :size 50
+              :color "grey"}])
       [rrn/view
        {:style {:gap 5}}
        [rrn/text
         {:style {:font-size 20}}
-        (md-title md-content)]
-       [rrn/text
-        {:style {:color (:green colors)}}
-        (str (:user/name author) " - " (utils/format-date creation-date))]]]]))
+        (if md-content
+          (md-title md-content)
+          "Click here to create a new post")]
+       (when-not (temporary-id? post-id)
+         [rrn/text
+          {:style {:color (:green colors)}}
+          (str (:user/name author) " - " (utils/format-date creation-date))])]]]))
 
 (defn posts-list
   []
-  [rrn/view
-   {:style {:background-color (:light colors)
-            :flex 1
-            :justify-content "center"}}
-   [rrn/flat-list
-    {:data @(rf/subscribe [:subs.post/posts :blog])
-     :key-extractor (fn [item]
-                      (-> item js->cljs :id))
-     :render-item (fn [item]
-                    (let [post-id (-> item js->cljs :item :id)]
-                      (r/as-element
-                       [post-short post-id])))}]])
+  (let [new-post {:post/id "new-post-temp-id"}
+        posts    @(rf/subscribe [:subs.post/posts :blog])]
+    [rrn/view
+     {:style {:background-color (:light colors)
+              :flex 1
+              :justify-content "center"
+              :border-top-width 2
+              :border-top-color (:green colors)}}
+     [rrn/flat-list
+      {:data (cons new-post posts)
+       :key-extractor (fn [item]
+                        (-> item js->cljs :id))
+       :render-item (fn [item]
+                      (let [post-id (-> item js->cljs :item :id)]
+                        (r/as-element
+                         [post-short post-id])))}]]))
 
 (defn posts-list-screen
   []
