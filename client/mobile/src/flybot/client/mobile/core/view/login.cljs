@@ -11,8 +11,7 @@
                    (fn [url]
                      (let [cookie (-> url js->cljs :url (str/split "?") second)] 
                        (when cookie
-                         (rf/dispatch [:evt.cookie/set "ring-session" cookie])
-                         (rf/dispatch [:evt.app/initialize])))))
+                         (rf/dispatch [:evt.login/link-url-listener cookie])))))
 
 (defn login
   []

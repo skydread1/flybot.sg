@@ -22,53 +22,48 @@
 
 (rf/reg-event-fx
  :evt.app/initialize
- (fn [{:keys [db local-store-theme]} _]
-   (let [app-theme (or local-store-theme :dark)]
-     {:db         (assoc
-                   db
-                   :app/theme        app-theme
-                   :user/mode        :reader
-                   :admin/mode       :read
-                   :navigator/ref    @nav/nav-ref
-                   :nav/navbar-open? false)
-      :http-xhrio {:method          :post
-                   :uri             (base-uri "/pages/all")
-                   :headers {:cookie (:user/cookie db)}
-                   :params {:pages
-                            {(list :all :with [])
-                             [{:page/name '?
-                               :page/sorting-method {:sort/type '?
-                                                     :sort/direction '?}}]}
-                            :posts
-                            {(list :all :with [])
-                             [{:post/id '?
-                               :post/page '?
-                               :post/css-class '?
-                               :post/creation-date '?
-                               :post/last-edit-date '?
-                               :post/author {:user/id '?
-                                             :user/name '?}
-                               :post/last-editor {:user/id '?
-                                                  :user/name '?}
-                               :post/show-authors? '?
-                               :post/show-dates? '?
-                               :post/md-content '?
-                               :post/image-beside {:image/src '?
-                                                   :image/src-dark '?
-                                                   :image/alt '?}}]}
-                            :users
-                            {:auth
-                             {(list :logged :with [])
-                              {:user/id '?
-                               :user/email '?
-                               :user/name '?
-                               :user/picture '?
-                               :user/roles [{:role/name '?
-                                             :role/date-granted '?}]}}}}
-                   :format          (edn-request-format {:keywords? true})
-                   :response-format (edn-response-format {:keywords? true})
-                   :on-success      [:fx.http/all-success]
-                   :on-failure      [:fx.http/failure]}})))
+ (fn [{:keys [db]} _]
+   {:db         (assoc
+                 db
+                 :navigator/ref @nav/nav-ref)
+    :http-xhrio {:method          :post
+                 :uri             (base-uri "/pages/all")
+                 :headers {:cookie (:user/cookie db)}
+                 :params {:pages
+                          {(list :all :with [])
+                           [{:page/name '?
+                             :page/sorting-method {:sort/type '?
+                                                   :sort/direction '?}}]}
+                          :posts
+                          {(list :all :with [])
+                           [{:post/id '?
+                             :post/page '?
+                             :post/css-class '?
+                             :post/creation-date '?
+                             :post/last-edit-date '?
+                             :post/author {:user/id '?
+                                           :user/name '?}
+                             :post/last-editor {:user/id '?
+                                                :user/name '?}
+                             :post/show-authors? '?
+                             :post/show-dates? '?
+                             :post/md-content '?
+                             :post/image-beside {:image/src '?
+                                                 :image/src-dark '?
+                                                 :image/alt '?}}]}
+                          :users
+                          {:auth
+                           {(list :logged :with [])
+                            {:user/id '?
+                             :user/email '?
+                             :user/name '?
+                             :user/picture '?
+                             :user/roles [{:role/name '?
+                                           :role/date-granted '?}]}}}}
+                 :format          (edn-request-format {:keywords? true})
+                 :response-format (edn-response-format {:keywords? true})
+                 :on-success      [:fx.http/all-success]
+                 :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-fx
  :evt.app/initialize-with-cookie
@@ -122,3 +117,12 @@
  (fn [_ [_ post-id]]
    {:fx [[:dispatch [:evt.post/remove-post post-id]]
          [:dispatch [:evt.nav/navigate "posts-list"]]]}))
+
+;; ---------- Login/Logout ----------
+
+(rf/reg-event-fx
+ :evt.login/link-url-listener
+ (fn [_ [_ cookie]]
+   {:fx [[:dispatch [:evt.cookie/set "ring-session" cookie]]
+         [:dispatch [:evt.app/initialize]]
+         [:dispatch [:evt.nav/navigate "blog"]]]}))
