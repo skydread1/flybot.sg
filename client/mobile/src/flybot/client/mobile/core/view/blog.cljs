@@ -27,6 +27,15 @@
   [title msg v-btns]
   (.alert Alert title msg (cljs->js v-btns)))
 
+(defn need-login-alert
+  "Ask the user if he wants to login.
+   The `post-id` needs to be provided to go back to same post after login complete."
+  [post-id]
+  (rn-alert "Warning" "You need to login for editing."
+            [{:text "Login"
+              :on-press #(rf/dispatch [:evt.nav/navigate "login" post-id])}
+             {:text "Cancel"}]))
+
 ;;---------- errors ----------
 
 (defn errors
@@ -142,12 +151,9 @@
         :on-press #(rf/dispatch [:evt.post.edit/autofill "post-edit" post-id])}]
       [rrn/button
        {:title "Edit Post"
-        :color "grey"
+        :color (:grey colors)
         :on-press (fn []
-                    (rn-alert "Warning" "You need to login for editing."
-                              [{:text "Login"
-                                :on-press #(rf/dispatch [:evt.nav/navigate "login" post-id])}
-                               {:text "Cancel"}]))}])))
+                    (need-login-alert post-id))}])))
 
 (defn post-read-screen
   []
@@ -297,11 +303,18 @@
   "Display a short version of the post"
   [post-id]
   (let [{:post/keys [md-content image-beside creation-date author]}
-        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
+        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])
+        user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
     [rrn/touchable-highlight
-     {:on-press #(if (temporary-id? post-id)
-                   (rf/dispatch [:evt.post.edit/autofill "post-edit" post-id])
-                   (rf/dispatch [:evt.post.edit/autofill "post-read" post-id]))
+     {:on-press #(cond
+                   (not (temporary-id? post-id))
+                   (rf/dispatch [:evt.post.edit/autofill "post-read" post-id])
+
+                   (not user-id)
+                   (need-login-alert post-id)
+
+                   :else
+                   (rf/dispatch [:evt.post.edit/autofill "post-edit" post-id]))
       :underlay-color (:blue colors)}
      [rrn/view
       {:style {:flex-direction "row"
@@ -317,7 +330,7 @@
             [:> default-icon
              {:name "add"
               :size 50
-              :color (:green colors)}]
+              :color (if user-id (:green colors) (:grey colors))}]
             
             image-beside
             [rrn/image
@@ -331,11 +344,12 @@
             [:> default-icon
              {:name "ellipsis-horizontal-outline"
               :size 50
-              :color "grey"}])
+              :color (:grey colors)}])
       [rrn/view
        {:style {:gap 5}}
        [rrn/text
-        {:style {:font-size 20}}
+        {:style {:font-size 20
+                 :color (when (not (or user-id md-content)) (:grey colors))}}
         (if md-content
           (md-title md-content)
           "Click here to create a new post")]
