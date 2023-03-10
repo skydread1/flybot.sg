@@ -117,3 +117,12 @@
  (fn [_ [_ post-id]]
    {:fx [[:dispatch [:evt.post/remove-post post-id]]
          [:dispatch [:evt.nav/navigate "posts-list"]]]}))
+
+;; ---------- Login/Logout ----------
+
+(rf/reg-event-fx
+ :evt.login/link-url-listener
+ (fn [_ [_ cookie]]
+   {:fx [[:dispatch [:evt.cookie/set "ring-session" cookie]]
+         [:dispatch [:evt.app/initialize]]
+         [:dispatch [:evt.nav/navigate "blog"]]]}))
