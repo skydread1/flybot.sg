@@ -135,9 +135,19 @@
 
 (defn edit-post-btn
   [post-id]
-  [rrn/button
-   {:title "Edit Post"
-    :on-press #(rf/dispatch [:evt.post.edit/autofill "post-edit" post-id])}])
+  (let [user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
+    (if user-id
+      [rrn/button
+       {:title "Edit Post"
+        :on-press #(rf/dispatch [:evt.post.edit/autofill "post-edit" post-id])}]
+      [rrn/button
+       {:title "Edit Post"
+        :color "grey"
+        :on-press (fn []
+                    (rn-alert "Warning" "You need to login for editing."
+                              [{:text "Login"
+                                :on-press #(rf/dispatch [:evt.nav/navigate "login" post-id])}
+                               {:text "Cancel"}]))}])))
 
 (defn post-read-screen
   []
@@ -366,8 +376,9 @@
 
 (defn blog
   []
-  [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}
-   (posts-list-screen)
-   (post-read-screen)
-   (post-edit-screen)
-   (post-preview-screen)])
+  (let [user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
+    [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}
+     (posts-list-screen)
+     (post-read-screen)
+     (when user-id (post-edit-screen))
+     (when user-id (post-preview-screen))]))
