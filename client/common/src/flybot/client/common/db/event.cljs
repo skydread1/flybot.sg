@@ -44,10 +44,9 @@
 (rf/reg-event-fx
  :fx.http/post-success
  (fn [{:keys [db]} [_ {:keys [posts]}]]
-   (let [post        (:post posts)
-         last-editor (or (:post/last-editor post) (:app/user db))]
+   (let [post (:post posts)]
      {:db (assoc db :form/fields (assoc post
-                                        :post/last-editor last-editor
+                                        :post/last-editor (:app/user db)
                                         :post/last-edit-date (utils/mk-date)))
       :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
 

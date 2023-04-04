@@ -120,8 +120,7 @@
   [post user-id]
   (let [temp-id?     (-> post :post/id u/temporary-id?)
         date-field   (if temp-id? :post/creation-date :post/last-edit-date)
-        action       (if (:post/author post) :edition :creation)
-        writer-field (if (= :creation action) :post/author :post/last-editor)]
+        writer-field (if temp-id? :post/author :post/last-editor)]
     (-> post
         (dissoc :post/view :post/mode :post/to-delete?)
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
