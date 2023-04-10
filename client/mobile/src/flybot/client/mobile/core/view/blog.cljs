@@ -45,11 +45,11 @@
             :color "red"
             :justify-content "center"
             :align-items "center"}}
-   (when-let [http-error @(rf/subscribe [:subs/pattern {:app/errors {:failure-http-result '?}} [:app/errors :failure-http-result]])]
+   (when-let [http-error @(rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])]
      [rrn/text
       {:style {:color "red"}}
       (str "server error:" (-> http-error :response :message))])
-   (when-let [validation-error @(rf/subscribe [:subs/pattern {:app/errors {:validation-errors '?}} [:app/errors :validation-errors]])]
+   (when-let [validation-error @(rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])]
      [rrn/text
       {:style {:color "red"}}
       (str "validation error: " validation-error)])])
@@ -144,7 +144,7 @@
 
 (defn edit-post-btn
   [post-id]
-  (let [user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
+  (let [user-id @(rf/subscribe [:subs/pattern '{:app/user {:user/id ?x}}])]
     (if user-id
       [rrn/button
        {:title "Edit Post"
@@ -157,8 +157,8 @@
 
 (defn post-read-screen
   []
-  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
-        post    @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])]
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?x}]))
+        post    @(rf/subscribe [:subs/pattern {:app/posts {post-id '?x}}])]
     [:> (.-Screen stack-nav) {:name "post-read"
                               :options {:title "Read Mode"
                                         :animation "slide_from_right"
@@ -172,9 +172,9 @@
 
 (defn post-preview-screen
   []
-  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?x}]))
         post (when (= (uuid "post-in-preview") post-id)
-               @(rf/subscribe [:subs/pattern '{:form/fields ?} [:form/fields]]))]
+               @(rf/subscribe [:subs/pattern '{:form/fields ?x}]))]
     [:> (.-Screen stack-nav) {:name "post-preview"
                               :options {:title "Preview"
                                         :animation "slide_from_right"}
@@ -217,7 +217,7 @@
     {:style {:text-align "center"}}
     "Side Image source for LIGHT mode:"]
    [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?}}}])
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?x}}}])
      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src %])
      :style {:border-width 1
              :padding 10}}]
@@ -225,7 +225,7 @@
     {:style {:text-align "center"}}
     "Side Image source for DARK mode:"]
    [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?}}}])
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?x}}}])
      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/src-dark %])
      :style {:border-width 1
              :padding 10}}]
@@ -233,20 +233,20 @@
     {:style {:text-align "center"}}
     "Side Image description:"]
    [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?}}}])
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?x}}}])
      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/alt %])
      :style {:border-width 1
              :padding 10}}]
    [:> check-box
     {:text "Show Dates"
-     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?}}])
+     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?x}}])
      :text-style {:text-decoration-line "none"}
      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
      :fill-color (:green colors)
      :style {:padding 10}}]
    [:> check-box
     {:text "Show Authors"
-     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?}}])
+     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?x}}])
      :text-style {:text-decoration-line "none"}
      :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
      :fill-color (:green colors)
@@ -255,7 +255,7 @@
     {:style {:text-align "center"}}
     "Post Content in Markdown:"]
    [rrn/text-input
-    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?}}])
+    {:default-value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?x}}])
      :on-change-text #(rf/dispatch [:evt.post.form/set-field :post/md-content %])
      :multiline true
      :style {:border-width 1
@@ -286,7 +286,7 @@
 
 (defn post-edit-screen
   []
-  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?}]))]
+  (let [post-id (nav/nav-params @(rf/subscribe [:subs/pattern '{:navigator/ref ?x}]))]
     [:> (.-Screen stack-nav) {:name "post-edit"
                               :options {:title "Edit Mode"
                                         :animation "slide_from_right"
@@ -303,8 +303,8 @@
   "Display a short version of the post"
   [post-id]
   (let [{:post/keys [md-content image-beside creation-date author]}
-        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?}} [:app/posts post-id]])
-        user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
+        @(rf/subscribe [:subs/pattern {:app/posts {post-id '?x}}])
+        user-id @(rf/subscribe [:subs/pattern '{:app/user {:user/id ?x}}])]
     [rrn/touchable-highlight
      {:on-press #(cond
                    (not (temporary-id? post-id))
@@ -390,7 +390,7 @@
 
 (defn blog
   []
-  (let [user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
+  (let [user-id @(rf/subscribe [:subs/pattern '{:app/user {:user/id ?x}}])]
     [:> (.-Navigator stack-nav) {:initial-route-name "posts-list"}
      (posts-list-screen)
      (post-read-screen)
