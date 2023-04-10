@@ -19,7 +19,7 @@
   []
   [:div.pointer
    {:on-click #(rf/dispatch [:evt.app/toggle-theme])}
-   (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?}]))
+   (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
      sun-icon
      moon-icon)])
 
@@ -45,7 +45,7 @@
   []
   [:div.pointer
    {:on-click #(rf/dispatch [:evt.user/toggle-mode])}
-   (if (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?}]))
+   (if (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?x}]))
      eye-icon
      pen-on-paper-icon)])
 

@@ -6,18 +6,22 @@
 (rf/reg-sub
  :subs/pattern
  ;; `pattern` is the pull pattern
- ;; By default, the first leaf is returned
- ;; i.e: in case '? is 3: @(rf/subscribe [:subs/pattern {:a {:b {:c '?}}}]) => 3
- ;; `path` can be provided to fetch the all data deep to a certain key
- ;; i.e: @(rf/subscribe [:subs/pattern {:a {:b {:c '?}}} [:a]]) => {:b {:c 3}}
- (fn [db [_ pattern path]]
-   (let [data (first ((pull/query pattern) db))]
-     (if path
-       (get-in data path)
-       (->> data
-            (iterate #(-> % vals first))
-            (drop-while map?)
-            first)))))
+ ;; in case of named-var (such as '?my-var), only the named var value is returned
+ ;; in case of no named-var (only '?), returns the value of the key '&?
+ (fn [db [_ pattern general?]]
+   (let [data ((pull/query pattern) db)]
+     (when (-> data (get '&?) seq)
+       (cond general?
+             (-> data (get '&?))
+
+             (and (not general?) (= 1 (-> data keys count)))
+             nil
+
+             (= 2 (-> data keys count))
+             (-> data (dissoc '&?) vals first)
+             
+             :else
+             data)))))
 
 (rf/reg-sub
  :subs.post/posts

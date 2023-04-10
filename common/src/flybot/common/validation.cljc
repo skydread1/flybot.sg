@@ -13,7 +13,8 @@
 
 (def author-schema
   [:map
-   [:user/id :string]])
+   [:user/id :string]
+   [:user/name {:optional true} :string]])
 
 (def user-schema
   [:map {:closed true}

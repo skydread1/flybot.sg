@@ -8,9 +8,7 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [sorting-method @(rf/subscribe [:subs/pattern
-                                       {:app/pages {page-name {:page/sorting-method '?}}}
-                                       [:app/pages page-name :page/sorting-method]])
+  (let [sorting-method @(rf/subscribe [:subs/pattern {:app/pages {page-name '{:page/sorting-method ?x}}}])
         ordered-posts (->> @(rf/subscribe [:subs.post/posts page-name])
                            (map #(assoc % :post/hiccup-content (h/md->hiccup (:post/md-content %))))
                            (utils/sort-posts sorting-method))
