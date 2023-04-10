@@ -90,12 +90,12 @@
                                                                    :role/date-granted (utils/mk-date)})]
           (is (= {:response updated-alice
                   :effects  {:db {:payload [updated-alice]}}}
-                 (sut/grant-admin (d/db db-conn) "alice@mail.com"))))))
+                 (sut/grant-admin (d/db db-conn) "alice@basecity.com"))))))
     (testing "User does not exist so returns error map."
       (is (= {:error {:type    :user.admin/not-found
                       :user-email "unknown-email"}}
              (sut/grant-admin (d/db db-conn) "unknown-email"))))
     (testing "User is already admin so returns error."
       (is (= {:error {:type    :user.admin/already-admin
-                      :user-email "bob@mail.com"}}
-             (sut/grant-admin (d/db db-conn) "bob@mail.com"))))))
+                      :user-email "bob@basecity.com"}}
+             (sut/grant-admin (d/db db-conn) "bob@basecity.com"))))))

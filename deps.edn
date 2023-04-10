@@ -3,8 +3,7 @@
            metosin/malli                         {:mvn/version "0.10.2"}
            metosin/reitit                        {:mvn/version "0.6.0"}
            metosin/muuntaja                      {:mvn/version "0.6.8"}
-           flybot-sg/lasagna-pull                {:git/url "https://github.com/flybot-sg/lasagna-pull.git"
-                                                  :sha     "861ef192288907b46d400769cb68a19de115ad58"}
+           sg.flybot/lasagna-pull                {:mvn/version "0.4.150"}
 
            ;; backend
            ring/ring-defaults                    {:mvn/version "0.3.4"}

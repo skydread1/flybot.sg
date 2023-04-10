@@ -19,7 +19,7 @@
 (def joshua-date-granted (u/mk-date))
 
 (def bob-user {:user/id "bob-id"
-               :user/email "bob@mail.com" 
+               :user/email "bob@basecity.com" 
                :user/name "Bob"
                :user/picture "bob-pic"
                :user/roles [{:role/name :admin
@@ -28,14 +28,14 @@
                              :role/date-granted bob-date-granted}]})
 
 (def alice-user {:user/id "alice-id"
-                 :user/email "alice@mail.com" 
+                 :user/email "alice@basecity.com" 
                  :user/name "Alice"
                  :user/picture "alice-pic"
                  :user/roles [{:role/name :editor
                                :role/date-granted alice-date-granted}]})
 
 (def joshua-user {:user/id "joshua-id"
-                  :user/email "joshua@mail.com"
+                  :user/email "joshua@basecity.com"
                   :user/name "Joshua"
                   :user/picture "joshua-pic"
                   :user/roles [{:role/name :editor

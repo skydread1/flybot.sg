@@ -15,8 +15,18 @@
   [:map
    [:user/id :string]])
 
+(def user-schema
+  [:map {:closed true}
+   [:user/id :string]
+   [:user/email :string]
+   [:user/name :string]
+   [:user/picture :string]
+   [:user/roles [:vector [:map
+                          [:role/name :keyword]
+                          [:role/date-granted inst?]]]]])
+
 (def user-email-schema
-  [:re #"^[a-zA-Z0-9]+@basecity.com$"])
+  [:re #"^([a-zA-Z0-9]+)([\.{1}])?([a-zA-Z0-9]+)@basecity.com$"])
 
 (def post-schema
   [:map {:closed true}
@@ -25,8 +35,8 @@
    [:post/css-class {:optional true} :string]
    [:post/creation-date inst?]
    [:post/last-edit-date {:optional true} inst?]
-   [:post/author author-schema]
-   [:post/last-editor {:optional true} author-schema]
+   [:post/author user-schema]
+   [:post/last-editor {:optional true} user-schema]
    [:post/show-dates? {:optional true} :boolean]
    [:post/show-authors? {:optional true} :boolean]
    [:post/md-content :string]
@@ -37,6 +47,12 @@
      [:image/src-dark :string]
      [:image/alt :string]]]])
 
+(def post-schema-create
+  "The difference with `post-schema` is that only the id of the author/last-editor is needed."
+  (-> post-schema
+      (mu/assoc :post/author author-schema)
+      (mu/assoc :post/last-editor author-schema)))
+
 (def page-schema
   [:map {:closed true}
    [:page/name :keyword]
@@ -45,16 +61,6 @@
     [:map
      [:sort/type :keyword]
      [:sort/direction :keyword]]]])
-
-(def user-schema
-  [:map {:closed true}
-   [:user/id :string]
-   [:user/email :string]
-   [:user/name :string]
-   [:user/picture :string]
-   [:user/roles [:vector [:map
-                          [:role/name :keyword]
-                          [:role/date-granted inst?]]]]])
 
 (defn all-keys-optional
   "Walk through the given `schema` and set all keys to optional."
@@ -76,25 +82,25 @@
     {:closed true}
     [:posts
      [:map
-      [:post post-schema]
-      [:all [:vector post-schema]]
-      [:new-post post-schema]
-      [:removed-post post-schema]]]
+      [:post [:=> [:cat :uuid] post-schema]]
+      [:all [:=> [:cat :any] [:vector post-schema]]]
+      [:new-post [:=> [:cat post-schema-create] post-schema]]
+      [:removed-post [:=> [:cat :uuid :string] post-schema]]]]
     [:pages
      [:map
-      [:page page-schema]
-      [:all [:vector page-schema]]
-      [:new-page page-schema]]]
+      [:page [:=> [:cat :keyword] page-schema]]
+      [:all [:=> [:cat :any] [:vector page-schema]]]
+      [:new-page [:=> [:cat page-schema] page-schema]]]]
     [:users
      [:map
-      [:user user-schema]
-      [:all [:vector user-schema]]
-      [:removed-user user-schema]
+      [:user [:=> [:cat :string] user-schema]]
+      [:all [:=> [:cat :any] [:vector user-schema]]]
+      [:removed-user [:=> [:cat :string] user-schema]]
       [:auth [:map
-              [:registered user-schema]
-              [:logged user-schema]]]
+              [:registered [:=> [:cat :string user-email-schema :string :string] user-schema]]
+              [:logged [:=> [:cat :any] user-schema]]]]
       [:new-role [:map
-                  [:admin user-schema]]]]]]))
+                  [:admin [:=> [:cat user-email-schema] user-schema]]]]]]]))
 
 ;;---------- Front-end validation ----------
 
@@ -132,4 +138,3 @@
       returns a page matching server format requirements."
   [page]
   (dissoc page :page/mode))
-

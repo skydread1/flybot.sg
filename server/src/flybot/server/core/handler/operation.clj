@@ -120,16 +120,16 @@
    The pull-pattern `:with` option will provide the params to execute the function
    before pulling it."
   [db session]
-  {:posts {:all          (fn [] (get-all-posts db))
+  {:posts {:all          (fn [_] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
            :new-post     (fn [post] (add-post post))
            :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
-   :pages {:all       (fn [] (get-all-pages db))
+   :pages {:all       (fn [_] (get-all-pages db))
            :page      (fn [page-name] (get-page db page-name))
            :new-page  (fn [page] (add-page page))}
-   :users {:all          (fn [] (get-all-users db))
+   :users {:all          (fn [_] (get-all-users db))
            :user         (fn [id] (get-user db id))
            :removed-user (fn [id] (delete-user db id))
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
-                          :logged     (fn [] (login-user db (:user-id session)))}
+                          :logged     (fn [_] (login-user db (:user-id session)))}
            :new-role     {:admin (fn [email] (grant-admin db email))}}})
