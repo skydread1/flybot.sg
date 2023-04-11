@@ -9,7 +9,7 @@
   "Extract the dark mode src from the markdown
    and add it to the hiccup props."
   [[tag {:keys [srcdark] :as props} value]] 
-  (if (and srcdark (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?}])))
+  (if (and srcdark (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}])))
     [tag (assoc props :src (:srcdark props)) value]
     [tag props value]))
 

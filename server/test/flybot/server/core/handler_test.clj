@@ -58,9 +58,10 @@
           pattern {(list :a :with [::OK]) '?
                    (list :b :with [::OK2]) '?}
           q       (sut/mk-query pattern)]
-      (is (= [{:a ::RESP-A :b ::RESP-B} {:pulled/effects [::EFFECTS-A ::EFFECTS-B]
-                                         :pulled/session {:A ::SESSION-A
-                                                          :B ::SESSION-B}}]
+      (is (= {'&?               {:a ::RESP-A :b ::RESP-B}
+              :context/effects  [::EFFECTS-A ::EFFECTS-B]
+              :context/sessions {:A ::SESSION-A
+                                 :B ::SESSION-B}}
              (q data))))))
 
 (deftest saturn-handler
@@ -95,17 +96,18 @@
   ([uri body]
    (http-request :post uri body))
   ([method uri body]
-   (let [resp (try
-                @(http/request
-                  {:content-type :edn
-                   :accept       :edn
-                   :url          (str "http://localhost:8100" uri)
-                   :method       (or method :post)
-                   :body         (str body)})
-                (catch Exception e
-                  (ex-data e)))]
+   (let [{:keys [status] :as resp} (try
+                                     @(http/request
+                                       {:content-type :edn
+                                        :accept       :edn
+                                        :url          (str "http://localhost:8100" uri)
+                                        :method       (or method :post)
+                                        :body         (str body)})
+                                     (catch Exception e
+                                       (ex-data e)))]
      (update resp :body (fn [body]
-                          (-> body bs/to-string edn/read-string))))))
+                          (let [f-read (if (= 200 status) edn/read-string identity)]
+                            (-> body bs/to-string f-read)))))))
 
 (deftest app-routes
   ;;---------- Errors
@@ -117,7 +119,7 @@
       (is (= 204 (-> resp :status)))))
   (testing "Invalid pattern so returns error 407."
     (let [resp (http-request "/pages/page" {:invalid-key '?})]
-      (is (= 407 (-> resp :status)))))
+      (is (= 500 (-> resp :status)))))
   (testing "Cannot delete user who does not exist so returns 409."
     (let [resp (http-request "/pages/page"
                              {:users
@@ -135,7 +137,7 @@
       (let [resp (http-request "/users/new-role/admin"
                                {:users
                                 {:new-role
-                                 {(list :admin :with ["unknown-email"])
+                                 {(list :admin :with ["unknown.email@basecity.com"])
                                   {:user/roles [{:role/name '?
                                                  :role/date-granted '?}]}}}})]
         (is (= 414 (-> resp :status))))))
@@ -154,7 +156,7 @@
   (testing "Execute a request for all pages."
     (let [resp (http-request "/pages/all"
                              {:pages
-                              {(list :all :with [])
+                              {(list :all :with [nil])
                                [{:page/name '?}]}})]
       (is (= [{:page/name :home} {:page/name :apply}]
              (-> resp :body :pages :all)))))
@@ -180,7 +182,7 @@
   (testing "Execute a request for all posts."
     (let [resp (http-request "/posts/all"
                              {:posts
-                              {(list :all :with [])
+                              {(list :all :with [nil])
                                [{:post/id '?}]}})]
       (is (= [{:post/id s/post-2-id} {:post/id s/post-1-id}]
              (-> resp :body :posts :all)))))
@@ -245,7 +247,7 @@
   (testing "Execute a request for all users."
     (let [resp (http-request "/users/all"
                              {:users
-                              {(list :all :with [])
+                              {(list :all :with [nil])
                                [{:user/id '?}]}})]
       (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
              (-> resp :body :users :all)))))
@@ -263,7 +265,7 @@
              (-> resp :body :users :user)))))
   (testing "Execute a request for a new user."
     (with-redefs [auth/google-api-fetch-user (constantly {:id    s/joshua-id
-                                                          :email "joshua@mail.com"
+                                                          :email "joshua@basecity.com"
                                                           :name  "Joshua"
                                                           :picture "joshua-pic"})
                   auth/redirect-302          (fn [resp _] resp)]

@@ -44,10 +44,15 @@
 (rf/reg-event-fx
  :fx.http/post-success
  (fn [{:keys [db]} [_ {:keys [posts]}]]
-   (let [post (:post posts)]
-     {:db (assoc db :form/fields (assoc post
-                                        :post/last-editor (:app/user db)
-                                        :post/last-edit-date (utils/mk-date)))
+   (let [post (:post posts)
+         fields (if (:post/author post)
+                  (assoc post
+                         :post/last-editor (select-keys (:app/user db) [:user/id :user/name])
+                         :post/last-edit-date (utils/mk-date))
+                  (assoc post
+                         :post/author (select-keys (:app/user db) [:user/id :user/name])
+                         :post/creation-date (utils/mk-date)))]
+     {:db (assoc db :form/fields fields)
       :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
 
 (rf/reg-event-fx
@@ -230,7 +235,7 @@
  :evt.post.form/send-post
  (fn [{:keys [db]} _]
    (let [user-id (-> db :app/user :user/id)
-         post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema))]
+         post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema-create))]
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post

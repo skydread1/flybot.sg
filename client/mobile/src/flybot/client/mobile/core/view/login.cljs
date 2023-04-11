@@ -15,7 +15,7 @@
 
 (defn login
   []
-  (let [user-name @(rf/subscribe [:subs/pattern {:app/user {:user/name '?}}])]
+  (let [user-name @(rf/subscribe [:subs/pattern '{:app/user {:user/name ?x}}])]
     (if user-name
       [rrn/view
        {:style {:background-color (:light colors)

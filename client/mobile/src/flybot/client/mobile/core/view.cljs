@@ -50,7 +50,7 @@
                       (r/as-element [tab-icon route-name user-id]))})))
 
 (defn app []
-  (let [user-id @(rf/subscribe [:subs/pattern {:app/user {:user/id '?}}])]
+  (let [user-id @(rf/subscribe [:subs/pattern '{:app/user {:user/id ?x}}])]
     [:> NavigationContainer {:ref (fn [el]
                                     (reset! nav/nav-ref el)
                                     (rf/dispatch [:evt.nav/set-ref el]))

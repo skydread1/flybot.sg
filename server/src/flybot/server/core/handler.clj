@@ -1,15 +1,14 @@
 (ns flybot.server.core.handler
-  (:require [flybot.server.core.handler.middleware :as mw]
-            [flybot.server.core.handler.operation :as op]
-            [flybot.server.core.handler.auth :as auth]
-            [flybot.common.validation :as v]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
             [datalevin.core :as d]
+            [flybot.common.validation :as v]
+            [flybot.server.core.handler.auth :as auth]
+            [flybot.server.core.handler.middleware :as mw]
+            [flybot.server.core.handler.operation :as op]
             [muuntaja.core :as m]
             [reitit.ring :as reitit]
             [reitit.ring.middleware.muuntaja :as muuntaja]
-            [sg.flybot.pullable :as pull]
-            [sg.flybot.pullable.schema :as sch]))
+            [sg.flybot.pullable :as pull]))
 
 (defn db-executor
   "Db transaction executor
@@ -48,43 +47,39 @@
         session-map (transient {})]
     (pull/query
      pattern
-     (fn [q] (pull/post-process-query
-              q
-              (fn [[k {:keys [response effects session error] :as v}]]
-                (when error
-                 (throw (ex-info "executor-error" error)))
-                (when session
-                  (reduce
-                   (fn [res [k v]] (assoc! res k v))
-                   session-map
-                   session))
-                (when effects
-                  (conj! effects-acc effects))
-                (if response
-                  [k response]
-                  [k v]))))
-     #(assoc %
-             :pulled/effects (persistent! effects-acc)
-             :pulled/session (persistent! session-map)))))
+     (pull/context-of
+      (fn [_ [k {:keys [response effects session error] :as v}]]
+        (when error
+          (throw (ex-info "executor-error" error)))
+        (when session
+          (reduce
+           (fn [res [k v]] (assoc! res k v))
+           session-map
+           session))
+        (when effects
+          (conj! effects-acc effects))
+        (if response
+          [k response]
+          [k v]))
+      #(assoc %
+              :context/effects  (persistent! effects-acc)
+              :context/sessions (persistent! session-map))))))
 
 (defn saturn-handler
   "A saturn handler takes a ring request enhanced with additional keys form the injectors.
    The saturn handler is purely functional.
    The description of the side effects to be performed are returned and they will be executed later on in the executors."
   [{:keys [params body-params session db]}]
-  (let [pattern           (if (seq params) params body-params)
-        pattern-validator (sch/pattern-validator v/api-schema)
-        pattern           (pattern-validator pattern)
-        data              (op/pullable-data db session)]
-    (if (:error pattern)
-      (throw (ex-info "invalid pattern" (merge {:type :pattern} pattern)))
-      (let [[resp complements] ((mk-query pattern) data)]
-        {:response     resp
-         :effects-desc (:pulled/effects complements)
-         :session      (merge session (:pulled/session complements))}))))
+  (let [pattern (if (seq params) params body-params)
+        data    (op/pullable-data db session)
+        {:context/keys [effects sessions] :as resp}
+        (pull/with-data-schema v/api-schema ((mk-query pattern) data))]
+    {:response     ('&? resp)
+     :effects-desc effects
+     :session      (merge session sessions)}))
 
 (defn mk-ring-handler
-  "Takes a seq on `injectors`, a `saturn-handler` and a seq `executors`.
+  "Takes a seq of `injectors`, a `saturn-handler` and a seq `executors`.
    As for now, only supports db injector and db executor.
    Returns a ring-handler."
   [injectors saturn-handler executors]
