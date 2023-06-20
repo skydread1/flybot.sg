@@ -16,8 +16,8 @@ build
 .nrepl-port
 
 ## config
-OAUTH2.edn
-admin.edn
+##oauth2.edn
+##admin.edn
 
 ## build
 target
