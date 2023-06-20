@@ -5,22 +5,37 @@ Full stack implementation of flybot.sg website
 
 ### DEV
 
-If you use VSCode, the jack-in is done in 2 steps to be able to start the REPL in VSCode instead of terminal:
-- first chose the aliases for the deps and enter
-- then chose the cljs repl you want to launch then enter
+You can perform ClojureScript jack-in to open the webpage in a browser on port `9500`, alongside an interactive REPL in your IDE (VS Code or Emacs).
 
-Prerequisites:
-- delete any `main.js` in the resources folder
-- delete `node_modules` at the root because no need for the web
-- Check if `cljs-out/dev-main.js` is the script source in `index.html`
+You can then edit and save source files to trigger hot reloading in the browser.
 
-Features:
-- It will open the browser on port `9500` automatically
-- Just save a file to trigger hot reloading in the browser
+#### Prerequisites
+
+- Delete any `main.js` in the resources folder
+- Delete `node_modules` at the root (not needed for the web)
+- Go to `resources/public/index.html` and check if `cljs-out/dev-main.js` is the script source in `index.html`  (near the end of the file)
+- Open a source file in either VS Code or Emacs
+
+#### VS Code
+
+If you use VS Code, the jack-in is done in 2 steps to be able to start the REPL in VS Code instead of terminal:
+
+1. Choose the aliases for the deps and enter
+2. Choose the ClojureScript REPL you want to launch and enter
 
 Jack-in `deps+figwheel`:
-- DEPS: `:jvm-base`, `:client`
+
+- Deps: `:jvm-base`, `:client`
 - REPL: `:web/dev`
+
+#### Emacs
+
+If you use Emacs (or Doom Emacs, or Spacemacs) with CIDER, the CIDER jack-in is done in 3 steps:
+
+1. `C-u M-x cider-jack-in-cljs`
+2. A long command will appear at the bottom, ending with something like `-M:cider/nrepl`. Change this ending to `-M:jvm-base:client:web/dev:cider/nrepl`
+3. Select ClojureScript REPL type: `figwheel-main`
+4. Select figwheel-main build: `dev`
 
 ### TEST in terminal
 
