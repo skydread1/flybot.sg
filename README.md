@@ -1,6 +1,34 @@
 # flybot.sg
 Full stack implementation of flybot.sg website
 
+## Config files
+
+In the `config` directory, you can see 3 config files:
+
+1) `system.edn`
+
+It ontains the different environment properties that are used to setup the systems (dev, test, figwheel, prod).
+
+2) `oauth2.edn`
+
+The oauth2 credentials to allow your application to access google services.
+
+You need to provide the google id and secret that allow the oauth client to communicate with the oauth server.
+
+You can read more about it [here](https://github.com/skydread1/reitit-oauth2#readme)
+
+_Note_: not providing the creds will prevent you from login/logout
+
+_Note 2_: the `redirect-uri` is specified in the `system.edn` because it depends on the environment.
+
+3) `admin.edn`
+
+It contains the admin user, who is loaded to the DB at system start, so you can dev/test the admin panel features. You need to use a google account that is allowed by your `Location` (i.e. company account)
+
+_Note_: your google account needs to belong to the google application linked to the app.
+
+_Note 2_: not providing your acc id will prevent you from doing admin tasks.
+
 ## frontend : WEB
 
 ### DEV
