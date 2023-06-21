@@ -60,8 +60,8 @@ Jack-in `deps+figwheel`:
 
 If you use Emacs (or Doom Emacs, or Spacemacs) with CIDER, the CIDER jack-in is done in 3 steps:
 
-1. `C-u M-x cider-jack-in-cljs`
-2. A long command will appear at the bottom, ending with something like `-M:cider/nrepl`. Change this ending to `-M:jvm-base:client:web/dev:cider/nrepl`
+1. `C-u M-x cider-jack-in-clj&cljs`
+2. By default, emacs use the `cider/nrepl` alias such as in `-M:cider/nrepl`. You need to keep this alias at the end such as `-M:jvm-base:client:web/dev:cider/nrepl`
 3. Select ClojureScript REPL type: `figwheel-main`
 4. Select figwheel-main build: `dev`
 
