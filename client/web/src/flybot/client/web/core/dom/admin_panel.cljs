@@ -43,7 +43,7 @@
 (defn  admin-section
   []
   (when (and (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?x}]))
-             (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?x}]}}])
+             (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?} ?x]}}])
                                   (map :role/name))))
     [:section.container.admin
      [:h1 "Admin"]
