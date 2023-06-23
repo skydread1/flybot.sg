@@ -28,7 +28,7 @@
 (defn format-image
   "Relative path for image does not seem to be working, so
    - if the path is aboslute, return it.
-   - if path is relative (such as 'assets/logo.png'), turn it into abasolute path."
+   - if path is relative (such as '/assets/logo.png'), turn it into abasolute path."
   [path]
   (if (str/starts-with? path "http")
     path

@@ -29,8 +29,8 @@
           :css-class "company"
           :creation-date (u/mk-date)
           :md-content (slurp-md "about" "company.md")
-          :image-beside #:image{:src "assets/flybot-logo.png"
-                                :src-dark "assets/flybot-logo.png"
+          :image-beside #:image{:src "/assets/flybot-logo.png"
+                                :src-dark "/assets/flybot-logo.png"
                                 :alt "Flybot Logo"}}
    #:post{:id (u/mk-uuid)
           :page :about
@@ -71,8 +71,8 @@
           :author (first users)
           :last-editor (first users)
           :md-content (slurp-md "blog" "welcome.md")
-          :image-beside #:image{:src "assets/flybot-logo.png"
-                                :src-dark "assets/flybot-logo.png"
+          :image-beside #:image{:src "/assets/flybot-logo.png"
+                                :src-dark "/assets/flybot-logo.png"
                                 :alt "Flybot Logo"}}
    #:post{:id (u/mk-uuid)
           :page :blog
@@ -94,32 +94,32 @@
           :css-class "clojure"
           :creation-date (u/mk-date)
           :md-content (slurp-md "home" "clojure.md")
-          :image-beside #:image{:src "assets/clojure-logo.svg"
-                                :src-dark "assets/clojure-logo-dark-mode.svg"
+          :image-beside #:image{:src "/assets/clojure-logo.svg"
+                                :src-dark "/assets/clojure-logo-dark-mode.svg"
                                 :alt "Clojure Logo"}}
    #:post{:id (u/mk-uuid)
           :page :home
           :css-class "paradigms"
           :creation-date (u/mk-date)
           :md-content (slurp-md "home" "paradigms.md")
-          :image-beside #:image{:src "assets/lambda-logo.svg"
-                                :src-dark "assets/lambda-logo-dark-mode.svg"
+          :image-beside #:image{:src "/assets/lambda-logo.svg"
+                                :src-dark "/assets/lambda-logo-dark-mode.svg"
                                 :alt "Lambda Logo"}}
    #:post{:id (u/mk-uuid)
           :page :home
           :css-class "golden-island"
           :creation-date (u/mk-date)
           :md-content (slurp-md "home" "golden-island.md")
-          :image-beside #:image{:src "assets/4suits.svg"
-                                :src-dark "assets/4suits-dark-mode.svg"
+          :image-beside #:image{:src "/assets/4suits.svg"
+                                :src-dark "/assets/4suits-dark-mode.svg"
                                 :alt "4 suits of a deck"}}
    #:post{:id (u/mk-uuid)
           :page :home
           :css-class "magic"
           :creation-date (u/mk-date)
           :md-content (slurp-md "home" "magic.md")
-          :image-beside #:image{:src "assets/binary.svg"
-                                :src-dark "assets/binary-dark-mode.svg"
+          :image-beside #:image{:src "/assets/binary.svg"
+                                :src-dark "/assets/binary-dark-mode.svg"
                                 :alt "Love word written in base 2"}}])
 
 (def posts
