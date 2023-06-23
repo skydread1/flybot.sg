@@ -45,7 +45,7 @@
     [:div
      [:img.flybotlogo
       {:alt "Flybot logo"
-       :src "assets/flybot-logo.png"}]]
+       :src "/assets/flybot-logo.png"}]]
     [svg/theme-logo]
     (when @(rf/subscribe [:subs/pattern '{:app/user ?x}])
       [svg/user-mode-logo])
