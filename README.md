@@ -1,26 +1,69 @@
 # flybot.sg
 Full stack implementation of flybot.sg website
 
+## Config files
+
+In the `config` directory, you can see 3 config files:
+
+1) `system.edn`
+
+It ontains the different environment properties that are used to setup the systems (dev, test, figwheel, prod).
+
+2) `oauth2.edn`
+
+The oauth2 credentials to allow your application to access google services.
+
+You need to provide the google id and secret that allow the oauth client to communicate with the oauth server.
+
+You can read more about it [here](https://github.com/skydread1/reitit-oauth2#readme)
+
+_Note_: not providing the creds will prevent you from login/logout
+
+_Note 2_: the `redirect-uri` is specified in the `system.edn` because it depends on the environment.
+
+3) `admin.edn`
+
+It contains the admin user, who is loaded to the DB at system start, so you can dev/test the admin panel features. You need to use a google account that is allowed by your `Location` (i.e. company account)
+
+_Note_: your google account needs to belong to the google application linked to the app.
+
+_Note 2_: not providing your acc id will prevent you from doing admin tasks.
+
 ## frontend : WEB
 
 ### DEV
 
-If you use VSCode, the jack-in is done in 2 steps to be able to start the REPL in VSCode instead of terminal:
-- first chose the aliases for the deps and enter
-- then chose the cljs repl you want to launch then enter
+You can perform ClojureScript jack-in to open the webpage in a browser on port `9500`, alongside an interactive REPL in your IDE (VS Code or Emacs).
 
-Prerequisites:
-- delete any `main.js` in the resources folder
-- delete `node_modules` at the root because no need for the web
-- Check if `cljs-out/dev-main.js` is the script source in `index.html`
+You can then edit and save source files to trigger hot reloading in the browser.
 
-Features:
-- It will open the browser on port `9500` automatically
-- Just save a file to trigger hot reloading in the browser
+#### Prerequisites
+
+- Delete any `main.js` in the resources folder
+- Delete `node_modules` at the root (not needed for the web)
+- Go to `resources/public/index.html` and check if `cljs-out/dev-main.js` is the script source in `index.html`  (near the end of the file)
+- Open a source file in either VS Code or Emacs
+
+#### VS Code
+
+If you use VS Code, the jack-in is done in 2 steps to be able to start the REPL in VS Code instead of terminal:
+
+1. Choose the aliases for the deps and enter
+2. Choose the ClojureScript REPL you want to launch and enter
 
 Jack-in `deps+figwheel`:
-- DEPS: `:jvm-base`, `:client`
+
+- Deps: `:jvm-base`, `:client`
 - REPL: `:web/dev`
+
+#### Emacs
+
+If you use Emacs (or Doom Emacs, or Spacemacs) with CIDER, the CIDER jack-in is done in 3 steps:
+
+1. `C-u M-x cider-jack-in-clj&cljs` or `C-u M-x cider-jack-in-cljs`
+2. By default, emacs use the `cider/nrepl` alias such as in `-M:cider/nrepl`. You need to keep this alias at the end such as `-M:jvm-base:client:web/dev:cider/nrepl`
+3. Select ClojureScript REPL type: `figwheel-main`
+4. Select figwheel-main build: `dev`
 
 ### TEST in terminal
 
