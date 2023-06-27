@@ -52,6 +52,6 @@
       :key   (name :blog)}
      (if queried-post
        (page-post :blog queried-post)
-       [:div
-        [:h2 [:i "No blog posts here yet…"]]
+       [:div.post
+        [:h2 "No blog posts reside here (yet…)"]
         [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
