@@ -7,7 +7,8 @@
 
 (defn add-hiccup-content
   [{:post/keys [md-content] :as post}]
-  (assoc post :post/hiccup-content (h/md->hiccup md-content)))
+  (when post
+    (assoc post :post/hiccup-content (h/md->hiccup md-content))))
 
 (defn page
   "Given the `page-name`, returns the page content."
@@ -32,18 +33,21 @@
 (defn blog-post-page
   "Given the blog post identifier, returns the corresponding post in a page."
   []
-  (let [query-id @(rf/subscribe [:subs/pattern
-                                 {:app/current-view
-                                  {:parameters
-                                   {:path
-                                    {:id '?x}}}}])
-        all-blog-posts (->> @(rf/subscribe [:subs.post/posts :blog])
-                            (map add-hiccup-content))
-        queried-post (filter (fn [post]
-                               (= query-id (str (:post/id post))))
-                             all-blog-posts)
+  (let [query-id (-> @(rf/subscribe [:subs/pattern
+                                     {:app/current-view
+                                      {:parameters
+                                       {:path
+                                        {:id '?x}}}}])
+                     uuid)
+        queried-post (-> @(rf/subscribe [:subs/pattern
+                                         {:app/posts
+                                          {(list query-id
+                                                 :when
+                                                 #(= :blog (:post/page %)))
+                                           '?post}}])
+                         add-hiccup-content)
         new-post      {:post/id "new-post-temp-id"}
-        posts         (conj queried-post new-post)]
+        posts         (remove nil? [queried-post new-post])]
     [:section.container
      {:class (name :blog)
       :key   (name :blog)}
