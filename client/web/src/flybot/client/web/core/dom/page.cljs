@@ -31,7 +31,8 @@
         (page-post page-name post)))]))
 
 (defn blog-post-page
-  "Given the blog post identifier, returns the corresponding post in a page."
+  "Given the blog post identifier, returns the corresponding post in a page.
+  If no matching post is found, returns some placeholder content."
   []
   (let [query-id (-> @(rf/subscribe [:subs/pattern
                                      {:app/current-view
@@ -45,13 +46,12 @@
                                                  :when
                                                  #(= :blog (:post/page %)))
                                            '?post}}])
-                         add-hiccup-content)
-        new-post      {:post/id "new-post-temp-id"}
-        posts         (remove nil? [queried-post new-post])]
+                         add-hiccup-content)]
     [:section.container
      {:class (name :blog)
       :key   (name :blog)}
-     [page-header :blog]
-     (doall
-      (for [post posts]
-        (page-post :blog post)))]))
+     (if queried-post
+       (page-post :blog queried-post)
+       [:div
+        [:h2 [:i "No blog posts here yet…"]]
+        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
