@@ -1,6 +1,7 @@
 (ns flybot.client.web.core.dom.page.post
   (:require [flybot.common.utils :as utils]
             [flybot.client.web.core.dom.hiccup :as h]
+            [flybot.client.web.core.dom.common :refer [internal-link]]
             [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
@@ -173,6 +174,22 @@
     (when (or user-name date)
       [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
 
+(defn post-link
+  "Produces a link to the given post's own URL.
+
+  Currently, links are only produced for blog posts; these links are only
+  displayed on the /blog page, not on their respective single-post pages."
+  [{:post/keys [id page] :as post}]
+  (when (= :blog page)
+    (when (= :flybot/blog @(rf/subscribe [:subs/pattern
+                                          {:app/current-view
+                                           {:data
+                                            {:name '?x}}}]))
+      (internal-link :flybot/blog-post
+                     "Go to blog post"
+                     true
+                     {:id id}))))
+                               
 (defn post-authors
   [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
   (cond (and show-authors? show-dates?)
@@ -200,22 +217,26 @@
   [{:post/keys [css-class image-beside hiccup-content] :as post}]
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
-              src-dark src)]
+              src-dark src)
+        link (post-link post)
+        full-content [link
+                      [post-authors post]
+                      hiccup-content]]
     (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns
       [:div.post-body
        {:class css-class}
        [:div.image
         [:img {:src src :alt alt}]]
-       [:div.text
-        [post-authors post]
-        hiccup-content]]
+       (into
+        [:div.text]
+        full-content)]
     ;; returns 1 hiccup div
       [:div.post-body
        {:class css-class}
-       [:div.textonly
-        [post-authors post]
-        hiccup-content]])))
+       (into
+        [:div.textonly]
+        full-content)])))
 
 ;;---------- Post ----------
 

@@ -1,20 +1,7 @@
-(ns flybot.client.web.core.dom.header 
-  (:require [flybot.client.web.core.dom.common.svg :as svg]
-            [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]))
-
-(defn internal-link
-  "Reitit internal link for the navbar.
-   Setting `reitit?` to false allows the use of a regular browser link (good for anchor link)."
-  ([page-name text]
-   (internal-link page-name text true))
-  ([page-name text reitit?]
-   (let [current-page @(rf/subscribe [:subs/pattern '{:app/current-view {:data {:name ?x}}}])]
-     [:a {:href                     (rfe/href page-name)
-          :on-click                 #(rf/dispatch [:evt.nav/close-navbar])
-          :class                    (when (= page-name current-page) "active")
-          :data-reitit-handle-click reitit?}
-      text])))
+(ns flybot.client.web.core.dom.header
+  (:require [flybot.client.web.core.dom.common :refer [internal-link]]
+            [flybot.client.web.core.dom.common.svg :as svg]
+            [re-frame.core :as rf]))
 
 (defn login-link
   "Link to the server for the login/logout of a user."
