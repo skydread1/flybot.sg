@@ -3,7 +3,30 @@
             [flybot.client.web.core.dom.hiccup :as h]
             [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.svg :as svg]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [reitit.frontend.easy :as rfe]))
+
+;;----------- Links -----------
+
+(defn internal-link
+  "Reitit internal link.
+
+  Setting `:with-reitit` to `false` allows the use of a regular browser link
+  (good for anchor link).
+
+  Copied from `flybot.client.web.core.dom.header/internal-link` with several
+  modifications (most notably the keyword arguments)."
+  [page-name text & {:keys [path-params query-params with-reitit]
+                     :or {with-reitit true}}]
+  (let [href-params (take-while (complement nil?)
+                                [path-params query-params])
+        current-page @(rf/subscribe [:subs/pattern
+                                     {:app/current-view {:data {:name '?x}}}])]
+    [:a {:href (apply rfe/href page-name href-params)
+         :on-click #(rf/dispatch [:evt.nav/close-navbar])
+         :class (when (= page-name current-page) "active")
+         :data-reitit-handle-click with-reitit}
+     text]))
 
 ;;---------- Buttons ----------
 
@@ -180,42 +203,63 @@
          [user-info (:user/name author) creation-date :author]
          (when last-edit-date
            [user-info (:user/name last-editor) last-edit-date :editor])]
-    
+
         (and show-authors? (not show-dates?))
         [:div.post-authors
          [user-info (:user/name author) nil :author]
          (when last-edit-date
            [user-info (:user/name last-editor) nil :editor])]
-    
+
         show-dates?
         [:div.post-authors
          [user-info nil creation-date :author]
          (when last-edit-date
            [user-info nil last-edit-date :editor])]
-        
+
         :else
         nil))
 
+(defn post-hyperlinks
+  "Returns some links relevant to the given post, e.g., its own URL.
+
+  For blog posts, their own URLs are only displayed on the /blog page, not on
+  their respective single-post pages."
+  [{:post/keys [id page] :as post}]
+  (remove nil?
+          [(when (= :blog page)
+             (when (= :flybot/blog @(rf/subscribe [:subs/pattern
+                                           {:app/current-view
+                                            {:data
+                                             {:name '?x}}}]))
+               (internal-link :flybot/blog-post
+                              "Go to blog post"
+                              {:path-params {:id id}
+                               :with-reitit true})))]))
+
 (defn post-view
-  [{:post/keys [css-class image-beside hiccup-content] :as post}]
+  [{:post/keys [id css-class image-beside hiccup-content page] :as post}]
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
-              src-dark src)]
+              src-dark src)
+        hyperlinks (post-hyperlinks post)
+        full-content (concat hyperlinks
+                             [[post-authors post]]
+                             [hiccup-content])]
     (if (seq src)
-    ;; returns 2 hiccup divs to be displayed in 2 columns
+      ;; returns 2 hiccup divs to be displayed in 2 columns
       [:div.post-body
        {:class css-class}
        [:div.image
         [:img {:src src :alt alt}]]
-       [:div.text
-        [post-authors post]
-        hiccup-content]]
-    ;; returns 1 hiccup div
+       (into
+        [:div.text]
+        full-content)]
+      ;; returns 1 hiccup div
       [:div.post-body
        {:class css-class}
-       [:div.textonly
-        [post-authors post]
-        hiccup-content]])))
+       (into
+        [:div.textonly]
+        full-content)])))
 
 ;;---------- Post ----------
 
