@@ -29,10 +29,10 @@ jobs:
           cli: latest
           
       - name: Run the clj tests
-        run: clojure -A:jvm-base:test-clj
+        run: clojure -A:jvm-base:server/test
 
       - name: Run the cljs tests
-        run: clojure -A:jvm-base:fig:cljs/test-headless
+        run: clojure -A:jvm-base:client:web/test-headless
 
       - name: Build main.js
         run: clojure -T:build js-bundle
