@@ -41,6 +41,10 @@
       touch
       :reitit-router))
 
+(comment
+  (touch figwheel-system)
+  (halt! figwheel-system) ;; reload ns after halt! before touch again.
+  )
 
 ;;---------- System for backend dev ----------
 ;; be sure to have a main.js in resources/public to have the UI on port 8123
@@ -50,11 +54,6 @@
       (assoc :db-conn (db-conn-system ds/init-data))))
 
 (comment
-  (touch figwheel-system)
-  (halt! figwheel-system)
-  )
-
-(comment
   (touch dev-system)
-  (halt! dev-system)
+  (halt! dev-system) ;; reload ns after halt! before touch again.
   )

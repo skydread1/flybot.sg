@@ -2,8 +2,13 @@
 ^{:launch-js
   ;; mac
   #_["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-   "--headless" "--disable-gpu" "--repl" :open-url]
+   "--headless" "--disable-gpu" "--repl" "--disable-dev-shm" "--dump-dom" :open-url]
   ;; ubuntu
   ["/opt/google/chrome/chrome"
    "--headless" "--disable-gpu" "--repl" "--disable-dev-shm" :open-url]}
-{:main cljs/flybot.test-runner}
+{:main flybot.client.web.test-runner}
+
+;; ::TOFIX
+;; Terminal hangs at:
+;; Launching Javascript environment with script:  ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" "--headless" "--disable-gpu" "--repl" "--disable-dev-shm" "--dump-dom" :open-url]
+;; Environment output being logged to: target/public/cljs-out/tests/js-environment.log

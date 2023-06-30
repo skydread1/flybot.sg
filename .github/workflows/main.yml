@@ -4,6 +4,12 @@ on:
   push:
     branches-ignore:
       - master
+  pull_request:
+    types: [opened, ready_for_review, review_requested, closed]
+  # Allows the CI to use the secrets to push to ECR when a fork is merged.
+  # You can see the if statement in the ECR step. 
+  pull_request_target:
+    types: [closed]
 
 env:
   OAUTH2: ""
@@ -23,15 +29,17 @@ jobs:
           cli: latest
           
       - name: Run the clj tests
-        run: clojure -A:jvm-base:test-clj
+        run: clojure -A:jvm-base:server/test
 
-      - name: Run the cljs tests
-        run: clojure -A:jvm-base:fig:cljs/test-headless
+      ## Not working as for now, refer to tests.cljs.edn
+      #- name: Run the cljs tests
+      #  run: clojure -A:jvm-base:client:web/test-headless
 
       - name: Build main.js
         run: clojure -T:build js-bundle
 
       - name: Build image and push to ECR
+        if: github.event.pull_request.merged == true
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
