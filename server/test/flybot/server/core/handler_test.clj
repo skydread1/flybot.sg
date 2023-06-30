@@ -14,23 +14,28 @@
 (def test-data [s/post-1 s/post-2
                 s/home-page s/apply-page
                 s/bob-user s/alice-user])
-(def test-system
+(defn test-system
+  []
   (-> (sys/system-config :test)
       core/system
       (dissoc :oauth2-config)
       (assoc :db-conn (sys/db-conn-system test-data))))
 
-(defn system-fixture [f]
-  (touch test-system)
-  (f)
-  (halt! test-system))
+;; atom required to re-evalualte (test-system) because of fixture `:each`
+(def a-test-system (atom nil))
 
-(use-fixtures :once system-fixture)
+(defn system-fixture [f]
+  (reset! a-test-system (test-system))
+  (touch @a-test-system)
+  (f)
+  (halt! @a-test-system))
+
+(use-fixtures :each system-fixture)
 
 ;;---------- Tests ----------
 
 (deftest executors
-  (let [executors (-> test-system :executors first)]
+  (let [executors (-> @a-test-system :executors first)]
     (testing "With effects that do not affect the response."
       (is (= ::NEW-POST
              (executors ::NEW-POST [{:db {:payload [{:post/id (d/squuid)}]}}]))))
@@ -66,8 +71,8 @@
 
 (deftest saturn-handler
   (testing "Returns the proper saturn response."
-    (let [saturn-handler (:saturn-handler test-system)
-          db-conn        (-> test-system :db-conn :conn)]
+    (let [saturn-handler (:saturn-handler @a-test-system)
+          db-conn        (-> @a-test-system :db-conn :conn)]
       (is (= {:response     {:posts
                              {:new-post
                               #:post{:id s/post-3-id}}}
@@ -81,7 +86,7 @@
 
 (deftest ring-handler
   (testing "Returns the proper ring response."
-    (let [ring-handler (:ring-handler test-system)]
+    (let [ring-handler (:ring-handler @a-test-system)]
       (is (= s/apply-page
              (-> {:body-params
                   {:pages
