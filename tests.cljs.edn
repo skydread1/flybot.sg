@@ -6,4 +6,4 @@
   ;; ubuntu
   ["/opt/google/chrome/chrome"
    "--headless" "--disable-gpu" "--repl" "--disable-dev-shm" :open-url]}
-{:main cljs/flybot.test-runner}
+{:main flybot.client.web.test-runner}
