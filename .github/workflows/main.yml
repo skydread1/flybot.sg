@@ -5,7 +5,7 @@ on:
     branches-ignore:
       - master
   pull_request:
-    types: [opened, synchronize, ready_for_review, review_requested, closed]
+    types: [opened, ready_for_review, review_requested, closed]
   # Allows the CI to use the secrets to push to ECR when a fork is merged.
   # You can see the if statement in the ECR step. 
   pull_request_target:
