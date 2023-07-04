@@ -24,3 +24,24 @@
   "Toggles 2 values."
   [cur [v1 v2]]
   (if (= cur v1) v2 v1))
+
+(defn filter-map-kv
+  "Returns map entries for which (pred map-entry) returns logical true.
+
+  Probably expensive. Use sparingly."
+  [pred map]
+  (into {} (filter pred map)))
+
+(defn filter-keys
+  "Returns map entries for which (pred key) returns logical true.
+
+  Probably expensive. Use sparingly."
+  [pred map]
+  (into {} (filter #(pred (key %)) map)))
+
+(defn filter-vals
+  "Returns map entries for which (pred key) returns logical true.
+
+  Probably expensive. Use sparingly."
+  [pred map]
+  (into {} (filter #(pred (val %)) map)))

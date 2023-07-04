@@ -1,9 +1,11 @@
 (ns flybot.client.web.core.dom.page.post
-  (:require [flybot.common.utils :as utils]
-            [flybot.client.web.core.dom.hiccup :as h]
-            [flybot.client.web.core.dom.common :refer [internal-link]]
+  (:require [flybot.client.web.core.dom.common
+             :refer [hiccup-extract-text internal-link mk-post-url-identifier]]
             [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.svg :as svg]
+            [flybot.client.web.core.dom.hiccup :as h]
+            [flybot.common.utils :as utils]
+            [markdown-to-hiccup.core :as mth]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
@@ -179,17 +181,19 @@
 
   Currently, links are only produced for blog posts; these links are only
   displayed on the /blog page, not on their respective single-post pages."
-  [{:post/keys [id page] :as post}]
+  [{:post/keys [id page] :as post} text]
   (when (= :blog page)
     (when (= :flybot/blog @(rf/subscribe [:subs/pattern
                                           {:app/current-view
                                            {:data
                                             {:name '?x}}}]))
       (internal-link :flybot/blog-post
-                     "Go to blog post"
+                     text
                      true
-                     {:id id}))))
-                               
+                     {:id-ending (let [id-str (str id)]
+                                   (subs id-str (- (count id-str) 8)))
+                      :url-identifier (mk-post-url-identifier post)}))))
+
 (defn post-authors
   [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
   (cond (and show-authors? show-dates?)
@@ -218,7 +222,7 @@
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
               src-dark src)
-        link (post-link post)
+        link (post-link post "Go to blog post")
         full-content [link
                       [post-authors post]
                       hiccup-content]]
@@ -308,3 +312,16 @@
           (post-read-only post)
           :else
           (post-read post))))
+
+(defn list-entry-post
+  [{:post/keys [css-class hiccup-content id] :as post}]
+  (let [post-title (-> hiccup-content
+                       (mth/hiccup-in :h1 0)
+                       hiccup-extract-text)]
+    [:div.post-list-entry
+     {:class css-class
+      :key id}
+     [:div
+      [:div.text
+       [:h2 [post-link post post-title]]]
+      [post-authors post]]]))
