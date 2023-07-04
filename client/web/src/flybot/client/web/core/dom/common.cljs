@@ -6,16 +6,6 @@
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]))
 
-(defn humanize-page-name
-  "Returns a meaningful page name string for the given `page-name` keyword."
-  [page-name]
-  (page-name {:home "Home"
-              :apply "Apply"
-              :about "We, Flybot"
-              :blog "Blog"
-              :contact "Contact Us"}
-             (name page-name)))
-
 (defn internal-link
   "Reitit internal link.
 
@@ -37,21 +27,6 @@
           :class (when (= page-name current-page) "active")
           :data-reitit-handle-click with-reitit}
       text])))
-
-(defn md-check-valid-h1-title
-  "Checks that the given Markdown content contains exactly one H1 heading at
-  the start.
-
-  Returns the content string if the check is successful, or `nil` otherwise."
-  [^String md-content]
-  (let [starts-with-h1? (fn [[div _ [element]]]
-                          (and (= :div div) (= :h1 element)))
-        contains-exactly-one-h1? (fn [hiccup]
-                                   (empty? (mth/hiccup-in hiccup :h1 1)))
-        contains-valid-h1? (every-pred starts-with-h1?
-                                       contains-exactly-one-h1?)]
-    (when (contains-valid-h1? (h/md->hiccup md-content))
-      md-content)))
 
 (defn add-hiccup-content
   [{:post/keys [md-content] :as post}]

@@ -1,7 +1,7 @@
 (ns flybot.client.web.core.dom.page
   (:require [flybot.client.common.utils :as utils]
             [flybot.client.web.core.dom.common
-             :refer [add-hiccup-content get-post-by-id-page humanize-page-name]]
+             :refer [add-hiccup-content get-post-by-id-page]]
             [flybot.client.web.core.dom.page.header :refer [page-header]]
             [flybot.client.web.core.dom.page.post
              :refer [list-entry-post page-post]]
@@ -23,8 +23,6 @@
      {:class (name page-name)
       :key   (name page-name)}
      [page-header page-name]
-     [:div.post
-      [:h1.page-title (humanize-page-name page-name)]]
      (doall
       (for [post posts]
         (page-post page-name post)))]))
