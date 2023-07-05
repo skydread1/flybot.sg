@@ -222,6 +222,24 @@
                  (assoc :post/author s/alice-user)
                  (assoc :post/last-editor s/bob-user))
              (-> resp :body :posts :post)))))
+  (testing "Execute a request for an invalid new post (missing title)."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [resp (http-request "/posts/new-post"
+                               {:posts
+                                {(list :new-post
+                                       :with
+                                       [s/post-3-missing-title])
+                                 {:post/id '?
+                                  :post/page '?
+                                  :post/creation-date '?
+                                  :post/author {:user/id '?
+                                                :user/email '?
+                                                :user/name '?
+                                                :user/picture '?
+                                                :user/roles [{:role/name '?
+                                                              :role/date-granted '?}]}
+                                  :post/md-content '?}}})]
+        (is (nil? (-> resp :body :posts :new-post))))))
   (testing "Execute a request for a new post."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/new-post"
