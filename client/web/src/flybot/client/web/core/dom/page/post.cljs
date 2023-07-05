@@ -1,7 +1,8 @@
 (ns flybot.client.web.core.dom.page.post
-  (:require [flybot.client.web.core.dom.common
-             :refer [hiccup-extract-text internal-link mk-post-url-identifier]]
-            [flybot.client.web.core.dom.common.error :refer [errors]]
+  (:require [flybot.client.web.core.dom.common.error :refer [errors]]
+            [flybot.client.web.core.dom.common.link
+             :refer [internal-link
+                     title->url-identifier]]
             [flybot.client.web.core.dom.common.svg :as svg]
             [flybot.client.web.core.dom.hiccup :as h]
             [flybot.common.utils :as utils]
@@ -176,6 +177,25 @@
     (when (or user-name date)
       [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
 
+(defn add-post-hiccup-content
+  [{:post/keys [md-content] :as post}]
+  (when post
+    (assoc post :post/hiccup-content (h/md->hiccup md-content))))
+
+(defn post-url-identifier
+  "Returns a URL identifier (slug) for the given post."
+  [{:post/keys [hiccup-content md-content] :as post}]
+  (if hiccup-content
+    (-> hiccup-content
+        (mth/hiccup-in :h1 0)
+        h/hiccup-extract-text
+        title->url-identifier)
+    (if md-content
+      (-> post
+          add-post-hiccup-content
+          post-url-identifier)
+      "Untitled_post")))
+
 (defn post-link
   "Produces a link to the given post's own URL.
 
@@ -192,7 +212,7 @@
                      true
                      {:id-ending (let [id-str (str id)]
                                    (subs id-str (- (count id-str) 8)))
-                      :url-identifier (mk-post-url-identifier post)}))))
+                      :url-identifier (post-url-identifier post)}))))
 
 (defn post-authors
   [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
@@ -317,7 +337,7 @@
   [{:post/keys [css-class hiccup-content id] :as post}]
   (let [post-title (-> hiccup-content
                        (mth/hiccup-in :h1 0)
-                       hiccup-extract-text)]
+                       h/hiccup-extract-text)]
     [:div.post-list-entry
      {:class css-class
       :key id}

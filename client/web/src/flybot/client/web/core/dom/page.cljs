@@ -1,11 +1,33 @@
 (ns flybot.client.web.core.dom.page
   (:require [flybot.client.common.utils :as utils]
-            [flybot.client.web.core.dom.common
-             :refer [add-hiccup-content get-post-by-id-page]]
             [flybot.client.web.core.dom.page.header :refer [page-header]]
             [flybot.client.web.core.dom.page.post
-             :refer [list-entry-post page-post]]
-            [re-frame.core :as rf]))
+             :refer [add-post-hiccup-content
+                     list-entry-post
+                     page-post
+                     post-url-identifier]]
+            [re-frame.core :as rf]
+            [clojure.string :as str]))
+
+(defn get-post-by-id-page
+  "Retrieves a post (or posts) with the given page name, ID ending and URL
+  identifier (slug).
+
+  Returns the post as an {id post} map. If multiple matches are found, they are
+  all included in the map. If no matches are found, returns an empty map."
+  ([page-name id-ending url-identifier]
+   (let [matches-page? (fn [post] (-> post :post/page (= page-name)))
+         matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
+         matches-url-identifier? (fn [post]
+                                   (= url-identifier
+                                      (post-url-identifier post)))
+         queried-posts (into {}
+                             (filter (fn [[id post]]
+                                       (and (matches-id-ending? id)
+                                            (matches-page? post)
+                                            (matches-url-identifier? post))))
+                             @(rf/subscribe [:subs/pattern {:app/posts '?x}]))]
+     queried-posts)))
 
 (defn page
   "Given the `page-name`, returns the page content."
@@ -15,7 +37,7 @@
                                         {page-name
                                          {:page/sorting-method '?x}}}])
         ordered-posts (->> @(rf/subscribe [:subs.post/posts page-name])
-                           (map add-hiccup-content)
+                           (map add-post-hiccup-content)
                            (utils/sort-posts sorting-method))
         new-post      {:post/id "new-post-temp-id"}
         posts         (conj ordered-posts new-post)]
@@ -36,7 +58,7 @@
                                          {:page/sorting-method '?x}}}])
         ordered-posts (->> @(rf/subscribe [:subs.post/posts :blog])
                            (utils/sort-posts sorting-method)
-                           (map add-hiccup-content))
+                           (map add-post-hiccup-content))
         new-post      {:post/id "new-post-temp-id"}]
     [:section.container
      {:class (name :blog)
@@ -67,7 +89,7 @@
                                               query-url-identifier)
                          vals
                          first
-                         add-hiccup-content)]
+                         add-post-hiccup-content)]
     [:section.container
      {:class (name :blog)
       :key   (name :blog)}

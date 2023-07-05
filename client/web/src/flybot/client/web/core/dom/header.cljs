@@ -1,5 +1,5 @@
 (ns flybot.client.web.core.dom.header
-  (:require [flybot.client.web.core.dom.common :refer [internal-link]]
+  (:require [flybot.client.web.core.dom.common.link :refer [internal-link]]
             [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
