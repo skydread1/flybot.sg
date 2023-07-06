@@ -41,3 +41,13 @@
   (->> title
        (re-seq #"\w+")
        (str/join "_")))
+
+(defn truncate-uuid
+  "Truncates a UUID into an 8-character ending string, for use in subpage URLs.
+
+  8 is chosen as the truncated length to follow Stack Exchange's convention for
+  question IDs."
+  [uuid]
+  (let [uuid-str (str uuid)
+        truncated-length 8]
+    (subs uuid-str (- (count uuid-str) truncated-length))))
