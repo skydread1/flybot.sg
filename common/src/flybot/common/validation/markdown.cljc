@@ -4,7 +4,7 @@
 (defn has-valid-h1-title?
   "Checks that the given Markdown content contains exactly one H1 heading at
   the start."
-  [^String md-content]
+  [md-content]
   (let [starts-with-h1? (fn [[div _ [element]]]
                           (and (= :div div) (= :h1 element)))
         contains-exactly-one-h1? (fn [hiccup]

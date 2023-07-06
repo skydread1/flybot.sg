@@ -37,7 +37,7 @@
   ```
 
   See [Slug (MDN Web Docs)](https://developer.mozilla.org/en-US/docs/Glossary/Slug)."
-  [^String title]
+  [title]
   (->> title
        (re-seq #"\w+")
        (str/join "_")))
