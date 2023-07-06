@@ -1,8 +1,6 @@
 (ns flybot.client.web.core.dom.page.post
   (:require [flybot.client.web.core.dom.common.error :refer [errors]]
-            [flybot.client.web.core.dom.common.link
-             :refer [internal-link
-                     title->url-identifier]]
+            [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.svg :as svg]
             [flybot.client.web.core.dom.hiccup :as h]
             [flybot.common.utils :as utils]
@@ -189,7 +187,7 @@
     (-> hiccup-content
         (mth/hiccup-in :h1 0)
         h/hiccup-extract-text
-        title->url-identifier)
+        link/title->url-identifier)
     (if md-content
       (-> post
           add-post-hiccup-content
@@ -197,22 +195,13 @@
       "Untitled_post")))
 
 (defn post-link
-  "Produces a link to the given post's own URL.
-
-  Currently, links are only produced for blog posts; these links are only
-  displayed on the /blog page, not on their respective single-post pages."
+  "Returns a Hiccup link to the given post's own URL."
   [{:post/keys [id page] :as post} text]
-  (when (= :blog page)
-    (when (= :flybot/blog @(rf/subscribe [:subs/pattern
-                                          {:app/current-view
-                                           {:data
-                                            {:name '?x}}}]))
-      (internal-link :flybot/blog-post
-                     text
-                     true
-                     {:id-ending (let [id-str (str id)]
-                                   (subs id-str (- (count id-str) 8)))
-                      :url-identifier (post-url-identifier post)}))))
+  (link/internal-link :flybot/blog-post
+                 text
+                 true
+                 {:id-ending (link/truncate-uuid id)
+                  :url-identifier (post-url-identifier post)}))
 
 (defn post-authors
   [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
@@ -242,9 +231,7 @@
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
               src-dark src)
-        link (post-link post "Go to blog post")
-        full-content [link
-                      [post-authors post]
+        full-content [[post-authors post]
                       hiccup-content]]
     (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns
