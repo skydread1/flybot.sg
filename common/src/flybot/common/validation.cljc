@@ -28,7 +28,7 @@
                           [:role/date-granted inst?]]]]])
 
 (def user-email-schema
-  [:re #"^([a-zA-Z0-9]+)([\.{1}])?([a-zA-Z0-9]+)@basecity.com$"])
+  [:re #"^([a-zA-Z0-9_-]+)([\.])?([a-zA-Z0-9_-]+)@basecity\.com$"])
 
 (def post-schema
   [:map {:closed true}
