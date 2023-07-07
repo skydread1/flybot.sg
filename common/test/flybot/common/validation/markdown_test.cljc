@@ -1,34 +1,27 @@
 (ns flybot.common.validation.markdown-test
-  (:require [flybot.common.test-sample-data :as s]
-            [flybot.common.validation.markdown :as md]
-            #?(:clj [clojure.test :refer [deftest is are]]
-               :cljs [cljs.test :refer [deftest is are]])))
+  (:require [clojure.test :refer [deftest is testing]]
+            [flybot.common.validation.markdown :as sut]))
 
 (deftest has-valid-h1-title?-test
-  (let [test-posts (concat
-                    [s/post-1 s/post-2]
-                    [s/post-3]
-                    [(assoc s/post-3
-                            :post/md-content
-                            "# [H1 link heading](https://www.flybot.sg)")]
-                    [(dissoc s/post-3 :post/md-content)]
-                    (map #(assoc s/post-3 :post/md-content %)
-                         [nil
-                          "No headings"
-                          "## No H1 headings\n\n### anywhere"
-                          "Some content before\n# First H1 heading"
-                          "# Multiple\n\n# H1 headings"]))]
-    (are [string expected] (= expected (md/has-valid-h1-title? string))
-      nil nil
-      "#No space" true
-      "# One space\n" true
-      "# [H1 link heading](https://www.flybot.sg)" true
-      "No headings" false
-      "## No H1 headings\n\n### anywhere" false
-      "Some content before\n# First H1 heading" false
-      "# Multiple\n\n# H1 headings" false)
-    (is (= (concat (repeat 4 true) (repeat 2 nil) (repeat 4 false))
-           (map #(-> %
-                     :post/md-content
-                     md/has-valid-h1-title?)
-                test-posts)))))
+  (testing "Markdown string H1 title validation"
+    (testing "Valid: one H1 heading at start, none elsewhere"
+      (is (true? (sut/has-valid-h1-title? "#No space")))
+      (is (true? (sut/has-valid-h1-title?
+                  "# One space\nAnd then some content.")))
+      (is (true? (sut/has-valid-h1-title?
+                  "# [H1 link heading](https://www.flybot.sg)"))))
+
+    (testing "Invalid: nil"
+      (is (false? (sut/has-valid-h1-title? nil))))
+
+    (testing "Invalid: no H1 headings anywhere"
+      (is (false? (sut/has-valid-h1-title? "No headings")))
+      (is (false? (sut/has-valid-h1-title?
+                   "## This is H2\n\n### And this is H3"))))
+
+    (testing "Invalid: multiple H1 headings"
+      (is (false? (sut/has-valid-h1-title? "# Multiple\n\n# H1 headings"))))
+
+    (testing "Invalid: H1 heading not at start"
+      (is (false? (sut/has-valid-h1-title?
+                   "Some content before\n# First H1 heading"))))))
