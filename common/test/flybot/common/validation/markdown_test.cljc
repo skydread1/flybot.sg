@@ -19,7 +19,7 @@
                           "Some content before\n# First H1 heading"
                           "# Multiple\n\n# H1 headings"]))]
     (are [string expected] (= expected (md/has-valid-h1-title? string))
-      nil nil
+      nil false
       "#No space" true
       "# One space\n" true
       "# [H1 link heading](https://www.flybot.sg)" true
@@ -27,7 +27,7 @@
       "## No H1 headings\n\n### anywhere" false
       "Some content before\n# First H1 heading" false
       "# Multiple\n\n# H1 headings" false)
-    (is (= (concat (repeat 4 true) (repeat 2 nil) (repeat 4 false))
+    (is (= (concat (repeat 4 true) (repeat 6 false))
            (map #(-> %
                      :post/md-content
                      md/has-valid-h1-title?)
