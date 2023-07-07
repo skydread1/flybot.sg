@@ -5,9 +5,10 @@
    force the client to require any fields.
    However, for validation schema (form inputs for frontend, request params for backend),
    we often need the client to provide some mandatory fields."
-  (:require [malli.core :as m]
-            [malli.util :as mu]
-            [flybot.common.utils :as u]))
+  (:require [flybot.common.utils :as u]
+            [flybot.common.validation.markdown :as md]
+            [malli.core :as m]
+            [malli.util :as mu]))
 
 ;;---------- Validation Schemas ----------
 
@@ -40,7 +41,7 @@
    [:post/last-editor {:optional true} user-schema]
    [:post/show-dates? {:optional true} :boolean]
    [:post/show-authors? {:optional true} :boolean]
-   [:post/md-content :string]
+   [:post/md-content [:and :string [:fn md/has-valid-h1-title?]]]
    [:post/image-beside
     {:optional true}
     [:map

@@ -1,9 +1,10 @@
 (ns flybot.client.web.core.dom.page.post
-  (:require [flybot.common.utils :as utils]
-            [flybot.client.web.core.dom.hiccup :as h]
-            [flybot.client.web.core.dom.common :refer [internal-link]]
-            [flybot.client.web.core.dom.common.error :refer [errors]]
+  (:require [flybot.client.web.core.dom.common.error :refer [errors]]
+            [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.svg :as svg]
+            [flybot.client.web.core.dom.hiccup :as h]
+            [flybot.common.utils :as utils]
+            [markdown-to-hiccup.core :as mth]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
@@ -174,22 +175,34 @@
     (when (or user-name date)
       [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
 
-(defn post-link
-  "Produces a link to the given post's own URL.
+(defn add-post-hiccup-content
+  [{:post/keys [md-content] :as post}]
+  (when post
+    (assoc post :post/hiccup-content (h/md->hiccup md-content))))
 
-  Currently, links are only produced for blog posts; these links are only
-  displayed on the /blog page, not on their respective single-post pages."
-  [{:post/keys [id page] :as post}]
-  (when (= :blog page)
-    (when (= :flybot/blog @(rf/subscribe [:subs/pattern
-                                          {:app/current-view
-                                           {:data
-                                            {:name '?x}}}]))
-      (internal-link :flybot/blog-post
-                     "Go to blog post"
-                     true
-                     {:id id}))))
-                               
+(defn post-url-identifier
+  "Returns a URL identifier (slug) for the given post."
+  [{:post/keys [hiccup-content md-content] :as post}]
+  (if hiccup-content
+    (-> hiccup-content
+        (mth/hiccup-in :h1 0)
+        h/hiccup-extract-text
+        link/title->url-identifier)
+    (if md-content
+      (-> post
+          add-post-hiccup-content
+          post-url-identifier)
+      "Untitled_post")))
+
+(defn post-link
+  "Returns a Hiccup link to the given post's own URL."
+  [{:post/keys [id page] :as post} text]
+  (link/internal-link :flybot/blog-post
+                 text
+                 true
+                 {:id-ending (link/truncate-uuid id)
+                  :url-identifier (post-url-identifier post)}))
+
 (defn post-authors
   [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
   (cond (and show-authors? show-dates?)
@@ -218,9 +231,7 @@
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
               src-dark src)
-        link (post-link post)
-        full-content [link
-                      [post-authors post]
+        full-content [[post-authors post]
                       hiccup-content]]
     (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns
@@ -308,3 +319,16 @@
           (post-read-only post)
           :else
           (post-read post))))
+
+(defn list-entry-post
+  [{:post/keys [css-class hiccup-content id] :as post}]
+  (let [post-title (-> hiccup-content
+                       (mth/hiccup-in :h1 0)
+                       h/hiccup-extract-text)]
+    [:div.post-list-entry
+     {:class css-class
+      :key id}
+     [:div
+      [:div.text
+       [:h2 [post-link post post-title]]]
+      [post-authors post]]]))
