@@ -5,6 +5,7 @@
     [flybot.client.web.core.db-test]
     [flybot.client.web.core.dom.common.link-test]
     [flybot.client.web.core.dom.page.post-test]
+    [flybot.client.web.core.router-test]
     [flybot.common.validation.markdown-test]))
 
 (defn -main [& args]
