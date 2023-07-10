@@ -6,7 +6,8 @@
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]
             [clojure.string :as str]
-            [flybot.client.web.core.dom.page.post :as post]))
+            [flybot.client.web.core.dom.page.post :as post]
+            [sg.flybot.pullable :as pull]))
 
 ;; Overridden by the figwheel config option :closure-defines
 (goog-define BASE-URI "")
@@ -20,8 +21,20 @@
 
 (rf/reg-event-fx
  :evt.nav/redirect-post-url
- (fn [{:keys [db]} [_ name page-name id-ending url-identifier]]
-   (let [matches-page? (fn [post] (-> post :post/page (= page-name)))
+ (fn [{:keys [db]} [_ default-name default-page-name]]
+   (let [[name page-name id-ending url-identifier :as params]
+         ((pull/qfn {:app/current-view
+                     {:data
+                      {(list :name :not-found default-name)
+                       '?name
+                       (list :page-name :not-found default-page-name)
+                       '?page-name}
+                      :path-params
+                      {:id-ending '?id-ending
+                       :url-identifier '?url-identifier}}}
+                    [?name ?page-name ?id-ending ?url-identifier])
+          db)
+         matches-page? (fn [post] (-> post :post/page (= page-name)))
          matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
          matches-url-identifier? (fn [post]
                                    (= url-identifier

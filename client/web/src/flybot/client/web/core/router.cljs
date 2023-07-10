@@ -29,19 +29,17 @@
      :page-name :blog
      :view blog-all-posts-page}]
 
-   ["/blog/:id-ending/:url-identifier"
-    {:name :flybot/blog-post
-     :page-name :blog
-     :view blog-single-post-page
-     :controllers
-     [{:parameters {:path [:id-ending :url-identifier]}
-       :start (fn [{{:keys [id-ending url-identifier]} :path}]
-                (js/console.log "CONTROLLER STARTS")
-                (rf/dispatch [:evt.nav/redirect-post-url
-                              :flybot/blog-post
-                              :blog
-                              id-ending
-                              url-identifier]))}]}]
+   ["/blog/:id-ending"
+    {:page-name :blog
+     :view #(do
+              (rf/dispatch [:evt.nav/redirect-post-url
+                            :flybot/blog-post
+                            :blog])
+              (blog-single-post-page))}
+    [""]
+    ["/"]
+    ["/:url-identifier"
+     {:name :flybot/blog-post}]]
 
    ["#footer-contact"
     {:name :flybot/contact}]])
