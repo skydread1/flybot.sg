@@ -39,9 +39,9 @@
             effects-desc)))
 
 (defn mk-query
-  "Given the pattern, make an advance query:
-   - query-wrapper: gather all the effects description in a coll
-   - finalize: assoc all effects descriptions in the second value of pattern."
+  "Given the pattern, make an advance query using a context:
+   - modifier: gather all the effects description in a coll
+   - finalizer: assoc all effects descriptions in the second value of pattern."
   [pattern]
   (let [effects-acc (transient [])
         session-map (transient {})]
