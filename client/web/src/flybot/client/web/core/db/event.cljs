@@ -38,12 +38,12 @@
       :http-xhrio {:method          :post
                    :uri             "/pages/all"
                    :params {:pages
-                            {(list :all :with [nil])
+                            {(list :all :with [])
                              [{:page/name '?
                                :page/sorting-method {:sort/type '?
                                                      :sort/direction '?}}]}
                             :posts
-                            {(list :all :with [nil])
+                            {(list :all :with [])
                              [{:post/id '?
                                :post/page '?
                                :post/css-class '?
@@ -61,7 +61,7 @@
                                                    :image/alt '?}}]}
                             :users
                             {:auth
-                             {(list :logged :with [nil])
+                             {(list :logged :with [])
                               {:user/id '?
                                :user/email '?
                                :user/name '?

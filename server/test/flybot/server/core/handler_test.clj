@@ -161,7 +161,7 @@
   (testing "Execute a request for all pages."
     (let [resp (http-request "/pages/all"
                              {:pages
-                              {(list :all :with [nil])
+                              {(list :all :with [])
                                [{:page/name '?}]}})]
       (is (= [{:page/name :home} {:page/name :apply}]
              (-> resp :body :pages :all)))))
@@ -187,7 +187,7 @@
   (testing "Execute a request for all posts."
     (let [resp (http-request "/posts/all"
                              {:posts
-                              {(list :all :with [nil])
+                              {(list :all :with [])
                                [{:post/id '?}]}})]
       (is (= [{:post/id s/post-2-id} {:post/id s/post-1-id}]
              (-> resp :body :posts :all)))))
@@ -270,7 +270,7 @@
   (testing "Execute a request for all users."
     (let [resp (http-request "/users/all"
                              {:users
-                              {(list :all :with [nil])
+                              {(list :all :with [])
                                [{:user/id '?}]}})]
       (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
              (-> resp :body :users :all)))))

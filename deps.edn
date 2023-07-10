@@ -4,7 +4,8 @@
            metosin/reitit                        {:mvn/version "0.6.0"}
            metosin/muuntaja                      {:mvn/version "0.6.8"}
            markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
-           sg.flybot/lasagna-pull                {:mvn/version "0.4.150"}
+           sg.flybot/lasagna-pull                {:git/url "https://github.com/flybot-sg/lasagna-pull.git"
+                                                  :git/sha "550f499bfb48c363eb8a40b6ee1c0ab5c02608b0"}
 
            ;; backend
            ring/ring-defaults                    {:mvn/version "0.3.4"}
@@ -12,7 +13,7 @@
            robertluo/fun-map                     {:mvn/version "0.5.110"}
            datalevin/datalevin                   {:mvn/version "0.8.5"}
            skydread1/reitit-oauth2               {:git/url "https://github.com/skydread1/reitit-oauth2.git"
-                                                  :sha     "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}}
+                                                  :git/sha "c06a3be2f00d5358a50c108816fe0cbfa9f67be1"}}
  :paths   ["server/src" "common/src" "resources"]
  :aliases
  {;;---------- SERVER ----------

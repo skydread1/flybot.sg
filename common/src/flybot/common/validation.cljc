@@ -85,22 +85,22 @@
     [:posts
      [:map
       [:post [:=> [:cat :uuid] post-schema]]
-      [:all [:=> [:cat :any] [:vector post-schema]]]
+      [:all [:=> [:cat] [:vector post-schema]]]
       [:new-post [:=> [:cat post-schema-create] post-schema]]
       [:removed-post [:=> [:cat :uuid :string] post-schema]]]]
     [:pages
      [:map
       [:page [:=> [:cat :keyword] page-schema]]
-      [:all [:=> [:cat :any] [:vector page-schema]]]
+      [:all [:=> [:cat] [:vector page-schema]]]
       [:new-page [:=> [:cat page-schema] page-schema]]]]
     [:users
      [:map
       [:user [:=> [:cat :string] user-schema]]
-      [:all [:=> [:cat :any] [:vector user-schema]]]
+      [:all [:=> [:cat] [:vector user-schema]]]
       [:removed-user [:=> [:cat :string] user-schema]]
       [:auth [:map
               [:registered [:=> [:cat :string user-email-schema :string :string] user-schema]]
-              [:logged [:=> [:cat :any] user-schema]]]]
+              [:logged [:=> [:cat] user-schema]]]]
       [:new-role [:map
                   [:admin [:=> [:cat user-email-schema] user-schema]]]]]]]))
 
