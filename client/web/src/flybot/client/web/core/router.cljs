@@ -32,7 +32,16 @@
    ["/blog/:id-ending/:url-identifier"
     {:name :flybot/blog-post
      :page-name :blog
-     :view blog-single-post-page}]
+     :view blog-single-post-page
+     :controllers
+     [{:parameters {:path [:id-ending :url-identifier]}
+       :start (fn [{{:keys [id-ending url-identifier]} :path}]
+                (js/console.log "CONTROLLER STARTS")
+                (rf/dispatch [:evt.nav/redirect-post-url
+                              :flybot/blog-post
+                              :blog
+                              id-ending
+                              url-identifier]))}]}]
 
    ["#footer-contact"
     {:name :flybot/contact}]])

@@ -4,7 +4,9 @@
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [clojure.edn :as edn]
             [day8.re-frame.http-fx]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [clojure.string :as str]
+            [flybot.client.web.core.dom.page.post :as post]))
 
 ;; Overridden by the figwheel config option :closure-defines
 (goog-define BASE-URI "")
@@ -13,6 +15,34 @@
   "Given the relative `path`, use the BASE-URI to build the absolute path uri."
   [path]
   (str BASE-URI path))
+
+;;; Routing
+
+(rf/reg-event-fx
+ :evt.nav/redirect-post-url
+ (fn [{:keys [db]} [_ name page-name id-ending url-identifier]]
+   (let [matches-page? (fn [post] (-> post :post/page (= page-name)))
+         matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
+         matches-url-identifier? (fn [post]
+                                   (= url-identifier
+                                      (post/post-url-identifier post)))
+         queried-post (->>
+                       (:app/posts db)
+                       (into {}
+                             (filter (fn [[id post]]
+                                       (and (matches-id-ending? id)
+                                            (matches-page? post)))))
+                       vals
+                       first)]
+     (if (or (nil? queried-post) (matches-url-identifier? queried-post))
+       ;; Don't redirect if there're no page-ID matches, or if there's a
+       ;; complete match
+       {}
+       ;; Redirect on partial match
+       {:fx.router/replace-state
+        [name
+         {:id-ending id-ending
+          :url-identifier (post/post-url-identifier queried-post)}]}))))
 
 ;; ---------- http success/failure ----------
 
