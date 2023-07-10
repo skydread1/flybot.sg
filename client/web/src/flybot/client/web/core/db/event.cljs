@@ -4,7 +4,8 @@
             [ajax.edn :refer [edn-request-format edn-response-format]]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]))
+            [reitit.frontend.easy :as rfe]
+            [reitit.frontend.controllers :as rfc]))
 
 ;; ---------- http success/failure ----------
 
@@ -104,4 +105,9 @@
 (rf/reg-event-db
  :evt.page/set-current-view
  (fn [db [_ new-match]]
-   (assoc db :app/current-view new-match)))
+   (let [old-match (-> db :app/current-view)
+         match (assoc new-match
+                      :controllers
+                      (rfc/apply-controllers (:controllers old-match)
+                                             new-match))]
+     (assoc db :app/current-view match))))
