@@ -6,7 +6,9 @@
    [flybot.common.test-sample-data :as s]
    [flybot.common.utils :as utils]
    [re-frame.core :as rf]
-   [reitit.core :as r]))
+   [reitit.core :as r]
+   [reitit.frontend.easy :as rfe]
+   [sg.flybot.pullable :as pull]))
 
 (use-fixtures :once
   {:before (fn [] (sut/init-routes!))})
@@ -56,9 +58,17 @@
                                 :path-params
                                 {:id-ending '?id-ending
                                  :url-identifier '?url-identifier}}}])
-           go-to-link (fn [path] (->> path
-                                      (r/match-by-path sut/router)
-                                      sut/on-navigate))]
+           go-to-link (fn [path]
+                        (let [[name path-params :as match]
+                              ((pull/qfn
+                                {:data
+                                 {:name '?name}
+                                 :path-params '?path-params}
+                                [?name ?path-params])
+                               (r/match-by-path sut/router path))]
+                          (rfe/replace-state name path-params)
+                          (rf/dispatch [:evt.nav/redirect-post-url])
+                          (print match)))]
 
        (testing "Create post:"
          (testing "Mode should be nil before post is sent:"
