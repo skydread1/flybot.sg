@@ -4,7 +4,6 @@
             [day8.re-frame.http-fx]
             [flybot.client.common.db.event]
             [flybot.client.web.core.dom.page.post :as post]
-            [flybot.client.web.core.router :as router]
             [flybot.common.utils :as utils :refer [toggle]]
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]

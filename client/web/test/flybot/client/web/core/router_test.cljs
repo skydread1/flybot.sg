@@ -6,9 +6,7 @@
    [flybot.common.test-sample-data :as s]
    [flybot.common.utils :as utils]
    [re-frame.core :as rf]
-   [reitit.core :as r]
-   [reitit.frontend.easy :as rfe]
-   [sg.flybot.pullable :as pull]))
+   [reitit.core :as r]))
 
 (use-fixtures :once
   {:before (fn [] (sut/init-routes!))})
