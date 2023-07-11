@@ -35,19 +35,14 @@
               (rf/dispatch [:evt.nav/redirect-post-url])
               (blog-single-post-page))}
     [""
-     {:name :flybot/-blog>id}]
+     {:redirect-name :flybot/blog-post}]
     ["/"
-     {:name :flybot/-blog>id>}]
+     {:redirect-name :flybot/blog-post}]
     ["/:url-identifier"
      {:name :flybot/blog-post}]]
 
    ["#footer-contact"
     {:name :flybot/contact}]])
-
-(def redirect-name-map
-  {:flybot/-blog>id :flybot/blog-post
-   :flybot/-blog>id> :flybot/blog-post
-   :flybot/blog-post :flybot/blog-post})
 
 (def router
   (rei/router routes))

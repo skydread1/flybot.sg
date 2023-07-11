@@ -29,15 +29,20 @@
 (rf/reg-event-fx
  :evt.nav/redirect-post-url
  (fn [{:keys [db]} [_]]
-   (let [[name page-name id-ending url-identifier]
+   (let [[name redirect-name page-name id-ending url-identifier]
          ((pull/qfn {:app/current-view
                      {:data
                       {:name '?name
+                       :redirect-name '?redirect-name
                        :page-name '?page-name}
                       :path-params
                       {:id-ending '?id-ending
                        :url-identifier '?url-identifier}}}
-                    [?name ?page-name ?id-ending ?url-identifier])
+                    [?name
+                     ?redirect-name
+                     ?page-name
+                     ?id-ending
+                     ?url-identifier])
           db)
          matches-page? (fn [post] (-> post :post/page (= page-name)))
          matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
@@ -55,7 +60,7 @@
      (when (and queried-post (not (matches-url-identifier? queried-post)))
        ;; Redirect on partial match (when everything matches except post title)
        {:fx.router/replace-state
-        [(get router/redirect-name-map name)
+        [(or name redirect-name)
          {:id-ending id-ending
           :url-identifier (post/post-url-identifier queried-post)}]}))))
 
