@@ -22,7 +22,7 @@
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]]})))
 
-;;; Routing
+;; ---------------- Routing -----------------
 
 ;; Redirecting incorrect/old post URLs
 
@@ -52,11 +52,8 @@
                                             (matches-page? post)))))
                        vals
                        first)]
-     (if (or (nil? queried-post) (matches-url-identifier? queried-post))
-       ;; Don't redirect if there're no page-ID matches, or if there's a
-       ;; complete match
-       {}
-       ;; Redirect on partial match
+     (when (and queried-post (not (matches-url-identifier? queried-post)))
+       ;; Redirect on partial match (when everything matches except post title)
        {:fx.router/replace-state
         [(get router/redirect-name-map name)
          {:id-ending id-ending

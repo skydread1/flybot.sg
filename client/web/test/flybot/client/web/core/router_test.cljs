@@ -59,7 +59,7 @@
                                 {:id-ending '?id-ending
                                  :url-identifier '?url-identifier}}}])
            go-to-link (fn [path]
-                        (let [[name path-params :as match]
+                        (let [[name path-params]
                               ((pull/qfn
                                 {:data
                                  {:name '?name}
@@ -67,8 +67,7 @@
                                 [?name ?path-params])
                                (r/match-by-path sut/router path))]
                           (rfe/replace-state name path-params)
-                          (rf/dispatch [:evt.nav/redirect-post-url])
-                          (print match)))]
+                          (rf/dispatch [:evt.nav/redirect-post-url])))]
 
        (testing "Create post:"
          (testing "Mode should be nil before post is sent:"

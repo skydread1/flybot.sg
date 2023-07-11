@@ -2,12 +2,6 @@
   (:require [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]))
 
-;; -- Producing pure results ---
-
-(rf/reg-fx
- :fx.pure/pure
- identity)
-
 ;; ---------- Routing ----------
 
 (rf/reg-fx
