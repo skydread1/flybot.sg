@@ -101,6 +101,9 @@
              (is (= expected-view (dissoc @get-current-view '&?))))
            (testing "Link with no title goes to correct view:"
              (go-to-link "/blog/-temp-id/")
+             (is (= expected-view (dissoc @get-current-view '&?))))
+           (testing "Link with only post ID goes to correct view:"
+             (go-to-link "/blog/-temp-id")
              (is (= expected-view (dissoc @get-current-view '&?))))))
 
        (testing "Edit post with new title:"
@@ -135,4 +138,7 @@
              (is (= expected-view (dissoc @get-current-view '&?))))
            (testing "Link with no title goes to correct view:"
              (go-to-link "/blog/-temp-id/")
+             (is (= expected-view (dissoc @get-current-view '&?))))
+           (testing "Link with only post ID goes to correct view:"
+             (go-to-link "/blog/-temp-id")
              (is (= expected-view (dissoc @get-current-view '&?))))))))))
