@@ -1,10 +1,13 @@
 (ns flybot.client.web.core.db.event
-  (:require [flybot.client.common.db.event]
-            [flybot.common.utils :as utils :refer [toggle]]
-            [ajax.edn :refer [edn-request-format edn-response-format]]
+  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
+            [clojure.string :as str]
             [day8.re-frame.http-fx]
+            [flybot.client.common.db.event]
+            [flybot.client.web.core.dom.page.post :as post]
+            [flybot.common.utils :as utils :refer [toggle]]
             [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]))
+            [reitit.frontend.easy :as rfe]
+            [sg.flybot.pullable :as pull]))
 
 ;; ---------- http success/failure ----------
 
@@ -17,6 +20,48 @@
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]]})))
+
+;; ---------------- Routing -----------------
+
+;; Redirecting incorrect/old post URLs
+
+(rf/reg-event-fx
+ :evt.nav/redirect-post-url
+ (fn [{:keys [db]} [_]]
+   (let [[name redirect-name page-name id-ending url-identifier]
+         ((pull/qfn {:app/current-view
+                     {:data
+                      {:name '?name
+                       :redirect-name '?redirect-name
+                       :page-name '?page-name}
+                      :path-params
+                      {:id-ending '?id-ending
+                       :url-identifier '?url-identifier}}}
+                    [?name
+                     ?redirect-name
+                     ?page-name
+                     ?id-ending
+                     ?url-identifier])
+          db)
+         matches-page? (fn [post] (-> post :post/page (= page-name)))
+         matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
+         matches-url-identifier? (fn [post]
+                                   (= url-identifier
+                                      (post/post-url-identifier post)))
+         queried-post (->>
+                       (:app/posts db)
+                       (into {}
+                             (filter (fn [[id post]]
+                                       (and (matches-id-ending? id)
+                                            (matches-page? post)))))
+                       vals
+                       first)]
+     (when (and queried-post (not (matches-url-identifier? queried-post)))
+       ;; Redirect on partial match (when everything matches except post title)
+       {:fx.router/replace-state
+        [(or name redirect-name)
+         {:id-ending id-ending
+          :url-identifier (post/post-url-identifier queried-post)}]}))))
 
 ;; ---------- App ----------
 

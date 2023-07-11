@@ -1,5 +1,12 @@
 (ns flybot.client.common.db.fx
-  (:require [re-frame.core :as rf]))
+  (:require [re-frame.core :as rf]
+            [reitit.frontend.easy :as rfe]))
+
+;; ---------- Routing ----------
+
+(rf/reg-fx
+ :fx.router/replace-state
+ (fn [args] (apply rfe/replace-state args)))
 
 ;; ---------- Logging ----------
 

@@ -29,10 +29,17 @@
      :page-name :blog
      :view blog-all-posts-page}]
 
-   ["/blog/:id-ending/:url-identifier"
-    {:name :flybot/blog-post
-     :page-name :blog
-     :view blog-single-post-page}]
+   ["/blog/:id-ending"
+    {:page-name :blog
+     :view #(do
+              (rf/dispatch [:evt.nav/redirect-post-url])
+              (blog-single-post-page))}
+    [""
+     {:redirect-name :flybot/blog-post}]
+    ["/"
+     {:redirect-name :flybot/blog-post}]
+    ["/:url-identifier"
+     {:name :flybot/blog-post}]]
 
    ["#footer-contact"
     {:name :flybot/contact}]])
