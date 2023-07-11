@@ -4,6 +4,7 @@
             [day8.re-frame.http-fx]
             [flybot.client.common.db.event]
             [flybot.client.web.core.dom.page.post :as post]
+            [flybot.client.web.core.router :as router]
             [flybot.common.utils :as utils :refer [toggle]]
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]
@@ -27,14 +28,12 @@
 
 (rf/reg-event-fx
  :evt.nav/redirect-post-url
- (fn [{:keys [db]} [_ default-name default-page-name]]
+ (fn [{:keys [db]} [_]]
    (let [[name page-name id-ending url-identifier]
          ((pull/qfn {:app/current-view
                      {:data
-                      {(list :name :not-found default-name)
-                       '?name
-                       (list :page-name :not-found default-page-name)
-                       '?page-name}
+                      {:name '?name
+                       :page-name '?page-name}
                       :path-params
                       {:id-ending '?id-ending
                        :url-identifier '?url-identifier}}}
@@ -59,7 +58,7 @@
        {}
        ;; Redirect on partial match
        {:fx.router/replace-state
-        [name
+        [(get router/redirect-name-map name)
          {:id-ending id-ending
           :url-identifier (post/post-url-identifier queried-post)}]}))))
 

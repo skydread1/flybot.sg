@@ -32,17 +32,22 @@
    ["/blog/:id-ending"
     {:page-name :blog
      :view #(do
-              (rf/dispatch [:evt.nav/redirect-post-url
-                            :flybot/blog-post
-                            :blog])
+              (rf/dispatch [:evt.nav/redirect-post-url])
               (blog-single-post-page))}
-    [""]
-    ["/"]
+    [""
+     {:name :flybot/-blog>id}]
+    ["/"
+     {:name :flybot/-blog>id>}]
     ["/:url-identifier"
      {:name :flybot/blog-post}]]
 
    ["#footer-contact"
     {:name :flybot/contact}]])
+
+(def redirect-name-map
+  {:flybot/-blog>id :flybot/blog-post
+   :flybot/-blog>id> :flybot/blog-post
+   :flybot/blog-post :flybot/blog-post})
 
 (def router
   (rei/router routes))
