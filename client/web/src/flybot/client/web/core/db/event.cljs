@@ -149,9 +149,4 @@
 (rf/reg-event-db
  :evt.page/set-current-view
  (fn [db [_ new-match]]
-   (let [old-match (-> db :app/current-view)
-         match (assoc new-match
-                      :controllers
-                      (rfc/apply-controllers (:controllers old-match)
-                                             new-match))]
-     (assoc db :app/current-view match))))
+   (assoc db :app/current-view new-match)))
