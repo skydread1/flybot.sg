@@ -49,7 +49,9 @@
    {:db/ident :post/last-editor
     :db/valueType :db.type/ref}
    {:db/ident :post/show-authors?
-    :db/valueType :db.type/boolean}])
+    :db/valueType :db.type/boolean}
+   {:db/ident :post/default-order
+    :db/valueType :db.type/long}])
 
 (def sort-config-schema
   [{:db/ident :sort/type
@@ -183,7 +185,8 @@
    :post/show-dates?
    :post/show-authors?
    :post/md-content
-   {:post/image-beside [:image/src :image/src-dark :image/alt]}])
+   {:post/image-beside [:image/src :image/src-dark :image/alt]}
+   :post/default-order])
 
 (defn get-post
   "Get the post with the given `id`."
