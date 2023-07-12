@@ -540,6 +540,7 @@ section .team img {
 
 .post-authors {
     font-size: 0.8rem;
+    overflow-x: auto;
     border-bottom: groove;
     border-bottom-width: thin;
     border-color: var(--text-tertiary-color);
@@ -553,6 +554,8 @@ section .team img {
 .post-author {
     display: flex;
     align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 1024px) {
@@ -617,6 +620,11 @@ section.admin h1 {
 }
 
 .blog .short .post-authors {
-    display: flex;
     border: none;
+}
+
+@media (max-width: 1024px) {
+    .blog .post.short .post-authors {
+        display: block;
+    }
 }
