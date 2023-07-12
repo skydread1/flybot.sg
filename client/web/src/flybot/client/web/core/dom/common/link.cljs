@@ -1,6 +1,5 @@
 (ns flybot.client.web.core.dom.common.link
-  (:require [clojure.string :as str]
-            [re-frame.core :as rf]
+  (:require [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]))
 
 (defn internal-link
@@ -24,23 +23,6 @@
           :class (when (= page-name current-page) "active")
           :data-reitit-handle-click with-reitit}
       text])))
-
-(defn title->url-identifier
-  "Converts a title string into a URL identifier (slug).
-
-  Only word characters (`\\w`) are retained, and then joined using underscores.
-
-  Example:
-  ```clojure
-  (title->url-identifier \"Flybot Pte. Ltd., since 2015/5/5\")
-  ;; => \"Flybot_Pte_Ltd_since_2015_5_5\"
-  ```
-
-  See [Slug (MDN Web Docs)](https://developer.mozilla.org/en-US/docs/Glossary/Slug)."
-  [title]
-  (->> title
-       (re-seq #"\w+")
-       (str/join "_")))
 
 (defn truncate-uuid
   "Truncates a UUID into an 8-character ending string, for use in subpage URLs.

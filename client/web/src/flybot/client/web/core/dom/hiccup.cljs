@@ -29,22 +29,3 @@
   "Given some markdown as a string, returns the hiccup equivalent."
   [markdown]
   (-> markdown mth/md->hiccup mth/component post-hiccup))
-
-;; -------- Hiccup to plain string --------
-
-(defn hiccup-extract-text
-  "Extracts all text and removes all markup from the given Hiccup content.
-
-  Example:
-  ```clojure
-  (hiccup-extract-text [:h1 {} \"Hi there, \"
-                               [:a {:href \"https://www.flybot.sg\"
-                                    :title \"Flybot\"}
-                               [:strong {} \"Henlo\"]]])
-  ;; => \"Hi there, Henlo\"
-  ```"
-  [hiccup]
-  (->> hiccup
-       flatten
-       (filter string?)
-       (apply str)))

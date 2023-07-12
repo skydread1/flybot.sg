@@ -1,5 +1,5 @@
 (ns flybot.client.web.core.dom.page.post-test
-  (:require [cljs.test :refer [deftest is are testing use-fixtures]]
+  (:require [cljs.test :refer [deftest is use-fixtures]]
             [day8.re-frame.test :as rf-test]
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.page.post :as post]

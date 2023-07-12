@@ -3,8 +3,8 @@
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.svg :as svg]
             [flybot.client.web.core.dom.hiccup :as h]
+            [flybot.client.web.core.utils :as web.utils]
             [flybot.common.utils :as utils]
-            [markdown-to-hiccup.core :as mth]
             [re-frame.core :as rf]))
 
 ;;---------- Buttons ----------
@@ -180,28 +180,14 @@
   (when post
     (assoc post :post/hiccup-content (h/md->hiccup md-content))))
 
-(defn post-url-identifier
-  "Returns a URL identifier (slug) for the given post."
-  [{:post/keys [hiccup-content md-content] :as post}]
-  (if hiccup-content
-    (-> hiccup-content
-        (mth/hiccup-in :h1 0)
-        h/hiccup-extract-text
-        link/title->url-identifier)
-    (if md-content
-      (-> post
-          add-post-hiccup-content
-          post-url-identifier)
-      "Untitled_post")))
-
 (defn post-link
   "Returns a Hiccup link to the given post's own URL."
-  [{:post/keys [id page] :as post} text]
+  [{:post/keys [id] :as post} text]
   (link/internal-link :flybot/blog-post
-                 text
-                 true
-                 {:id-ending (link/truncate-uuid id)
-                  :url-identifier (post-url-identifier post)}))
+                      text
+                      true
+                      {:id-ending (link/truncate-uuid id)
+                       :url-identifier (web.utils/post->url-identifier post)}))
 
 (defn post-authors
   [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
@@ -283,7 +269,7 @@
 
 (defn post-edit
   "Edit Post Form with preview feature."
-  [{:post/keys [id] :as post}]
+  [{:post/keys [id]}]
   [:div.post
    {:key id
     :id  id}
@@ -321,10 +307,8 @@
           (post-read post))))
 
 (defn list-entry-post
-  [{:post/keys [css-class hiccup-content id] :as post}]
-  (let [post-title (-> hiccup-content
-                       (mth/hiccup-in :h1 0)
-                       h/hiccup-extract-text)]
+  [{:post/keys [css-class id] :as post}]
+  (let [post-title (web.utils/post->title post)]
     [:div.post-list-entry
      {:class css-class
       :key id}
