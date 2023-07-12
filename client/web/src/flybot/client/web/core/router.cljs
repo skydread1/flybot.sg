@@ -1,7 +1,5 @@
 (ns flybot.client.web.core.router
-  (:require [flybot.client.web.core.dom.page :refer [page
-                                                     blog-all-posts-page
-                                                     blog-single-post-page]]
+  (:require [flybot.client.web.core.dom.page :refer [page blog-single-post-page]]
             [goog.object :as gobj]
             [reitit.frontend :as rei]
             [reitit.frontend.easy :as rfe]
@@ -27,7 +25,7 @@
    ["/blog"
     {:name :flybot/blog
      :page-name :blog
-     :view blog-all-posts-page}]
+     :view #(page :blog)}]
 
    ["/blog/:id-ending"
     {:page-name :blog
