@@ -200,8 +200,6 @@
                                 :post/css-class '?
                                 :post/creation-date '?
                                 :post/last-edit-date '?
-                                :post/show-dates? '?
-                                :post/show-authors? '?
                                 :post/author {:user/id '?
                                               :user/email '?
                                               :user/name '?
