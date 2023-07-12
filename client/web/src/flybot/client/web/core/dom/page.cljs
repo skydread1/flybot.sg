@@ -65,12 +65,9 @@
       :key (name :blog)}
      [page-header :blog]
      [page-post :blog new-post]
-     [:div.post
-      [:h1.page-title "Blog"]]
-     [:div.post.post-list
-      (doall
-       (for [post ordered-posts]
-         (list-entry-post post)))]]))
+     (doall
+      (for [post ordered-posts]
+        (list-entry-post post)))]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.

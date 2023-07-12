@@ -6,15 +6,22 @@
 
 ;; ---------- Initial Data ----------
 
+(def user-admin
+  (-> (edn/read-string (or (System/getenv "ADMIN_USER")
+                           (slurp "config/admin.edn")))
+      (assoc :user/roles [#:role{:name :editor
+                                 :date-granted (u/mk-date)}
+                          #:role{:name :admin
+                                 :date-granted (u/mk-date)}])))
+
+(def user-alice
+  #:user{:id "alice-id"
+         :email "alice@basecity.com"
+         :name "Alice Martin"
+         :roles [#:role{:name :editor
+                        :date-granted (u/mk-date)}]})
 (def users
-  (let [admin (edn/read-string (or (System/getenv "ADMIN_USER")
-                                   (slurp "config/admin.edn")))]
-    (-> admin
-        (assoc :user/roles [#:role{:name :editor
-                                   :date-granted (u/mk-date)}
-                            #:role{:name :admin
-                                   :date-granted (u/mk-date)}])
-        vector)))
+  [user-admin user-alice])
 
 (defn slurp-md
   "Slurp the sample files with the markdown."
@@ -68,8 +75,8 @@
           :last-edit-date (u/mk-date)
           :show-dates? true
           :show-authors? true
-          :author (first users)
-          :last-editor (first users)
+          :author user-admin
+          :last-editor user-admin
           :md-content (slurp-md "blog" "welcome.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
@@ -81,8 +88,8 @@
           :last-edit-date (u/mk-date)
           :show-dates? true
           :show-authors? true
-          :author (first users)
-          :last-editor (first users)
+          :author user-alice
+          :last-editor user-admin
           :md-content (slurp-md "blog" "mdsample.md")
           :image-beside #:image{:src "https://octodex.github.com/images/dojocat.jpg"
                                 :src-dark "https://octodex.github.com/images/stormtroopocat.jpg"

@@ -162,19 +162,6 @@
   (-> (js/Intl.DateTimeFormat. "en-GB")
       (.format date)))
 
-(defn user-info
-  [user-name date action]
-  [:div.post-author
-   (concat
-    (when user-name
-      [[:div {:key "pen-icon"} svg/pen-icon]
-       [:div {:key "user-name"} (str user-name)]])
-    (when date
-      [[:div {:key "clock-icon"} svg/clock-icon]
-       [:div {:key "date"} (format-date date)]])
-    (when (or user-name date)
-      [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
-
 (defn add-post-hiccup-content
   [{:post/keys [md-content] :as post}]
   (when post
@@ -196,35 +183,41 @@
 
 (defn post-link
   "Returns a Hiccup link to the given post's own URL."
-  [{:post/keys [id page] :as post} text]
+  [{:post/keys [id] :as post} text]
   (link/internal-link :flybot/blog-post
                  text
                  true
                  {:id-ending (link/truncate-uuid id)
                   :url-identifier (post-url-identifier post)}))
 
+(defn user-info
+  [username date1 date2 action]
+  [:div.post-author
+   [:div {:key "pen-icon"} svg/pen-icon]
+   [:div {:key "user-name"} (str username)]
+   [:div {:key "clock-icon"} svg/clock-icon]
+   [:div {:key "date1"} (format-date date1)]
+   [:div {:key "action"} (if (= :editor action) "(Edited)" "(Created)")]
+   (when date2
+     [:<>
+      [:div {:key "date2"} (format-date date2)]
+      [:div {:key "action"} "(Edited)"]])])
+
 (defn post-authors
-  [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
-  (cond (and show-authors? show-dates?)
-        [:div.post-authors
-         [user-info (:user/name author) creation-date :author]
-         (when last-edit-date
-           [user-info (:user/name last-editor) last-edit-date :editor])]
-    
-        (and show-authors? (not show-dates?))
-        [:div.post-authors
-         [user-info (:user/name author) nil :author]
-         (when last-edit-date
-           [user-info (:user/name last-editor) nil :editor])]
-    
-        show-dates?
-        [:div.post-authors
-         [user-info nil creation-date :author]
-         (when last-edit-date
-           [user-info nil last-edit-date :editor])]
-        
-        :else
-        nil))
+  [{:post/keys [author last-editor creation-date last-edit-date]}]
+  (let [author-name (:user/name author)
+        editor-name (:user/name last-editor)]
+    [:div.post-authors
+     (cond (not last-editor)
+           (user-info author-name creation-date nil :author)
+
+           (= author last-editor)
+           (user-info author-name creation-date last-edit-date :author)
+
+           :else
+           [:<>
+            (user-info author-name creation-date nil :author)
+            (user-info editor-name last-edit-date nil :editor)])]))
 
 (defn post-view
   [{:post/keys [css-class image-beside hiccup-content] :as post}]
@@ -325,10 +318,11 @@
   (let [post-title (-> hiccup-content
                        (mth/hiccup-in :h1 0)
                        h/hiccup-extract-text)]
-    [:div.post-list-entry
-     {:class css-class
-      :key id}
-     [:div
-      [:div.text
-       [:h2 [post-link post post-title]]]
-      [post-authors post]]]))
+    [:div.post.short
+     {:key id
+      :id id}
+     [post-link post
+      [:div.post-body
+       {:class css-class}
+       [:h2 post-title]
+       [post-authors post]]]]))

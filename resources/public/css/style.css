@@ -13,6 +13,7 @@
 
     --text-primary-color: #bae6fd;
     --text-secondary-color: #f0f9ff;
+    --text-tertiary-color: lightgray;
 
     --button-primary-color: black;
 
@@ -26,6 +27,7 @@
 
     --text-primary-color: #0ea5e9;
     --text-secondary-color: #18181b;
+    --text-tertiary-color: grey;
 
     --button-primary-color: white;
 
@@ -262,8 +264,8 @@ input[type=button] {
 }
 
 .post-icon {
-    width: 22px;
-    height: 22px;
+    width: 14px;
+    height: 14px;
 }
 
 .burger {
@@ -537,14 +539,20 @@ section .team img {
 /* Post */
 
 .post-authors {
+    font-size: 0.8rem;
     border-bottom: groove;
     border-bottom-width: thin;
+    border-color: var(--text-tertiary-color);
+    color: var(--text-tertiary-color);
+}
+
+.post-authors svg {
+    fill: var(--text-tertiary-color);
 }
 
 .post-author {
     display: flex;
     align-items: center;
-    font-size: 0.8rem;
 }
 
 @media (max-width: 1024px) {
@@ -573,4 +581,42 @@ section .team img {
 
 section.admin h1 {
     text-align: center;
+}
+
+/* Blog Page */
+
+.blog .post.short {
+    background-color: inherit;
+    padding: 0;
+    border: none;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--border-primary-color);
+    border-bottom-style: solid;
+}
+
+.blog .post.short .post-body {
+    display: block;
+    padding: 0.5rem;
+}
+
+.blog .post.short .post-body:hover {
+    background-color: var(--bg-primary-color);
+    border-left-width: 1px;
+    border-left-color: var(--border-primary-color);
+    border-left-style: solid;
+}
+
+.blog .post.short .post-body>* {
+    padding: 0.5rem;
+}
+
+.blog .post.short a {
+    display: block;
+    padding: 0;
+    text-decoration: none;
+}
+
+.blog .short .post-authors {
+    display: flex;
+    border: none;
 }
