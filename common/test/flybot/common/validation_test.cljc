@@ -38,7 +38,5 @@
                                         :image/src-dark "https://some-image-dark-mode.svg"
                                         :image/alt "something"}
                   :post/creation-date  s/post-1-create-date
-                  :post/author         {:user/id s/alice-id}
-                  :post/show-dates?    true
-                  :post/show-authors?  true}]
+                  :post/author         {:user/id s/alice-id}}]
         (is (= s/post-1 (sut/prepare-post post "bob-id")))))))

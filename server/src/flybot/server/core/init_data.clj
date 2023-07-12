@@ -73,8 +73,6 @@
           :css-class "welcome"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :show-dates? true
-          :show-authors? true
           :author user-admin
           :last-editor user-admin
           :md-content (slurp-md "blog" "welcome.md")
@@ -86,8 +84,6 @@
           :css-class "md-example"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :show-dates? true
-          :show-authors? true
           :author user-alice
           :last-editor user-admin
           :md-content (slurp-md "blog" "mdsample.md")

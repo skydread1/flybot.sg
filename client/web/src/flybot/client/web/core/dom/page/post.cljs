@@ -119,26 +119,6 @@
                                  :image/alt
                                  (.. % -target -value)])}]
      [:br]
-     [:label {:for "show-dates"} "Show Dates:"]
-     [:br]
-     [:input
-      {:type "checkbox"
-       :name "show-dates"
-       :default-checked (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?x}}]) "checked")
-       :on-click #(rf/dispatch [:evt.post.form/set-field
-                                :post/show-dates?
-                                (.. % -target -checked)])}]
-     [:br]
-     [:label {:for "show-authors"} "Show Authors:"]
-     [:br]
-     [:input
-      {:type "checkbox"
-       :name "show-authors"
-       :default-checked (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?x}}]) "checked")
-       :on-click #(rf/dispatch [:evt.post.form/set-field
-                                :post/show-authors?
-                                (.. % -target -checked)])}]
-     [:br]
      [svg/theme-logo]]
     [:br]
     [:fieldset
