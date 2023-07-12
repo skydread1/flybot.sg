@@ -204,20 +204,21 @@
       [:div {:key "action"} "(Edited)"]])])
 
 (defn post-authors
-  [{:post/keys [author last-editor creation-date last-edit-date]}]
-  (let [author-name (:user/name author)
-        editor-name (:user/name last-editor)]
-    [:div.post-authors
-     (cond (not last-editor)
-           (user-info author-name creation-date nil :author)
+  [{:post/keys [author last-editor creation-date last-edit-date page]}]
+  (when (= :blog page)
+    (let [author-name (:user/name author)
+          editor-name (:user/name last-editor)]
+      [:div.post-authors
+       (cond (not last-editor)
+             (user-info author-name creation-date nil :author)
 
-           (= author last-editor)
-           (user-info author-name creation-date last-edit-date :author)
+             (= author last-editor)
+             (user-info author-name creation-date last-edit-date :author)
 
-           :else
-           [:<>
-            (user-info author-name creation-date nil :author)
-            (user-info editor-name last-edit-date nil :editor)])]))
+             :else
+             [:<>
+              (user-info author-name creation-date nil :author)
+              (user-info editor-name last-edit-date nil :editor)])])))
 
 (defn post-view
   [{:post/keys [css-class image-beside hiccup-content] :as post}]
@@ -313,7 +314,7 @@
           :else
           (post-read post))))
 
-(defn list-entry-post
+(defn blog-post-short
   [{:post/keys [css-class hiccup-content id] :as post}]
   (let [post-title (-> hiccup-content
                        (mth/hiccup-in :h1 0)

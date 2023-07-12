@@ -1,11 +1,7 @@
 (ns flybot.client.web.core.dom.page
   (:require [flybot.client.common.utils :as utils]
             [flybot.client.web.core.dom.page.header :refer [page-header]]
-            [flybot.client.web.core.dom.page.post
-             :refer [add-post-hiccup-content
-                     list-entry-post
-                     page-post
-                     post-url-identifier]]
+            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
             [re-frame.core :as rf]
             [clojure.string :as str]))
 
@@ -20,7 +16,7 @@
          matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
          matches-url-identifier? (fn [post]
                                    (= url-identifier
-                                      (post-url-identifier post)))
+                                      (post/post-url-identifier post)))
          queried-posts (into {}
                              (filter (fn [[id post]]
                                        (and (matches-id-ending? id)
@@ -36,38 +32,20 @@
                                        {:app/pages
                                         {page-name
                                          {:page/sorting-method '?x}}}])
-        ordered-posts (->> @(rf/subscribe [:subs.post/posts page-name])
-                           (map add-post-hiccup-content)
+        posts         (->> @(rf/subscribe [:subs.post/posts page-name])
+                           (map post/add-post-hiccup-content)
                            (utils/sort-posts sorting-method))
-        new-post      {:post/id "new-post-temp-id"}
-        posts         (conj ordered-posts new-post)]
+        new-post      {:post/id "new-post-temp-id"}]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [page-header page-name]
-     (doall
-      (for [post posts]
-        (page-post page-name post)))]))
-
-(defn blog-all-posts-page
-  "Display all blog post titles."
-  []
-  (let [sorting-method @(rf/subscribe [:subs/pattern
-                                       {:app/pages
-                                        {:blog
-                                         {:page/sorting-method '?x}}}])
-        ordered-posts (->> @(rf/subscribe [:subs.post/posts :blog])
-                           (utils/sort-posts sorting-method)
-                           (map add-post-hiccup-content))
-        new-post      {:post/id "new-post-temp-id"}]
-    [:section.container
-     {:class (name :blog)
-      :key (name :blog)}
-     [page-header :blog]
      [page-post :blog new-post]
      (doall
-      (for [post ordered-posts]
-        (list-entry-post post)))]))
+      (for [post posts]
+        (if (= :blog page-name)
+          (blog-post-short post)
+          (page-post page-name post))))]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.
@@ -86,7 +64,7 @@
                                               query-url-identifier)
                          vals
                          first
-                         add-post-hiccup-content)]
+                         post/add-post-hiccup-content)]
     [:section.container
      {:class (name :blog)
       :key   (name :blog)}
