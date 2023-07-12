@@ -412,6 +412,16 @@ section .page-header h1 {
     text-align: center;
 }
 
+section h1.page-title {
+    background-color: var(--text-primary-color);
+    color: var(--bg-secondary-color);
+    text-align: center;
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--border-primary-color);
+    border-top: none;
+}
+
 @media (max-width: 1024px) {
     section .page-header {
         padding: 0.5rem;
@@ -579,7 +589,10 @@ section .team img {
 /* Admin */
 
 .admin {
-    padding-top: 1rem;
+    padding: 1rem;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: var(--border-primary-color);
 }
 
 section.admin h1 {

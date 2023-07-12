@@ -39,6 +39,7 @@
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
+     [:h1.page-title page-name]
      [page-header page-name]
      [page-post :blog new-post]
      (doall
