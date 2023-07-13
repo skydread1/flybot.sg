@@ -46,7 +46,7 @@
      [:image/src :string]
      [:image/src-dark :string]
      [:image/alt :string]]]
-   [:post/default-order :int]])
+   [:post/default-order {:optional true} pos-int?]])
 
 (def post-schema-create
   "The difference with `post-schema` is that only the id of the author/last-editor is needed."
