@@ -119,26 +119,6 @@
                                  :image/alt
                                  (.. % -target -value)])}]
      [:br]
-     [:label {:for "show-dates"} "Show Dates:"]
-     [:br]
-     [:input
-      {:type "checkbox"
-       :name "show-dates"
-       :default-checked (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?x}}]) "checked")
-       :on-click #(rf/dispatch [:evt.post.form/set-field
-                                :post/show-dates?
-                                (.. % -target -checked)])}]
-     [:br]
-     [:label {:for "show-authors"} "Show Authors:"]
-     [:br]
-     [:input
-      {:type "checkbox"
-       :name "show-authors"
-       :default-checked (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?x}}]) "checked")
-       :on-click #(rf/dispatch [:evt.post.form/set-field
-                                :post/show-authors?
-                                (.. % -target -checked)])}]
-     [:br]
      [svg/theme-logo]]
     [:br]
     [:fieldset
@@ -162,19 +142,6 @@
   (-> (js/Intl.DateTimeFormat. "en-GB")
       (.format date)))
 
-(defn user-info
-  [user-name date action]
-  [:div.post-author
-   (concat
-    (when user-name
-      [[:div {:key "pen-icon"} svg/pen-icon]
-       [:div {:key "user-name"} (str user-name)]])
-    (when date
-      [[:div {:key "clock-icon"} svg/clock-icon]
-       [:div {:key "date"} (format-date date)]])
-    (when (or user-name date)
-      [[:div {:key "action"} (if (= :editor action) "(Last Edited)" "(Authored)")]]))])
-
 (defn add-post-hiccup-content
   [{:post/keys [md-content] :as post}]
   (when post
@@ -189,28 +156,35 @@
                       {:id-ending (link/truncate-uuid id)
                        :url-identifier (web.utils/post->url-identifier post)}))
 
+(defn user-info
+  [username date1 date2 action]
+  [:div.post-author
+   [:div {:key "pen-icon"} svg/pen-icon]
+   [:div {:key "user-name"} (str username)]
+   [:div {:key "clock-icon"} svg/clock-icon]
+   [:div {:key "date1"} (format-date date1)]
+   [:div {:key "action"} (if (= :editor action) "(Edited)" "(Created)")]
+   (when date2
+     [:<>
+      [:div {:key "date2"} (format-date date2)]
+      [:div {:key "action"} "(Edited)"]])])
+
 (defn post-authors
-  [{:post/keys [author last-editor show-authors? creation-date last-edit-date show-dates?]}]
-  (cond (and show-authors? show-dates?)
-        [:div.post-authors
-         [user-info (:user/name author) creation-date :author]
-         (when last-edit-date
-           [user-info (:user/name last-editor) last-edit-date :editor])]
-    
-        (and show-authors? (not show-dates?))
-        [:div.post-authors
-         [user-info (:user/name author) nil :author]
-         (when last-edit-date
-           [user-info (:user/name last-editor) nil :editor])]
-    
-        show-dates?
-        [:div.post-authors
-         [user-info nil creation-date :author]
-         (when last-edit-date
-           [user-info nil last-edit-date :editor])]
-        
-        :else
-        nil))
+  [{:post/keys [author last-editor creation-date last-edit-date page]}]
+  (when (= :blog page)
+    (let [author-name (:user/name author)
+          editor-name (:user/name last-editor)]
+      [:div.post-authors
+       (cond (not last-editor)
+             (user-info author-name creation-date nil :author)
+
+             (= author last-editor)
+             (user-info author-name creation-date last-edit-date :author)
+
+             :else
+             [:<>
+              (user-info author-name creation-date nil :author)
+              (user-info editor-name last-edit-date nil :editor)])])))
 
 (defn post-view
   [{:post/keys [css-class image-beside hiccup-content] :as post}]
@@ -306,13 +280,14 @@
           :else
           (post-read post))))
 
-(defn list-entry-post
+(defn blog-post-short
   [{:post/keys [css-class id] :as post}]
   (let [post-title (web.utils/post->title post)]
-    [:div.post-list-entry
-     {:class css-class
-      :key id}
-     [:div
-      [:div.text
-       [:h2 [post-link post post-title]]]
-      [post-authors post]]]))
+    [:div.post.short
+     {:key id
+      :id id}
+     [post-link post
+      [:div.post-body
+       {:class css-class}
+       [:h2 post-title]
+       [post-authors post]]]]))

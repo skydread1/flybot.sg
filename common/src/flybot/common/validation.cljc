@@ -39,8 +39,6 @@
    [:post/last-edit-date {:optional true} inst?]
    [:post/author user-schema]
    [:post/last-editor {:optional true} user-schema]
-   [:post/show-dates? {:optional true} :boolean]
-   [:post/show-authors? {:optional true} :boolean]
    [:post/md-content [:and :string [:fn md/has-valid-h1-title?]]]
    [:post/image-beside
     {:optional true}
