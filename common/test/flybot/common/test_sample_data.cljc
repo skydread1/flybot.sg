@@ -61,9 +61,7 @@
              :post/creation-date  post-1-create-date
              :post/last-edit-date post-1-edit-date
              :post/author         {:user/id alice-id}
-             :post/last-editor    {:user/id bob-id}
-             :post/show-dates?    true
-             :post/show-authors?  true})
+             :post/last-editor    {:user/id bob-id}})
 (def post-2 {:post/id            post-2-id
              :post/page          :home
              :post/css-class     "post-2"
