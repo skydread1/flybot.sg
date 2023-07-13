@@ -1,9 +1,11 @@
 (ns flybot.client.web.core.dom.page
-  (:require [flybot.client.common.utils :as utils]
+  (:require [clojure.string :as str]
+            [flybot.client.common.utils :as utils]
             [flybot.client.web.core.dom.page.header :refer [page-header]]
-            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
-            [re-frame.core :as rf]
-            [clojure.string :as str]))
+            [flybot.client.web.core.dom.page.post :as post
+             :refer [blog-post-short page-post]]
+            [flybot.client.web.core.utils :as web.utils]
+            [re-frame.core :as rf]))
 
 (defn get-post-by-id-page
   "Retrieves a post (or posts) with the given page name, ID ending and URL
@@ -16,7 +18,7 @@
          matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
          matches-url-identifier? (fn [post]
                                    (= url-identifier
-                                      (post/post-url-identifier post)))
+                                      (web.utils/post->url-identifier post)))
          queried-posts (into {}
                              (filter (fn [[id post]]
                                        (and (matches-id-ending? id)
