@@ -3,7 +3,7 @@
             [clojure.string :as str]
             [day8.re-frame.http-fx]
             [flybot.client.common.db.event]
-            [flybot.client.web.core.dom.page.post :as post]
+            [flybot.client.web.core.utils :as web.utils]
             [flybot.common.utils :as utils :refer [toggle]]
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]
@@ -47,7 +47,7 @@
          matches-id-ending? (fn [id] (str/ends-with? (str id) id-ending))
          matches-url-identifier? (fn [post]
                                    (= url-identifier
-                                      (post/post-url-identifier post)))
+                                      (web.utils/post->url-identifier post)))
          queried-post (->>
                        (:app/posts db)
                        (into {}
@@ -61,7 +61,7 @@
        {:fx.router/replace-state
         [(or name redirect-name)
          {:id-ending id-ending
-          :url-identifier (post/post-url-identifier queried-post)}]}))))
+          :url-identifier (web.utils/post->url-identifier queried-post)}]}))))
 
 ;; ---------- App ----------
 
@@ -98,8 +98,6 @@
                                              :user/name '?}
                                :post/last-editor {:user/id '?
                                                   :user/name '?}
-                               :post/show-authors? '?
-                               :post/show-dates? '?
                                :post/md-content '?
                                :post/image-beside {:image/src '?
                                                    :image/src-dark '?

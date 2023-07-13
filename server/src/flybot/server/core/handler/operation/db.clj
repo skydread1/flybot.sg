@@ -35,8 +35,6 @@
     :db/valueType :db.type/instant}
    {:db/ident :post/last-edit-date
     :db/valueType :db.type/instant}
-   {:db/ident :post/show-dates?
-    :db/valueType :db.type/boolean}
    {:db/ident :post/css-class
     :db/valueType :db.type/string}
    {:db/ident :post/image-beside
@@ -48,8 +46,6 @@
     :db/valueType :db.type/ref}
    {:db/ident :post/last-editor
     :db/valueType :db.type/ref}
-   {:db/ident :post/show-authors?
-    :db/valueType :db.type/boolean}
    {:db/ident :post/default-order
     :db/valueType :db.type/long}])
 
@@ -182,8 +178,6 @@
    :post/last-edit-date
    {:post/author user-pull-pattern}
    {:post/last-editor user-pull-pattern}
-   :post/show-dates?
-   :post/show-authors?
    :post/md-content
    {:post/image-beside [:image/src :image/src-dark :image/alt]}
    :post/default-order])

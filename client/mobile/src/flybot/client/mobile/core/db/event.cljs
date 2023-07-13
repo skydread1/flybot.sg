@@ -45,8 +45,6 @@
                                            :user/name '?}
                              :post/last-editor {:user/id '?
                                                 :user/name '?}
-                             :post/show-authors? '?
-                             :post/show-dates? '?
                              :post/md-content '?
                              :post/image-beside {:image/src '?
                                                  :image/src-dark '?

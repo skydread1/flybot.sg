@@ -237,20 +237,6 @@
      :on-change-text #(rf/dispatch [:evt.form.image/set-field :image/alt %])
      :style {:border-width 1
              :padding 10}}]
-   [:> check-box
-    {:text "Show Dates"
-     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-dates? ?x}}])
-     :text-style {:text-decoration-line "none"}
-     :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-dates? %])
-     :fill-color (:green colors)
-     :style {:padding 10}}]
-   [:> check-box
-    {:text "Show Authors"
-     :is-checked @(rf/subscribe [:subs/pattern '{:form/fields {:post/show-authors? ?x}}])
-     :text-style {:text-decoration-line "none"}
-     :on-press #(rf/dispatch [:evt.post.form/set-field :post/show-authors? %])
-     :fill-color (:green colors)
-     :style {:padding 10}}]
    [rrn/text
     {:style {:text-align "center"}}
     "Post Content in Markdown:"]
