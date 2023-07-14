@@ -24,6 +24,16 @@
 
 (use-fixtures :once system-fixture)
 
+(deftest add-post
+  (let [db-conn (-> test-system :db-conn :conn)]
+    (testing "Returns the proper response and effects."
+      (let [post-in s/post-3
+            post-out (assoc s/post-3 :post/author s/bob-user)]
+        (is (= {:response post-out
+                :effects {:db {:payload [post-out]}}}
+               (sut/add-post (d/db db-conn) post-in)))))))
+
+
 (deftest delete-post
   (let [db-conn (-> test-system :db-conn :conn)]
     (testing "User is admin so returns post delete effects."

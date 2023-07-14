@@ -17,7 +17,22 @@
           [:map
            {:closed true}
            [:a [:vector :int]]
-           [:b [:map [:c [:map [:d :keyword]]]]]])))))
+           [:b [:map [:c [:map [:d :keyword]]]]]]))))
+  (testing "map with property :locked-keys is not affected by keys optional."
+    (is (mu/equals
+         [:cat
+          [:map
+           [:a {:optional true} :int]]
+          [:map {:closed true :locked-keys true}
+           [:a :int]
+           [:b {:optional true} :int]]]
+         (sut/all-keys-optional
+          [:cat
+           [:map
+            [:a :int]]
+           [:map {:closed true :locked-keys true}
+            [:a :int]
+            [:b {:optional true} :int]]])))))
 
 (deftest prepare-post
   (testing "Creation of a post."

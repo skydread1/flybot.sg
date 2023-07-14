@@ -14,8 +14,7 @@
 
 (def author-schema
   [:map
-   [:user/id :string]
-   [:user/name {:optional true} :string]])
+   [:user/id :string]])
 
 (def user-schema
   [:map {:closed true}
@@ -48,10 +47,14 @@
      [:image/alt :string]]]])
 
 (def post-schema-create
-  "The difference with `post-schema` is that only the id of the author/last-editor is needed."
-  (-> post-schema
-      (mu/assoc :post/author author-schema)
-      (mu/assoc :post/last-editor author-schema)))
+  "The differences with `post-schema` are that:
+   - only the id of the author/last-editor is required.
+   - the keys are locked so they won't be affected by all-keys-optional."
+  (let [sch        (-> post-schema
+                       (mu/assoc :post/author author-schema)
+                       (mu/assoc :post/last-editor author-schema))
+        properties (assoc (m/properties sch) :locked-keys true)]
+    (m/into-schema (m/type sch) properties (m/children sch) (m/options sch))))
 
 (def page-schema
   [:map {:closed true}
@@ -62,6 +65,13 @@
      [:sort/type :keyword]
      [:sort/direction :keyword]]]])
 
+(def page-schema-create
+  "The difference with `page-schema` is that:
+     - the keys are locked so they won't be affected by all-keys-optional."
+  (let [sch        page-schema
+        properties (assoc (m/properties sch) :locked-keys true)]
+    (m/into-schema (m/type sch) properties (m/children sch) (m/options sch))))
+
 (defn all-keys-optional
   "Walk through the given `schema` and set all keys to optional."
   [schema]
@@ -69,14 +79,18 @@
    schema
    (m/schema-walker
     (fn [sch]
-      (if (= :map (m/type sch))
+      (if (and (= :map (m/type sch))
+               (-> sch m/properties :locked-keys not))
         (mu/optional-keys sch)
         sch)))))
+
+
 
 ;;---------- Pull Schemas ----------
 
 (def api-schema
-  "All keys are optional because it is just a data query schema."
+  "All keys are optional because it is just a data query schema.
+   maps with a property :locked-keys set to true have their keys remain unchanged."
   (all-keys-optional
    [:map
     {:closed true}
@@ -90,7 +104,7 @@
      [:map
       [:page [:=> [:cat :keyword] page-schema]]
       [:all [:=> [:cat] [:vector page-schema]]]
-      [:new-page [:=> [:cat page-schema] page-schema]]]]
+      [:new-page [:=> [:cat page-schema-create] page-schema]]]]
     [:users
      [:map
       [:user [:=> [:cat :string] user-schema]]
@@ -102,7 +116,7 @@
       [:new-role [:map
                   [:admin [:=> [:cat user-email-schema] user-schema]]]]]]]))
 
-;;---------- Front-end validation ----------
+;;---------- Frontend validation ----------
 
 (defn validate
   "Validates the given `data` against the given `schema`.
