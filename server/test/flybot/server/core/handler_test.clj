@@ -238,23 +238,39 @@
                                                               :role/date-granted '?}]}
                                   :post/md-content '?}}})]
         (is (nil? (-> resp :body :posts :new-post))))))
-  (testing "Execute a request for a new post."
+  (testing "Execute a request for a new post:"
     (with-redefs [auth/has-permission? (constantly true)]
-      (let [resp (http-request "/posts/new-post"
-                               {:posts
-                                {(list :new-post :with [s/post-3])
-                                 {:post/id '?
-                                  :post/page '?
-                                  :post/creation-date '?
-                                  :post/author {:user/id '?
-                                                :user/email '?
-                                                :user/name '?
-                                                :user/picture '?
-                                                :user/roles [{:role/name '?
-                                                              :role/date-granted '?}]}
-                                  :post/md-content '?}}})]
-        (is (= s/post-3
-               (-> resp :body :posts :new-post))))))
+      (testing "Submit a new post."
+        (let [resp (http-request "/posts/new-post"
+                                 {:posts
+                                  {(list :new-post :with [s/post-3])
+                                   {:post/id '?
+                                    :post/page '?
+                                    :post/creation-date '?
+                                    :post/author {:user/id '?
+                                                  :user/email '?
+                                                  :user/name '?
+                                                  :user/picture '?
+                                                  :user/roles [{:role/name '?
+                                                                :role/date-granted '?}]}
+                                    :post/md-content '?
+                                    :post/default-order '?}}})]
+          ;; new posts go to the bottom (position 1) by default
+          (is (= (assoc s/post-3 :post/default-order 1)
+                 (-> resp :body :posts :new-post)))))
+      (testing "Adjust sorting on new post submission."
+        (let [resp (http-request "/posts/all"
+                                 {:posts
+                                  {(list :all :with [])
+                                   [{:post/id '?
+                                     :post/default-order '?}]}})]
+          (is (= #{{:post/id s/post-2-id
+                    :post/default-order 3}
+                   {:post/id s/post-1-id
+                    :post/default-order 2}
+                   {:post/id s/post-3-id
+                    :post/default-order 1}}
+                 (-> resp :body :posts :all set)))))))
   (testing "Execute a request for a delete post."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/removed-post"

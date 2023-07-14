@@ -67,7 +67,8 @@
              :post/css-class     "post-2"
              :post/md-content    "#Some content 2"
              :post/creation-date post-2-create-date
-             :post/author        {:user/id bob-id}})
+             :post/author        {:user/id bob-id}
+             :post/default-order 100})
 (def post-3 {:post/id            post-3-id
              :post/page          :home
              :post/md-content    "# Post 3"

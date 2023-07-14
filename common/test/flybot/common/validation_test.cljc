@@ -27,7 +27,8 @@
                   :post/page          :home
                   :post/css-class     "post-2"
                   :post/md-content    "#Some content 2"}]
-        (is (= s/post-2 (sut/prepare-post post "bob-id"))))))
+        (is (= (assoc s/post-2 :post/default-order nil)
+               (sut/prepare-post post "bob-id"))))))
   (testing "Edition of a post."
     (with-redefs [utils/mk-date (constantly s/post-1-edit-date)]
       (let [post {:post/id             s/post-1-id
@@ -39,4 +40,5 @@
                                         :image/alt "something"}
                   :post/creation-date  s/post-1-create-date
                   :post/author         {:user/id s/alice-id}}]
-        (is (= s/post-1 (sut/prepare-post post "bob-id")))))))
+        (is (= (assoc s/post-1 :post/default-order nil)
+               (sut/prepare-post post "bob-id")))))))

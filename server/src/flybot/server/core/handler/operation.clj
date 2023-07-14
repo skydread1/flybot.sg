@@ -30,25 +30,51 @@
 
 ;;---------- Ops with effects ----------
 
+(defn with-updated-post-order
+  "Adjusts the default sorting order only for posts in `page`."
+  [db {:post/keys [id page] :as post} option]
+  (let [same-page? #(= page (:post/page %))
+        same-id? #(= id (:post/id %))
+        posts (->> db
+                   db/get-all-posts
+                   (filter same-page?)
+                   ((cond
+                      (= :new-post option) #(into [post] (remove same-id?) %)
+                      (= :removed-post option) #(remove same-id? %)
+                      :else identity))
+                   (sort-by (juxt :post/default-order
+                                  :post/last-edit-date
+                                  :post/creation-date))
+                   (map (fn [new-order post]
+                          (assoc post :post/default-order new-order))
+                        (iterate inc 1))
+                   vec)]
+    posts))
+
 (defn add-post
-  [post]
-  {:response post
-   :effects  {:db {:payload [post]}}})
+  [db {:post/keys [id] :as post}]
+  (let [posts (with-updated-post-order db post :new-post)]
+    {:response (first (filter #(= id (:post/id %)) posts))
+     :effects {:db {:payload posts}}}))
 
 (defn delete-post
   "Delete the post if
    - `user-id` is author of `post-id`
    - `user-id` has admin role"
   [db post-id user-id]
-  (let [author-id (-> (db/get-post db post-id) :post/author :user/id)
+  (let [post (db/get-post db post-id)
+        author-id (-> post :post/author :user/id)
         admin?    (->> (db/get-user db user-id)
                        :user/roles
                        (map :role/name)
                        (filter #(= :admin %))
                        seq)]
     (if (or admin? (= author-id user-id))
-      {:response {:post/id post-id}
-       :effects  {:db {:payload [[:db.fn/retractEntity [:post/id post-id]]]}}}
+      (let [posts (with-updated-post-order db post :removed-post)]
+        {:response {:post/id post-id}
+         :effects {:db {:payload (into
+                                  [[:db.fn/retractEntity [:post/id post-id]]]
+                                  posts)}}})
       {:error {:type      :authorization
                :user-id   user-id
                :author-id author-id}})))
@@ -122,7 +148,7 @@
   [db session]
   {:posts {:all          (fn [] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
-           :new-post     (fn [post] (add-post post))
+           :new-post     (fn [post] (add-post db post))
            :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
    :pages {:all       (fn [] (get-all-pages db))
            :page      (fn [page-name] (get-page db page-name))

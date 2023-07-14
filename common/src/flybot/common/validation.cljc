@@ -131,7 +131,8 @@
     (-> post
         (dissoc :post/view :post/mode :post/to-delete?)
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
-        (assoc date-field (u/mk-date))
+        (assoc :post/default-order nil
+               date-field (u/mk-date))
         (assoc-in [writer-field :user/id] user-id))))
 
 (defn prepare-page
