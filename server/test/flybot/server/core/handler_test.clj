@@ -77,7 +77,17 @@
                              {:new-post
                               #:post{:id s/post-3-id}}}
               :effects-desc [{:db
-                              {:payload [s/post-3]}}]
+                              {:payload
+                               [(assoc s/post-3
+                                       :post/author {:user/id s/bob-id}
+                                       :post/default-order 1)
+                                (assoc s/post-1
+                                       :post/author s/alice-user
+                                       :post/last-editor s/bob-user
+                                       :post/default-order 2)
+                                (assoc s/post-2
+                                       :post/author s/bob-user
+                                       :post/default-order 3)]}}]
               :session      {}}
              (saturn-handler {:body-params {:posts
                                             {(list :new-post :with [s/post-3])
