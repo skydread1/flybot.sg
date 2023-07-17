@@ -5,10 +5,12 @@
             [flybot.server.core.handler.auth :as auth]
             [flybot.server.core.handler.middleware :as mw]
             [flybot.server.core.handler.operation :as op]
+            [malli.core :as malli]
             [muuntaja.core :as m]
             [reitit.ring :as reitit]
             [reitit.ring.middleware.muuntaja :as muuntaja]
-            [sg.flybot.pullable :as pull]))
+            [sg.flybot.pullable :as pull]
+            [sg.flybot.pullable.schema :as sch]))
 
 (defn db-executor
   "Db transaction executor
@@ -65,6 +67,15 @@
               :context/effects  (persistent! effects-acc)
               :context/sessions (persistent! session-map))))))
 
+(defn check-pattern!
+  "Same implementation as sch/check-pattern but includes a :type in the map so the
+   mw/exception-middleware can catch it."
+  [data-schema pattern]
+  (let [ptn-sch (sch/pattern-schema-of data-schema)]
+    (when-not (malli/validate ptn-sch pattern)
+      (throw (ex-info "Wrong pattern" {:type :pattern/schema
+                                       :msg  (malli/explain ptn-sch pattern)})))))
+
 (defn saturn-handler
   "A saturn handler takes a ring request enhanced with additional keys form the injectors.
    The saturn handler is purely functional.
@@ -73,7 +84,8 @@
   (let [pattern (if (seq params) params body-params)
         data    (op/pullable-data db session)
         {:context/keys [effects sessions] :as resp}
-        (pull/with-data-schema v/api-schema ((mk-query pattern) data))]
+        (with-redefs [sch/check-pattern! check-pattern!]
+         (pull/with-data-schema v/api-schema ((mk-query pattern) data)))]
     {:response     ('&? resp)
      :effects-desc effects
      :session      (merge session sessions)}))

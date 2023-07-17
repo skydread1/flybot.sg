@@ -17,7 +17,22 @@
           [:map
            {:closed true}
            [:a [:vector :int]]
-           [:b [:map [:c [:map [:d :keyword]]]]]])))))
+           [:b [:map [:c [:map [:d :keyword]]]]]]))))
+  (testing "map with property `:preserve-required` preserves required keys."
+    (is (mu/equals
+         [:cat
+          [:map
+           [:a {:optional true} :int]]
+          [:map {:closed true :preserve-required true}
+           [:a :int]
+           [:b {:optional true} :int]]]
+         (sut/all-keys-optional
+          [:cat
+           [:map
+            [:a :int]]
+           [:map {:closed true :preserve-required true}
+            [:a :int]
+            [:b {:optional true} :int]]])))))
 
 (deftest prepare-post
   (testing "Creation of a post."

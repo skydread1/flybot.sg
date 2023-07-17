@@ -14,7 +14,7 @@
 (def exception-middleware
   "When a ex-data :type is matched, create a handler with custom status and error message."
   (exception/create-exception-middleware
-   {:pattern/schema            (partial handler 407 "Invalid pattern provided") ;; use status 500 for now
+   {:pattern/schema            (partial handler 407 "Invalid pattern provided")
     :user/login                (partial handler 408 "Cannot login because user does not exist")
     :user/delete               (partial handler 409 "Cannot delete because user does not exist")
     :user.admin/not-found      (partial handler 414 "User does not exist")

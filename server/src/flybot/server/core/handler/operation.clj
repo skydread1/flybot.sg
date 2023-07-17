@@ -52,10 +52,16 @@
     posts))
 
 (defn add-post
+  "Add the post to the DB.
+   Returns the post with the full author/editor profile included."
   [db {:post/keys [id] :as post}]
-  (let [posts (with-updated-post-order db post :new-post)]
-    {:response (first (filter #(= id (:post/id %)) posts))
-     :effects {:db {:payload posts}}}))
+  (let [author (db/get-user db (-> post :post/author :user/id))
+        editor (db/get-user db (-> post :post/last-editor :user/id))
+        full-post (cond-> (assoc post :post/author author)
+                    editor (assoc :post/last-editor editor))
+        posts (with-updated-post-order db full-post :new-post)]
+    {:response full-post
+     :effects  {:db {:payload posts}}}))
 
 (defn delete-post
   "Delete the post if
