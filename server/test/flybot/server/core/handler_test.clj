@@ -124,9 +124,9 @@
   (testing "Invalid http method so returns and index.html."
     (let [resp (http-request :get "/pages/page" ::PATTERN)]
       (is (= 204 (-> resp :status)))))
-  (testing "Invalid pattern so returns error 500."
+  (testing "Invalid pattern so returns error 407."
     (let [resp (http-request "/pages/page" {:invalid-key '?})]
-      (is (= 500 (-> resp :status)))))
+      (is (= 407 (-> resp :status)))))
   (testing "Cannot delete user who does not exist so returns 409."
     (let [resp (http-request "/pages/page"
                              {:users
