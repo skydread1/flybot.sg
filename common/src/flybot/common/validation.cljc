@@ -46,7 +46,7 @@
      [:image/src :string]
      [:image/src-dark :string]
      [:image/alt :string]]]
-   [:post/default-order {:optional true} pos-int?]])
+   [:post/default-order {:optional true} nat-int?]])
 
 (def post-schema-create
   "The difference with `post-schema` is that only the id of the author/last-editor is needed."
@@ -131,8 +131,7 @@
     (-> post
         (dissoc :post/view :post/mode :post/to-delete?)
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
-        (assoc :post/default-order nil
-               date-field (u/mk-date))
+        (assoc date-field (u/mk-date))
         (assoc-in [writer-field :user/id] user-id))))
 
 (defn prepare-page

@@ -47,7 +47,7 @@
                                   :post/creation-date))
                    (map (fn [new-order post]
                           (assoc post :post/default-order new-order))
-                        (iterate inc 1))
+                        (range))
                    vec)]
     posts))
 

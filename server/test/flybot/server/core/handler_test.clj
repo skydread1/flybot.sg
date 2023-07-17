@@ -80,14 +80,14 @@
                               {:payload
                                [(assoc s/post-3
                                        :post/author {:user/id s/bob-id}
-                                       :post/default-order 1)
+                                       :post/default-order 0)
                                 (assoc s/post-1
                                        :post/author s/alice-user
                                        :post/last-editor s/bob-user
-                                       :post/default-order 2)
+                                       :post/default-order 1)
                                 (assoc s/post-2
                                        :post/author s/bob-user
-                                       :post/default-order 3)]}}]
+                                       :post/default-order 2)]}}]
               :session      {}}
              (saturn-handler {:body-params {:posts
                                             {(list :new-post :with [s/post-3])
@@ -265,8 +265,8 @@
                                                                 :role/date-granted '?}]}
                                     :post/md-content '?
                                     :post/default-order '?}}})]
-          ;; new posts go to the bottom (position 1) by default
-          (is (= (assoc s/post-3 :post/default-order 1)
+          ;; new posts go to the bottom (position 0) by default
+          (is (= (assoc s/post-3 :post/default-order 0)
                  (-> resp :body :posts :new-post)))))
       (testing "Adjust sorting on new post submission."
         (let [resp (http-request "/posts/all"
@@ -275,11 +275,11 @@
                                    [{:post/id '?
                                      :post/default-order '?}]}})]
           (is (= #{{:post/id s/post-2-id
-                    :post/default-order 3}
-                   {:post/id s/post-1-id
                     :post/default-order 2}
+                   {:post/id s/post-1-id
+                    :post/default-order 1}
                    {:post/id s/post-3-id
-                    :post/default-order 1}}
+                    :post/default-order 0}}
                  (-> resp :body :posts :all set)))))))
   (testing "Execute a request for a delete post."
     (with-redefs [auth/has-permission? (constantly true)]
@@ -318,7 +318,7 @@
                   auth/redirect-302          (fn [resp _] resp)]
       (let [resp (http-request :get "/oauth/google/success" nil)]
         (is (= s/joshua-id
-               (-> resp :body :users :auth :registered :user/id)))))) 
+               (-> resp :body :users :auth :registered :user/id))))))
   (testing "Execute a request to grant admin role to an existing user."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [joshua-email (:user/email s/joshua-user)
