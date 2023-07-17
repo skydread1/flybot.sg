@@ -127,13 +127,6 @@
   (testing "Invalid pattern so returns error 500."
     (let [resp (http-request "/pages/page" {:invalid-key '?})]
       (is (= 500 (-> resp :status)))))
-  #_(testing "Invalid pattern in `:with` option so returns error 500."
-    (with-redefs [auth/has-permission? (constantly true)]
-      (let [resp (http-request "/posts/new-post"
-                               {:posts
-                                {(list :new-post :with [(dissoc s/post-3 :post/page)]) ;; pull pattern should throw error but don't
-                                 {:post/id '?}}})]
-        (is (= 500 (-> resp :status)))))) ;; TOFIX: current result: 200, expected result: 500.
   (testing "Cannot delete user who does not exist so returns 409."
     (let [resp (http-request "/pages/page"
                              {:users

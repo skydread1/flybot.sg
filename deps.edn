@@ -5,7 +5,7 @@
            metosin/muuntaja                      {:mvn/version "0.6.8"}
            markdown-to-hiccup/markdown-to-hiccup {:mvn/version "0.6.2"}
            sg.flybot/lasagna-pull                {:git/url "https://github.com/flybot-sg/lasagna-pull.git"
-                                                  :git/sha "550f499bfb48c363eb8a40b6ee1c0ab5c02608b0"}
+                                                  :git/sha "f9b91174a135a0e32e87441470e4209c04d87306"}
 
            ;; backend
            ring/ring-defaults                    {:mvn/version "0.3.4"}
