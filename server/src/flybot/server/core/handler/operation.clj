@@ -31,9 +31,15 @@
 ;;---------- Ops with effects ----------
 
 (defn add-post
-  [post]
-  {:response post
-   :effects  {:db {:payload [post]}}})
+  "Add the post to the DB.
+   Returns the post with the full author/editor profile included."
+  [db post]
+  (let [author (db/get-user db (-> post :post/author :user/id))
+        editor (db/get-user db (-> post :post/last-editor :user/id))
+        full-post (cond-> (assoc post :post/author author)
+                    editor (assoc :post/last-editor editor))]
+    {:response full-post
+     :effects  {:db {:payload [full-post]}}}))
 
 (defn delete-post
   "Delete the post if
@@ -122,7 +128,7 @@
   [db session]
   {:posts {:all          (fn [] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
-           :new-post     (fn [post] (add-post post))
+           :new-post     (fn [post] (add-post db post))
            :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
    :pages {:all       (fn [] (get-all-pages db))
            :page      (fn [page-name] (get-page db page-name))

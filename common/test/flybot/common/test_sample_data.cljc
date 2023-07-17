@@ -73,8 +73,6 @@
              :post/md-content    "# Post 3"
              :post/creation-date post-3-create-date
              :post/author        {:user/id bob-id}})
-(def post-3-missing-title
-  (assoc post-3 :post/md-content "No title"))
 
 (def init-pages-and-posts
   {:posts {:all [post-1 post-2]}
