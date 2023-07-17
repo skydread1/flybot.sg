@@ -36,8 +36,8 @@
   [db post]
   (let [author (db/get-user db (-> post :post/author :user/id))
         editor (db/get-user db (-> post :post/last-editor :user/id))
-        full-post (assoc post :post/author author)
-        full-post (if editor (assoc full-post :post/last-editor editor) full-post)]
+        full-post (cond-> (assoc post :post/author author)
+                    editor (assoc :post/last-editor editor))]
     {:response full-post
      :effects  {:db {:payload [full-post]}}}))
 
