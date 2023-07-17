@@ -49,11 +49,11 @@
 (def post-schema-create
   "The differences with `post-schema` are that:
    - only the id of the author/last-editor is required.
-   - the keys are locked so they won't be affected by all-keys-optional."
+   - the required keys won't be affected by all-keys-optional."
   (-> post-schema
       (mu/assoc :post/author author-schema)
       (mu/assoc :post/last-editor author-schema)
-      (mu/update-properties assoc :locked-keys true)))
+      (mu/update-properties assoc :preserve-required true)))
 
 (def page-schema
   [:map {:closed true}
@@ -66,8 +66,8 @@
 
 (def page-schema-create
   "The difference with `page-schema` is that:
-     - the keys are locked so they won't be affected by all-keys-optional."
-  (mu/update-properties page-schema assoc :locked-keys true))
+     - the required keys won't be affected by all-keys-optional."
+  (mu/update-properties page-schema assoc :preserve-required true))
 
 (defn all-keys-optional
   "Walk through the given `schema` and set all keys to optional."
@@ -77,7 +77,7 @@
    (m/schema-walker
     (fn [sch]
       (if (and (= :map (m/type sch))
-               (-> sch m/properties :locked-keys not))
+               (-> sch m/properties :preserve-required not))
         (mu/optional-keys sch)
         sch)))))
 
@@ -85,7 +85,7 @@
 
 (def api-schema
   "All keys are optional because it is just a data query schema.
-   maps with a property :locked-keys set to true have their keys remaining unchanged."
+   maps with a property :preserve-required set to true have their keys remaining unchanged."
   (all-keys-optional
    [:map
     {:closed true}

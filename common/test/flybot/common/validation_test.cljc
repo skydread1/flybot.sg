@@ -18,19 +18,19 @@
            {:closed true}
            [:a [:vector :int]]
            [:b [:map [:c [:map [:d :keyword]]]]]]))))
-  (testing "map with property :locked-keys is not affected by keys optional."
+  (testing "map with property `:preserve-required` preserves required keys."
     (is (mu/equals
          [:cat
           [:map
            [:a {:optional true} :int]]
-          [:map {:closed true :locked-keys true}
+          [:map {:closed true :preserve-required true}
            [:a :int]
            [:b {:optional true} :int]]]
          (sut/all-keys-optional
           [:cat
            [:map
             [:a :int]]
-           [:map {:closed true :locked-keys true}
+           [:map {:closed true :preserve-required true}
             [:a :int]
             [:b {:optional true} :int]]])))))
 
