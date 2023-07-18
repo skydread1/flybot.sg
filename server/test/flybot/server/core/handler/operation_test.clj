@@ -24,6 +24,61 @@
 
 (use-fixtures :once system-fixture)
 
+(deftest update-post-orders
+  (let [posts [{:post/id s/post-1-id :post/default-order 0}
+               {:post/id s/post-2-id :post/default-order 1}
+               {:post/id s/post-3-id :post/default-order 2}]
+        post-2 {:post/id s/post-2-id}
+        post-4 {:post/id s/post-4-id}
+        update-with-new-post
+        #(sut/update-post-orders-with posts % :new-post)
+        update-with-removed-post
+        #(sut/update-post-orders-with posts % :removed-post)]
+    (testing "Returns only posts whose default orders need to be updated:"
+      (testing "New post:"
+        (testing "`nil` order."
+          (is (= [{:post/id s/post-4-id :post/default-order 3}]
+                 (update-with-new-post (dissoc post-4 :post/default-order)))))
+        (testing "Normal order."
+          (is (= #{{:post/id s/post-4-id :post/default-order 2}
+                   {:post/id s/post-3-id :post/default-order 3}}
+                 (set (update-with-new-post (assoc post-4
+                                                   :post/default-order 2))))))
+        (testing "Out-of-bounds order."
+          (is (= [{:post/id s/post-4-id :post/default-order 3}]
+                 (update-with-new-post (assoc post-4 :post/default-order 4))))))
+      (testing "Edited post:"
+        (testing "`nil` order."
+          (is (= #{{:post/id s/post-2-id :post/default-order 2}
+                   {:post/id s/post-3-id :post/default-order 1}}
+                 (set (update-with-new-post (dissoc post-2
+                                                    :post/default-order))))))
+        (testing "Moved toward zeroth."
+          (is (= #{{:post/id s/post-2-id :post/default-order 0}
+                   {:post/id s/post-1-id :post/default-order 1}}
+                 (set (update-with-new-post (assoc post-2
+                                                   :post/default-order 0))))))
+        (testing "Same order as before."
+          (is (= [{:post/id s/post-2-id :post/default-order 1}]
+                 (update-with-new-post (assoc post-2 :post/default-order 1)))))
+        (testing "Moved toward end."
+          (is (= #{{:post/id s/post-2-id :post/default-order 2}
+                   {:post/id s/post-3-id :post/default-order 1}}
+                 (set (update-with-new-post (assoc post-2
+                                                   :post/default-order 2))))))
+        (testing "Out-of-bounds order."
+          (is (= #{{:post/id s/post-2-id :post/default-order 2}
+                   {:post/id s/post-3-id :post/default-order 1}}
+                 (set (update-with-new-post (assoc post-2
+                                                   :post/default-order 4)))))))
+      (testing "Removed post:"
+        (testing "Post found."
+          (is (= [{:post/id s/post-3-id :post/default-order 1}]
+                 (update-with-removed-post post-2))))
+        (testing "No post found."
+          (is (= []
+                 (update-with-removed-post post-4))))))))
+
 (deftest add-post
   (let [db-conn (-> test-system :db-conn :conn)]
     (testing "Returns the proper response and effects."

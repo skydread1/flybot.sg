@@ -30,8 +30,12 @@
 
 ;;---------- Ops with effects ----------
 
-(defn with-updated-post-order
-  "Adjusts the default sorting order only for posts in `page`."
+(defn update-post-orders-with
+  "Returns posts whose default sorting orders need to be changed.
+
+  Posts only need to be re-sorted when there is a new, edited or removed post.
+  Such a post must be provided as the second argument, alongside either
+  `:new-post` or `:removed-post` as the third argument."
   [posts {:post/keys [id page default-order] :as post} option]
   (let [existing-post-order (->> posts
                                  (filter #(= id (:post/id %)))
@@ -47,13 +51,24 @@
         updated-posts
         (as-> other-posts-same-page _
           (cond
-            (and existing-post-order (= :new-post option))  ; edited post
-            (->> _
-                 (filter #(<= new-post-order
-                              (:post/default-order %)
-                              existing-post-order))
-                 (map #(update % :post/default-order inc))
-                 (into [(assoc post :post/default-order new-post-order)]))
+            (and (= :new-post option) existing-post-order)
+            (cond
+              (> existing-post-order new-post-order)
+              (->> _
+                   (filter #(>= existing-post-order
+                                (:post/default-order %)
+                                new-post-order))
+                   (map #(update % :post/default-order inc))
+                   (into [(assoc post :post/default-order new-post-order)]))
+              (< existing-post-order new-post-order)
+              (->> _
+                   (filter #(<= existing-post-order
+                                (:post/default-order %)
+                                new-post-order))
+                   (map #(update % :post/default-order dec))
+                   (into [(assoc post :post/default-order new-post-order)]))
+              :else
+              [(assoc post :post/default-order new-post-order)])
             (= :new-post option)
             (->> _
                  (filter #(<= new-post-order (:post/default-order %)))
@@ -75,8 +90,9 @@
         editor (db/get-user db (-> post :post/last-editor :user/id))
         full-post (cond-> (assoc post :post/author author)
                     editor (assoc :post/last-editor editor))
-        posts
-        (with-updated-post-order (db/get-all-posts db) full-post :new-post)]
+        posts (-> db
+                  db/get-all-posts
+                  (update-post-orders-with full-post :new-post))]
     {:response full-post
      :effects  {:db {:payload posts}}}))
 
@@ -93,8 +109,9 @@
                        (filter #(= :admin %))
                        seq)]
     (if (or admin? (= author-id user-id))
-      (let [posts
-            (with-updated-post-order (db/get-all-posts db) post :removed-post)]
+      (let [posts (-> db
+                      db/get-all-posts
+                      (update-post-orders-with post :removed-post))]
         {:response {:post/id post-id}
          :effects {:db {:payload (into
                                   [[:db.fn/retractEntity [:post/id post-id]]]
