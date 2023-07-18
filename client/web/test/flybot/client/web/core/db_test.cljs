@@ -115,50 +115,6 @@
      (testing "New mode is :editor."
        (is (= :editor @mode))))))
 
-;; ---------- Page ----------
-
-(deftest page
-  (rf-test/run-test-sync
-   (test-fixtures)
-   (let [mode               (rf/subscribe [:subs/pattern '{:app/pages {:home {:page/mode ?x}}}])
-         sorting-method     (rf/subscribe [:subs/pattern
-                                           '{:app/pages {:home {:page/sorting-method ?x}}}])
-         validation-error   (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])
-         new-sorting-method {:sort/type :post/last-edit-date :sort/direction :ascending}]
-     (testing "Initial mode is :read."
-       (is (= :read @mode)))
-
-     ;; Toggle mode
-     (rf/dispatch [:evt.page/toggle-edit-mode :home])
-     (testing "New mode is :edit."
-       (is (= :edit @mode)))
-
-     ;;---------- PAGE VALIDATION ERROR
-     ;; Change sorting method with wrong format
-     (rf/dispatch [:evt.page.form/set-sorting-method :home (str ::WRONG-FORMAT)])
-     ;; Send page but validation error
-     (rf/dispatch [:evt.page.form/send-page :home])
-     (testing "Validation error added to db."
-       (is @validation-error))
-
-     ;;---------- SEND PAGE SUCCESS
-     ;; Change sorting method
-     (rf/dispatch [:evt.page.form/set-sorting-method :home (str new-sorting-method)])
-     (testing "Sorting method has changed."
-       (is (= new-sorting-method @sorting-method)))
-     ;; Mock success http request
-     (rf/reg-fx :http-xhrio
-                (fn [_]
-                  (rf/dispatch [:fx.http/send-page-success
-                                {:pages
-                                 {:new-page
-                                  {:page/name           :home
-                                   :page/sorting-method new-sorting-method}}}])))
-     ;; Send page with new sorting to server
-     (rf/dispatch [:evt.page.form/send-page :home])
-     (testing "Page sent successfully."
-       (is (= new-sorting-method @sorting-method))))))
-
 ;; ---------- Post ----------
 
 (deftest edit-post

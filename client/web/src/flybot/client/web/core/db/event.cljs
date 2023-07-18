@@ -84,9 +84,7 @@
                    :uri             "/pages/all"
                    :params {:pages
                             {(list :all :with [])
-                             [{:page/name '?
-                               :page/sorting-method {:sort/type '?
-                                                     :sort/direction '?}}]}
+                             [{:page/name '?}]}
                             :posts
                             {(list :all :with [])
                              [{:post/id '?
@@ -140,9 +138,7 @@
  (fn [db [_]]
    (assoc db :nav/navbar-open? false)))
 
-;; ---------- Page ----------
-
-;; View
+;; ---------- View ----------
 
 (rf/reg-event-db
  :evt.page/set-current-view

@@ -2,7 +2,6 @@
   (:require [flybot.common.utils :as utils :refer [toggle]]
             [flybot.common.validation :as valid]
             [ajax.edn :refer [edn-request-format edn-response-format]]
-            [clojure.edn :as edn]
             [day8.re-frame.http-fx]
             [re-frame.core :as rf]))
 
@@ -29,7 +28,6 @@
    (let [user (-> users :auth :logged)]
      {:db (merge db {:app/pages (->> pages
                                      :all
-                                     (map #(assoc % :page/mode :read))
                                      (utils/to-indexed-maps :page/name))
                      :app/posts (->> posts
                                      :all
@@ -54,13 +52,6 @@
                          :post/creation-date (utils/mk-date)))]
      {:db (assoc db :form/fields fields)
       :fx [[:fx.log/message ["Got the post " (:post/id post)]]]})))
-
-(rf/reg-event-fx
- :fx.http/send-page-success
- (fn [_ [_ {:keys [pages]}]]
-   (let [page-name (-> pages :new-page :page/name)]
-     {:fx [[:dispatch [:evt.page/toggle-edit-mode page-name]]
-           [:fx.log/message ["Page " page-name " updated."]]]})))
 
 (rf/reg-event-fx
  :fx.http/remove-post-success
@@ -127,41 +118,6 @@
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/grant-admin-success]
-                     :on-failure      [:fx.http/failure]}}))))
-
-;; ---------- Page ----------
-
-;; Mode
-
-(rf/reg-event-db
- :evt.page/toggle-edit-mode
- [(rf/path :app/pages)]
- (fn [pages [_ page-name]]
-   (update-in pages [page-name :page/mode] toggle [:read :edit])))
-
-;; ---------- Page Header Form ----------
-
-(rf/reg-event-db
- :evt.page.form/set-sorting-method
- [(rf/path :app/pages)]
- (fn [pages [_ page-name method]]
-   (assoc-in pages [page-name :page/sorting-method] (edn/read-string method))))
-
-(rf/reg-event-fx
- :evt.page.form/send-page
- (fn [{:keys [db]} [_ page-name]]
-   (let [page (-> db :app/pages page-name valid/prepare-page (valid/validate valid/page-schema))]
-     (if (:errors page)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg page)]]]}
-       {:http-xhrio {:method          :post
-                     :uri             (base-uri "/pages/new-page")
-                     :headers         {:cookie (:user/cookie db)}
-                     :params          {:pages
-                                       {(list :new-page :with [page])
-                                        {:page/name '?}}}
-                     :format          (edn-request-format {:keywords? true})
-                     :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/send-page-success]
                      :on-failure      [:fx.http/failure]}}))))
 
 ;; ---------- Post ----------

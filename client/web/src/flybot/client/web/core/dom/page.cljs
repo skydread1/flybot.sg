@@ -1,9 +1,6 @@
 (ns flybot.client.web.core.dom.page
   (:require [clojure.string :as str]
-            [flybot.client.common.utils :as utils]
-            [flybot.client.web.core.dom.page.header :refer [page-header]]
-            [flybot.client.web.core.dom.page.post :as post
-             :refer [blog-post-short page-post]]
+            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 
@@ -30,25 +27,21 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [sorting-method @(rf/subscribe [:subs/pattern
-                                       {:app/pages
-                                        {page-name
-                                         {:page/sorting-method '?x}}}])
-        posts         (->> @(rf/subscribe [:subs.post/posts page-name])
-                           (map post/add-post-hiccup-content)
-                           (utils/sort-posts sorting-method))
-        new-post      {:post/id "new-post-temp-id"}]
+  (let [posts      (->> @(rf/subscribe [:subs.post/posts page-name])
+                        (map post/add-post-hiccup-content)
+                        (sort-by :post/creation-date)
+                        (reverse))
+        new-post   {:post/id "new-post-temp-id"}]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [:h1.page-title page-name]
-     [page-header page-name]
-     [page-post :blog new-post]
+     [page-post new-post]
      (doall
       (for [post posts]
         (if (= :blog page-name)
           (blog-post-short post)
-          (page-post page-name post))))]))
+          (page-post post))))]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.
@@ -72,7 +65,7 @@
      {:class (name :blog)
       :key   (name :blog)}
      (if queried-post
-       (page-post :blog queried-post)
+       (page-post queried-post)
        [:div.post
         [:h2 "No blog posts reside here (yet…)"]
         [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))

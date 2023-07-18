@@ -21,9 +21,7 @@
 
 (def init-pages-and-posts
   {:posts {:all [post-1]}
-   :pages {:all [{:page/name :home
-                  :page/sorting-method {:sort/type :post/creation-date
-                                        :sort/direction :ascending}}
+   :pages {:all [{:page/name :home}
                  {:page/name :apply}]}
    :users {:auth {:logged s/bob-user}}})
 
