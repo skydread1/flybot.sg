@@ -14,8 +14,13 @@
 (def bob-id "bob-id")
 (def alice-id "alice-id")
 (def joshua-id "joshua-id")
+(def charlie-id "charlie-id")
+(def daniel-id "daniel-id")
+
 (def bob-date-granted (u/mk-date))
 (def alice-date-granted (u/mk-date))
+(def charlie-date-granted (u/mk-date))
+(def daniel-date-granted (u/mk-date))
 (def joshua-date-granted (u/mk-date))
 
 (def bob-user {:user/id "bob-id"
@@ -41,15 +46,35 @@
                   :user/roles [{:role/name :editor
                                 :role/date-granted joshua-date-granted}]})
 
+(def charlie-user {:user/id "charlie-id"
+                   :user/email "user.this-is_charlie@basecity.com"
+                   :user/name "Charlie"
+                   :user/picture "charlie-pic"
+                   :user/roles [{:role/name :editor
+                                 :role/date-granted charlie-date-granted}]})
+
+(def daniel-user {:user/id "daniel-id"
+                  :user/email "dan137@basecity.com"
+                  :user/name "daniel"
+                  :user/picture "daniel-pic"
+                  :user/roles [{:role/name :editor
+                                :role/date-granted charlie-date-granted}]})
+
 ;;---------- Posts ----------
 
 (def post-1-id (u/mk-uuid))
 (def post-2-id (u/mk-uuid))
 (def post-3-id (u/mk-uuid))
+(def post-4-id (u/mk-uuid))
+(def post-5-id (u/mk-uuid))
+
 (def post-1-create-date (u/mk-date))
 (def post-1-edit-date (u/mk-date))
 (def post-2-create-date (u/mk-date))
 (def post-3-create-date (u/mk-date))
+(def post-4-create-date (u/mk-date))
+(def post-5-create-date (u/mk-date))
+(def post-3-edit-date (u/mk-date))
 
 (def post-1 {:post/id             post-1-id
              :post/page           :home
@@ -61,19 +86,31 @@
              :post/creation-date  post-1-create-date
              :post/last-edit-date post-1-edit-date
              :post/author         {:user/id alice-id}
-             :post/last-editor    {:user/id bob-id}})
+             :post/last-editor    {:user/id bob-id}
+             :post/default-order  0})
 (def post-2 {:post/id            post-2-id
              :post/page          :home
              :post/css-class     "post-2"
              :post/md-content    "#Some content 2"
              :post/creation-date post-2-create-date
              :post/author        {:user/id bob-id}
-             :post/default-order 100})
+             :post/default-order 1})
 (def post-3 {:post/id            post-3-id
              :post/page          :home
              :post/md-content    "# Post 3"
              :post/creation-date post-3-create-date
              :post/author        {:user/id bob-id}})
+(def post-4 {:post/id            post-4-id
+             :post/page          :home
+             :post/md-content    "# Post Number 4"
+             :post/creation-date post-4-create-date
+             :post/author        {:user/id charlie-id}
+             :post/default-order 1})
+(def post-5 {:post/id            post-5-id
+             :post/page          :home
+             :post/md-content    "# The 5th post"
+             :post/creation-date post-5-create-date
+             :post/author        {:user/id daniel-id}})
 
 (def init-pages-and-posts
   {:posts {:all [post-1 post-2]}

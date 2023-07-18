@@ -31,17 +31,8 @@
             post-out (assoc s/post-3 :post/author s/bob-user)]
         (is (= {:response post-out
                 :effects {:db {:payload
-                               [(assoc post-out
-                                       :post/default-order 0)
-                                (assoc s/post-1
-                                       :post/author s/alice-user
-                                       :post/last-editor s/bob-user
-                                       :post/default-order 1)
-                                (assoc s/post-2
-                                       :post/author s/bob-user
-                                       :post/default-order 2)]}}}
+                               [(assoc post-out :post/default-order 2)]}}}
                (sut/add-post (d/db db-conn) post-in)))))))
-
 
 (deftest delete-post
   (let [db-conn (-> test-system :db-conn :conn)]
