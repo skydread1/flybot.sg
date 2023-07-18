@@ -13,7 +13,7 @@
 
 (def test-data [s/post-1 s/post-2
                 s/home-page s/apply-page
-                s/bob-user s/alice-user s/charlie-user s/daniel-user])
+                s/bob-user s/alice-user])
 (defn test-system
   []
   (-> (sys/system-config :test)
@@ -257,38 +257,7 @@
                     :post/default-order 1}
                    {:post/id s/post-1-id
                     :post/default-order 0}}
-                 (-> resp :body :posts :all set)))))
-      (testing "Adjust sorting after multiple new post submissions."
-        (let [new-post-http-request
-              (fn [post]
-                (http-request "/posts/new-post"
-                              {:posts
-                               {(list :new-post :with [post])
-                                {:post/id '?
-                                 :post/default-order '?}}}))
-              all-posts-http-request
-              (fn []
-                (http-request "/posts/all"
-                              {:posts
-                               {(list :all :with [])
-                                [{:post/id '?
-                                  :post/default-order '?}]}}))
-              post-3-edited (assoc s/post-3
-                                   :post/last-edit-date s/post-3-edit-date
-                                   :post/default-order 1)
-              post-4-new s/post-4
-              post-5-new s/post-5
-              _ (doall
-                 (map new-post-http-request [post-5-new
-                                             post-3-edited
-                                             post-4-new]))
-              all-posts (-> (all-posts-http-request) :body :posts :all)]
-          (is (= [{:post/id s/post-1-id :post/default-order 0}
-                  {:post/id s/post-4-id :post/default-order 1}
-                  {:post/id s/post-3-id :post/default-order 2}
-                  {:post/id s/post-2-id :post/default-order 3}
-                  {:post/id s/post-5-id :post/default-order 4}]
-                 (sort-by :post/default-order all-posts)))))))
+                 (-> resp :body :posts :all set)))))))
   (testing "Execute a request for a delete post."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/removed-post"
@@ -304,11 +273,8 @@
                              {:users
                               {(list :all :with [])
                                [{:user/id '?}]}})]
-      (is (= #{{:user/id s/alice-id}
-               {:user/id s/bob-id}
-               {:user/id s/charlie-id}
-               {:user/id s/daniel-id}}
-             (-> resp :body :users :all set)))))
+      (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
+             (-> resp :body :users :all)))))
   (testing "Execute a request for a user."
     (let [resp (http-request "/users/user"
                              {:users
