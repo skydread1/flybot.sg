@@ -141,6 +141,7 @@ img,
 svg {
     display: block;
     margin: auto;
+    max-width: 80%;
 }
 
 .container {
@@ -463,11 +464,12 @@ section .post-body>div {
 }
 
 section .post-body>.image {
-    width: 25%;
+    width: 30%;
+    margin: auto;
 }
 
 section .post-body>.text {
-    width: 50%;
+    width: 60%;
 }
 
 section .post-body>.textonly {
@@ -483,9 +485,9 @@ section .image>img {
         padding: 0.5rem;
         display: block;
     }
-    section .post .post-body>.image, section .post-body>.text {
+    section .post-body>.image,
+    section .post-body>.text {
         width: 100%;
-        margin: auto;
         padding: 0.5rem;
     }
 }
@@ -584,6 +586,18 @@ section.admin h1 {
 
 /* Blog Page */
 
+.blog .post .post-body {
+    display: block;
+}
+
+.blog .post .post-body .image img {
+    max-width: 80%;
+}
+
+.blog .post .post-body>.text {
+    width: 100%;
+}
+
 .blog .post.short {
     background-color: inherit;
     padding: 0;
@@ -617,10 +631,14 @@ section.admin h1 {
 
 .blog .short .post-authors {
     border: none;
+    justify-content: flex-start;
 }
 
 @media (max-width: 1024px) {
     .blog .post.short .post-authors {
         display: block;
+    }
+    .blog .post .post-body .image img {
+        max-width: 50%;
     }
 }
