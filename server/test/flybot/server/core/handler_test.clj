@@ -166,15 +166,13 @@
                              {:pages
                               {(list :all :with [])
                                [{:page/name '?}]}})]
-      (is (= [{:page/name :home} {:page/name :apply}]
-             (-> resp :body :pages :all)))))
+      (is (= (set [{:page/name :home} {:page/name :apply}])
+             (set (-> resp :body :pages :all))))))
   (testing "Execute a request for a page."
     (let [resp (http-request "/pages/page"
                              {:pages
                               {(list :page :with [:home])
-                               {:page/name '?
-                                :page/sorting-method {:sort/type '?
-                                                      :sort/direction '?}}}})]
+                               {:page/name '?}}})]
       (is (= s/home-page
              (-> resp :body :pages :page)))))
   (testing "Execute a request for a new page."

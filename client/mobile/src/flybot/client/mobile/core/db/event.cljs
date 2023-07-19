@@ -31,9 +31,7 @@
                  :headers {:cookie (:user/cookie db)}
                  :params {:pages
                           {(list :all :with [])
-                           [{:page/name '?
-                             :page/sorting-method {:sort/type '?
-                                                   :sort/direction '?}}]}
+                           [{:page/name '?}]}
                           :posts
                           {(list :all :with [])
                            [{:post/id '?

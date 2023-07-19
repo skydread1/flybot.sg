@@ -6,7 +6,6 @@
             ["react-native" :refer [Alert]]
             [clojure.string :as str]
             [flybot.common.utils :refer [temporary-id?]]
-            [flybot.client.common.utils :refer [sort-posts]]
             [flybot.client.mobile.core.navigation :as nav]
             [flybot.client.mobile.core.styles :refer [colors]]
             [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
@@ -348,8 +347,7 @@
   []
   (let [new-post {:post/id "new-post-temp-id"}
         posts    (->> @(rf/subscribe [:subs.post/posts :blog])
-                      (sort-posts #:sort{:type :post/creation-date
-                                         :direction :descending}))]
+                      (sort-by :post/creation-date))]
     [rrn/view
      {:style {:background-color (:light colors)
               :flex 1

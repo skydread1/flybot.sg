@@ -4,9 +4,7 @@
 
 ;;---------- Pages ----------
 
-(def home-page {:page/name           :home
-                :page/sorting-method {:sort/type :post/creation-date
-                                      :sort/direction :ascending}})
+(def home-page {:page/name :home})
 (def apply-page {:page/name :apply})
 
 ;;---------- Users ----------
@@ -18,28 +16,31 @@
 (def alice-date-granted (u/mk-date))
 (def joshua-date-granted (u/mk-date))
 
-(def bob-user {:user/id "bob-id"
-               :user/email "bob@basecity.com" 
-               :user/name "Bob"
-               :user/picture "bob-pic"
-               :user/roles [{:role/name :admin
-                             :role/date-granted bob-date-granted}
-                            {:role/name :editor
-                             :role/date-granted bob-date-granted}]})
+(def bob-user
+  #:user{:id "bob-id"
+         :email "bob@basecity.com"
+         :name "Bob"
+         :picture "bob-pic"
+         :roles [#:role{:name :admin
+                        :date-granted bob-date-granted}
+                 #:role{:name :editor
+                        :date-granted bob-date-granted}]})
 
-(def alice-user {:user/id "alice-id"
-                 :user/email "alice@basecity.com" 
-                 :user/name "Alice"
-                 :user/picture "alice-pic"
-                 :user/roles [{:role/name :editor
-                               :role/date-granted alice-date-granted}]})
+(def alice-user
+  #:user{:id "alice-id"
+         :email "alice@basecity.com"
+         :name "Alice"
+         :picture "alice-pic"
+         :roles [#:role{:name :editor
+                        :date-granted alice-date-granted}]})
 
-(def joshua-user {:user/id "joshua-id"
-                  :user/email "joshua@basecity.com"
-                  :user/name "Joshua"
-                  :user/picture "joshua-pic"
-                  :user/roles [{:role/name :editor
-                                :role/date-granted joshua-date-granted}]})
+(def joshua-user
+  #:user{:id "joshua-id"
+         :email "joshua@basecity.com"
+         :name "Joshua"
+         :picture "joshua-pic"
+         :roles [#:role{:name :editor
+                        :date-granted joshua-date-granted}]})
 
 ;;---------- Posts ----------
 
@@ -53,35 +54,35 @@
 (def post-2-create-date (u/mk-date))
 (def post-3-create-date (u/mk-date))
 
-(def post-1 {:post/id             post-1-id
-             :post/page           :home
-             :post/css-class      "post-1"
-             :post/md-content     "#Some content 1"
-             :post/image-beside   {:image/src "https://some-image.svg"
-                                   :image/src-dark "https://some-image-dark-mode.svg"
-                                   :image/alt "something"}
-             :post/creation-date  post-1-create-date
-             :post/last-edit-date post-1-edit-date
-             :post/author         {:user/id alice-id}
-             :post/last-editor    {:user/id bob-id}
-             :post/default-order  0})
-(def post-2 {:post/id            post-2-id
-             :post/page          :home
-             :post/css-class     "post-2"
-             :post/md-content    "#Some content 2"
-             :post/creation-date post-2-create-date
-             :post/author        {:user/id bob-id}
-             :post/default-order 1})
-(def post-3 {:post/id            post-3-id
-             :post/page          :home
-             :post/md-content    "# Post 3"
-             :post/creation-date post-3-create-date
-             :post/author        {:user/id bob-id}})
+(def post-1
+  #:post{:id             post-1-id
+         :page           :home
+         :css-class      "post-1"
+         :md-content     "#Some content 1"
+         :image-beside   #:image{:src       "https://some-image.svg"
+                                 :src-dark  "https://some-image-dark-mode.svg"
+                                 :alt       "something"}
+         :creation-date  post-1-create-date
+         :last-edit-date post-1-edit-date
+         :author         #:user{:id alice-id}
+         :last-editor    #:user{:id bob-id}})
+
+(def post-2
+  #:post{:id            post-2-id
+         :page          :home
+         :css-class     "post-2"
+         :md-content    "#Some content 2"
+         :creation-date post-2-create-date
+         :author        #:user{:id bob-id}})
+
+(def post-3
+  #:post{:id            post-3-id
+         :page          :home
+         :md-content    "# Post 3"
+         :creation-date post-3-create-date
+         :author        #:user{:id bob-id}})
 
 (def init-pages-and-posts
   {:posts {:all [post-1 post-2]}
-   :pages {:all [{:page/name :home
-                  :page/sorting-method {:sort/type :post/creation-date
-                                        :sort/direction :ascending}}
-                 {:page/name :apply}]}
+   :pages {:all [home-page apply-page]}
    :users {:auth {:logged bob-user}}})

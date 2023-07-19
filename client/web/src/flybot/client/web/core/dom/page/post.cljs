@@ -264,14 +264,11 @@
      [post-form])])
 
 (defn page-post
-  [page-name {:post/keys [id] :as post}]
-  (let [page-mode      @(rf/subscribe [:subs/pattern {:app/pages {page-name {:page/mode '?x}}}])
-        post-mode      @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?x}}}])
+  [{:post/keys [id] :as post}]
+  (let [post-mode      @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?x}}}])
         user-mode      @(rf/subscribe [:subs/pattern '{:user/mode ?x}])
         active-post-id @(rf/subscribe [:subs/pattern '{:form/fields {:post/id ?x}}])]
     (cond (= :reader user-mode)
-          (post-read-only post)
-          (= :edit page-mode)
           (post-read-only post)
           (= :edit post-mode)
           (post-edit post)
