@@ -205,7 +205,8 @@
                                          :post/md-content '?
                                          :post/image-beside {:image/src '?
                                                              :image/src-dark '?
-                                                             :image/alt '?}}}}
+                                                             :image/alt '?}
+                                         :post/default-order '?}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/send-post-success]
@@ -241,7 +242,8 @@
                                        :post/md-content '?
                                        :post/image-beside {:image/src '?
                                                            :image/src-dark '?
-                                                           :image/alt '?}}}}
+                                                           :image/alt '?}
+                                       :post/default-order '?}}}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/post-success]
