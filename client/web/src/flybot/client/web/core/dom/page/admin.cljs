@@ -1,19 +1,14 @@
-(ns flybot.client.web.core.dom.admin-panel
+(ns flybot.client.web.core.dom.page.admin
   (:require [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
-;;---------- Buttons ----------
-
-(defn edit-admin-button
+(defn admin?
   []
-  [:button
-   {:type "button"
-    :on-click #(rf/dispatch [:evt.user.admin/toggle-mode])}
-   (if (= :edit @(rf/subscribe [:subs/pattern '{:admin/mode ?x}]))
-     svg/close-icon
-     svg/plus-icon )])
+  (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?} ?x]}}])
+                       (map :role/name))))
 
+;;---------- Button ----------
 (defn submit-admin-button
   []
   [:button
@@ -40,19 +35,13 @@
 
 ;;---------- Admin div ----------
 
-(defn  admin-section
+(defn admin-panel
   []
-  (when (and (= :editor @(rf/subscribe [:subs/pattern '{:user/mode ?x}]))
-             (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?} ?x]}}])
-                                  (map :role/name))))
+  (when (admin?)
     [:section.container.admin
      [:h1 "Admin"]
-     (if (= :edit @(rf/subscribe [:subs/pattern '{:admin/mode ?x}]))
-       [:<>
-        [errors "admin-page" [:validation-errors :failure-http-result]]
-        [:form
-         [edit-admin-button]
-         [submit-admin-button]]
-        [admin-form]]
-       [:form
-        [edit-admin-button]])]))
+     [:<>
+      [errors "admin-page" [:validation-errors :failure-http-result]]
+      [:form
+       [submit-admin-button]]
+      [admin-form]]]))

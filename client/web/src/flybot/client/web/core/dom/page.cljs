@@ -1,6 +1,7 @@
 (ns flybot.client.web.core.dom.page
   (:require [clojure.string :as str]
             [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
+            [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 
@@ -69,3 +70,8 @@
        [:div.post
         [:h2 "No blog posts reside here (yet…)"]
         [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
+
+(defn admin-page
+  "Returns the admin content."
+  []
+  [admin-panel])

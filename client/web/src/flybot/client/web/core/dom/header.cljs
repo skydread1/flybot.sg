@@ -1,6 +1,7 @@
 (ns flybot.client.web.core.dom.header
   (:require [flybot.client.web.core.dom.common.link :refer [internal-link]]
             [flybot.client.web.core.dom.common.svg :as svg]
+            [flybot.client.web.core.dom.page.admin :as admin]
             [re-frame.core :as rf]))
 
 (defn login-link
@@ -10,12 +11,15 @@
     [:a {:href "" :on-click #(rf/dispatch [:evt.user/logout])} "Logout"]
     [:a {:href "oauth/google/login"} "Login"]))
 
+
+
 (defn navbar-content []
   [(internal-link :flybot/home "Home")
    (internal-link :flybot/apply "Apply")
    (internal-link :flybot/about "About Us")
    (internal-link :flybot/blog "Blog")
    (internal-link :flybot/contact "Contact" false)
+   (when (admin/admin?) (internal-link :flybot/admin "Admin"))
    (login-link)])
 
 (defn navbar-web []
