@@ -79,7 +79,8 @@
                              {:new-post
                               #:post{:id s/post-3-id}}}
               :effects-desc [{:db
-                              {:payload [post-out]}}]
+                              {:payload
+                               [(assoc post-out :post/default-order 2)]}}]
               :session      {}}
              (saturn-handler {:body-params {:posts
                                             {(list :new-post :with [post-in])
@@ -215,29 +216,46 @@
                                 :post/md-content '?
                                 :post/image-beside {:image/src '?
                                                     :image/src-dark '?
-                                                    :image/alt '?}}}})]
+                                                    :image/alt '?}
+                                :post/default-order '?}}})]
       (is (= (-> s/post-1
                  (assoc :post/author s/alice-user)
                  (assoc :post/last-editor s/bob-user))
              (-> resp :body :posts :post)))))
-  (testing "Execute a request for a new post."
+  (testing "Execute a request for a new post:"
     (with-redefs [auth/has-permission? (constantly true)]
-      (let [post-in s/post-3
-            post-out (assoc s/post-3 :post/author s/bob-user)
-            resp (http-request "/posts/new-post"
-                               {:posts
-                                {(list :new-post :with [post-in])
-                                 {:post/id '?
-                                  :post/page '?
-                                  :post/creation-date '?
-                                  :post/author {:user/id '?
-                                                :user/email '?
-                                                :user/name '?
-                                                :user/picture '?
-                                                :user/roles [{:role/name '?
-                                                              :role/date-granted '?}]}
-                                  :post/md-content '?}}})]
-        (is (= post-out (-> resp :body :posts :new-post))))))
+      (testing "Submit a new post."
+        (let [post-in s/post-3
+              post-out (assoc s/post-3 :post/author s/bob-user)
+              resp (http-request "/posts/new-post"
+                                 {:posts
+                                  {(list :new-post :with [post-in])
+                                   {:post/id '?
+                                    :post/page '?
+                                    :post/creation-date '?
+                                    :post/author {:user/id '?
+                                                  :user/email '?
+                                                  :user/name '?
+                                                  :user/picture '?
+                                                  :user/roles [{:role/name '?
+                                                                :role/date-granted '?}]}
+                                    :post/md-content '?
+                                    :post/default-order '?}}})]
+          (is (= post-out
+                 (-> resp :body :posts :new-post)))))
+      (testing "Adjust sorting on new post submission."
+        (let [resp (http-request "/posts/all"
+                                 {:posts
+                                  {(list :all :with [])
+                                   [{:post/id '?
+                                     :post/default-order '?}]}})]
+          (is (= #{{:post/id s/post-3-id
+                    :post/default-order 2}
+                   {:post/id s/post-2-id
+                    :post/default-order 1}
+                   {:post/id s/post-1-id
+                    :post/default-order 0}}
+                 (-> resp :body :posts :all set)))))))
   (testing "Execute a request for a delete post."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/posts/removed-post"

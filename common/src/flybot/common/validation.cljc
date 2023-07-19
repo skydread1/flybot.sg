@@ -44,7 +44,8 @@
     [:map
      [:image/src :string]
      [:image/src-dark :string]
-     [:image/alt :string]]]])
+     [:image/alt :string]]]
+   [:post/default-order {:optional true} nat-int?]])
 
 (def post-schema-create
   "The differences with `post-schema` are that:

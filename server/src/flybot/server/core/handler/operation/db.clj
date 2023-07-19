@@ -45,7 +45,9 @@
    {:db/ident :post/author
     :db/valueType :db.type/ref}
    {:db/ident :post/last-editor
-    :db/valueType :db.type/ref}])
+    :db/valueType :db.type/ref}
+   {:db/ident :post/default-order
+    :db/valueType :db.type/long}])
 
 (def page-schema
   [{:db/ident :page/name
@@ -166,7 +168,8 @@
    {:post/author user-pull-pattern}
    {:post/last-editor user-pull-pattern}
    :post/md-content
-   {:post/image-beside [:image/src :image/src-dark :image/alt]}])
+   {:post/image-beside [:image/src :image/src-dark :image/alt]}
+   :post/default-order])
 
 (defn get-post
   "Get the post with the given `id`."

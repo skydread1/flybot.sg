@@ -30,6 +30,30 @@
 
 ;;---------- Ops with effects ----------
 
+(defn update-post-orders-with
+  "Returns posts whose default sorting orders need to be changed.
+
+  Posts only need to be re-sorted when there is a new, edited or removed post.
+  Such a post must be provided as the second argument, alongside either
+  `:new-post` or `:removed-post` as the third argument."
+  [posts {:post/keys [id page default-order] :as post} option]
+  (let [page-posts (into #{} (filter #(= page (:post/page %))) posts)
+        other-posts (->> page-posts
+                         (filter #(not= id (:post/id %)))
+                         (sort-by :post/default-order))
+        [posts-before posts-after] (if (nil? default-order)
+                                     [other-posts []]
+                                     (split-at default-order other-posts))
+        updated-posts (->>
+                       (condp = option
+                         :new-post (concat posts-before [post] posts-after)
+                         :removed-post other-posts
+                         [])
+                       (map-indexed
+                        (fn [i post] (assoc post :post/default-order i)))
+                       (remove page-posts))]
+    updated-posts))
+
 (defn add-post
   "Add the post to the DB.
    Returns the post with the full author/editor profile included."
@@ -37,24 +61,33 @@
   (let [author (db/get-user db (-> post :post/author :user/id))
         editor (db/get-user db (-> post :post/last-editor :user/id))
         full-post (cond-> (assoc post :post/author author)
-                    editor (assoc :post/last-editor editor))]
+                    editor (assoc :post/last-editor editor))
+        posts (-> db
+                  db/get-all-posts
+                  (update-post-orders-with full-post :new-post))]
     {:response full-post
-     :effects  {:db {:payload [full-post]}}}))
+     :effects  {:db {:payload posts}}}))
 
 (defn delete-post
   "Delete the post if
    - `user-id` is author of `post-id`
    - `user-id` has admin role"
   [db post-id user-id]
-  (let [author-id (-> (db/get-post db post-id) :post/author :user/id)
+  (let [post (db/get-post db post-id)
+        author-id (-> post :post/author :user/id)
         admin?    (->> (db/get-user db user-id)
                        :user/roles
                        (map :role/name)
                        (filter #(= :admin %))
                        seq)]
     (if (or admin? (= author-id user-id))
-      {:response {:post/id post-id}
-       :effects  {:db {:payload [[:db.fn/retractEntity [:post/id post-id]]]}}}
+      (let [posts (-> db
+                      db/get-all-posts
+                      (update-post-orders-with post :removed-post))]
+        {:response {:post/id post-id}
+         :effects {:db {:payload (into
+                                  [[:db.fn/retractEntity [:post/id post-id]]]
+                                  posts)}}})
       {:error {:type      :authorization
                :user-id   user-id
                :author-id author-id}})))
