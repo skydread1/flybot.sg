@@ -85,12 +85,6 @@
  (fn [user-mode _]
    (toggle user-mode [:reader :editor])))
 
-(rf/reg-event-db
- :evt.user.admin/toggle-mode
- [(rf/path :admin/mode)]
- (fn [admin-mode _]
-   (toggle admin-mode [:read :edit])))
-
 (rf/reg-event-fx
  :evt.user/logout
  (fn [_ _]

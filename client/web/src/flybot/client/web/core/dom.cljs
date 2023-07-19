@@ -1,6 +1,5 @@
 (ns flybot.client.web.core.dom
   (:require [flybot.client.web.core.dom.header :refer [header-comp]]
-            [flybot.client.web.core.dom.admin-panel :refer [admin-section]]
             [flybot.client.web.core.dom.page :refer [page]]
             [flybot.client.web.core.dom.footer :refer [footer-comp]]
             [flybot.client.web.core.db]
@@ -16,6 +15,5 @@
 (defn app []
   [:div
    [header-comp]
-   [admin-section]
    [current-page]
    [footer-comp]])
