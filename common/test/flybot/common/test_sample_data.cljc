@@ -65,7 +65,8 @@
          :creation-date  post-1-create-date
          :last-edit-date post-1-edit-date
          :author         #:user{:id alice-id}
-         :last-editor    #:user{:id bob-id}})
+         :last-editor    #:user{:id bob-id}
+         :default-order  0})
 
 (def post-2
   #:post{:id            post-2-id
@@ -73,7 +74,8 @@
          :css-class     "post-2"
          :md-content    "#Some content 2"
          :creation-date post-2-create-date
-         :author        #:user{:id bob-id}})
+         :author        #:user{:id bob-id}
+         :default-order 1})
 
 (def post-3
   #:post{:id            post-3-id

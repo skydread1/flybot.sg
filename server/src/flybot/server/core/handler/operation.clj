@@ -37,49 +37,21 @@
   Such a post must be provided as the second argument, alongside either
   `:new-post` or `:removed-post` as the third argument."
   [posts {:post/keys [id page default-order] :as post} option]
-  (let [existing-post-order (->> posts
-                                 (filter #(= id (:post/id %)))
-                                 first
-                                 :post/default-order)
-        other-posts-same-page (filter (every-pred #(= page (:post/page %))
-                                                  #(not= id (:post/id %)))
-                                      posts)
-        new-post-order (if (or (nil? default-order)
-                               (> default-order (count other-posts-same-page)))
-                         (count other-posts-same-page)
-                         default-order)
-        updated-posts
-        (as-> other-posts-same-page _
-          (cond
-            (and (= :new-post option) existing-post-order)
-            (cond
-              (> existing-post-order new-post-order)
-              (->> _
-                   (filter #(>= existing-post-order
-                                (:post/default-order %)
-                                new-post-order))
-                   (map #(update % :post/default-order inc))
-                   (into [(assoc post :post/default-order new-post-order)]))
-              (< existing-post-order new-post-order)
-              (->> _
-                   (filter #(<= existing-post-order
-                                (:post/default-order %)
-                                new-post-order))
-                   (map #(update % :post/default-order dec))
-                   (into [(assoc post :post/default-order new-post-order)]))
-              :else
-              [(assoc post :post/default-order new-post-order)])
-            (= :new-post option)
-            (->> _
-                 (filter #(<= new-post-order (:post/default-order %)))
-                 (map #(update % :post/default-order inc))
-                 (into [(assoc post :post/default-order new-post-order)]))
-            (= :removed-post option)
-            (->> _
-                 (filter #(<= new-post-order (:post/default-order %)))
-                 (map #(update % :post/default-order dec))
-                 (into []))
-            :else _))]
+  (let [page-posts (into #{} (filter #(= page (:post/page %))) posts)
+        other-posts (->> page-posts
+                         (filter #(not= id (:post/id %)))
+                         (sort-by :post/default-order))
+        [posts-before posts-after] (if (nil? default-order)
+                                     [other-posts []]
+                                     (split-at default-order other-posts))
+        updated-posts (->>
+                       (condp = option
+                         :new-post (concat posts-before [post] posts-after)
+                         :removed-post other-posts
+                         [])
+                       (map-indexed
+                        (fn [i post] (assoc post :post/default-order i)))
+                       (remove page-posts))]
     updated-posts))
 
 (defn add-post
