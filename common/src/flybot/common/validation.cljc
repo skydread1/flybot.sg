@@ -56,15 +56,6 @@
       (mu/assoc :post/last-editor author-schema)
       (mu/update-properties assoc :preserve-required true)))
 
-(def page-schema
-  [:map {:closed true}
-   [:page/name :keyword]])
-
-(def page-schema-create
-  "The difference with `page-schema` is that:
-     - the required keys won't be affected by all-keys-optional."
-  (mu/update-properties page-schema assoc :preserve-required true))
-
 (defn all-keys-optional
   "Walk through the given `schema` and set all keys to optional."
   [schema]
@@ -91,11 +82,6 @@
       [:all [:=> [:cat] [:vector post-schema]]]
       [:new-post [:=> [:cat post-schema-create] post-schema]]
       [:removed-post [:=> [:cat :uuid :string] post-schema]]]]
-    [:pages
-     [:map
-      [:page [:=> [:cat :keyword] page-schema]]
-      [:all [:=> [:cat] [:vector page-schema]]]
-      [:new-page [:=> [:cat page-schema-create] page-schema]]]]
     [:users
      [:map
       [:user [:=> [:cat :string] user-schema]]
@@ -137,9 +123,3 @@
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
         (assoc date-field (u/mk-date))
         (assoc-in [writer-field :user/id] user-id))))
-
-(defn prepare-page
-  "Given the `page` from the page form,
-      returns a page matching server format requirements."
-  [page]
-  (dissoc page :page/mode))

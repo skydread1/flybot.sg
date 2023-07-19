@@ -9,7 +9,6 @@
             [robertluo.fun-map :refer [halt! touch]]))
 
 (def test-data [s/post-1 s/post-2
-                s/home-page s/apply-page
                 s/bob-user s/alice-user])
 (def test-system
   (-> (sys/system-config :test)

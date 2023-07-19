@@ -8,17 +8,9 @@
   [db post-id]
   {:response (db/get-post db post-id)})
 
-(defn get-page
-  [db page-name]
-  {:response (db/get-page db page-name)})
-
 (defn get-all-posts
   [db]
   {:response (db/get-all-posts db)})
-
-(defn get-all-pages
-  [db]
-  {:response (db/get-all-pages db)})
 
 (defn get-user
   [db user-id]
@@ -31,19 +23,18 @@
 ;;---------- Ops with effects ----------
 
 (defn update-post-orders-with
-  "Returns posts whose default sorting orders need to be changed.
-
-  Posts only need to be re-sorted when there is a new, edited or removed post.
-  Such a post must be provided as the second argument, alongside either
-  `:new-post` or `:removed-post` as the third argument."
-  [posts {:post/keys [id page default-order] :as post} option]
-  (let [page-posts (into #{} (filter #(= page (:post/page %))) posts)
+  "Given the `posts` of a page and a `post` with a new default-order,
+   Returns all the posts of that page that have had their default-order affected.
+   - post: new/removed post
+   - option: type of action affetcing the post order: `new-post` or `removed-post`"
+  [posts {:post/keys [id default-order] :as post} option]
+  (let [page-posts (into #{} posts)
         other-posts (->> page-posts
                          (filter #(not= id (:post/id %)))
                          (sort-by :post/default-order))
-        [posts-before posts-after] (if (nil? default-order)
-                                     [other-posts []]
-                                     (split-at default-order other-posts))
+        [posts-before posts-after] (if default-order
+                                     (split-at default-order other-posts)
+                                     [other-posts []])
         updated-posts (->>
                        (condp = option
                          :new-post (concat posts-before [post] posts-after)
@@ -62,8 +53,9 @@
         editor (db/get-user db (-> post :post/last-editor :user/id))
         full-post (cond-> (assoc post :post/author author)
                     editor (assoc :post/last-editor editor))
+        page (:post/page post)
         posts (-> db
-                  db/get-all-posts
+                  (db/get-all-posts-of page)
                   (update-post-orders-with full-post :new-post))]
     {:response full-post
      :effects  {:db {:payload posts}}}))
@@ -79,10 +71,11 @@
                        :user/roles
                        (map :role/name)
                        (filter #(= :admin %))
-                       seq)]
+                       seq)
+        page (:post/page post)]
     (if (or admin? (= author-id user-id))
       (let [posts (-> db
-                      db/get-all-posts
+                      (db/get-all-posts-of page)
                       (update-post-orders-with post :removed-post))]
         {:response {:post/id post-id}
          :effects {:db {:payload (into
@@ -91,11 +84,6 @@
       {:error {:type      :authorization
                :user-id   user-id
                :author-id author-id}})))
-
-(defn add-page
-  [page]
-  {:response page
-   :effects  {:db {:payload [page]}}})
 
 (defn login-user
   [db user-id]
@@ -163,9 +151,6 @@
            :post         (fn [post-id] (get-post db post-id))
            :new-post     (fn [post] (add-post db post))
            :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
-   :pages {:all       (fn [] (get-all-pages db))
-           :page      (fn [page-name] (get-page db page-name))
-           :new-page  (fn [page] (add-page page))}
    :users {:all          (fn [] (get-all-users db))
            :user         (fn [id] (get-user db id))
            :removed-user (fn [id] (delete-user db id))

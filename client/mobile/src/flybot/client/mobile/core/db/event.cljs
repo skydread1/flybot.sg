@@ -27,12 +27,9 @@
                  db
                  :navigator/ref @nav/nav-ref)
     :http-xhrio {:method          :post
-                 :uri             (base-uri "/pages/all")
+                 :uri             (base-uri "/posts/all")
                  :headers {:cookie (:user/cookie db)}
-                 :params {:pages
-                          {(list :all :with [])
-                           [{:page/name '?}]}
-                          :posts
+                 :params {:posts
                           {(list :all :with [])
                            [{:post/id '?
                              :post/page '?

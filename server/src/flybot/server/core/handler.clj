@@ -122,11 +122,6 @@
                               :middleware [[auth/authorization-middleware [:editor]]]}]
             ["/removed-post" {:post       ring-handler
                               :middleware [[auth/authorization-middleware [:editor]]]}]]
-           ["/pages"
-            ["/all"          {:post ring-handler}]
-            ["/page"         {:post ring-handler}]
-            ["/new-page"     {:post       ring-handler
-                              :middleware [[auth/authorization-middleware [:editor]]]}]]
            ["/users"
             ["/logout"         {:get (auth/logout-handler client-root-path)}]
             ["/all"            {:post ring-handler}]

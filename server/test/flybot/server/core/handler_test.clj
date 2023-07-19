@@ -12,7 +12,6 @@
             [robertluo.fun-map :refer [halt! touch]]))
 
 (def test-data [s/post-1 s/post-2
-                s/home-page s/apply-page
                 s/bob-user s/alice-user])
 (defn test-system
   []
@@ -90,15 +89,15 @@
 (deftest ring-handler
   (testing "Returns the proper ring response."
     (let [ring-handler (:ring-handler @a-test-system)]
-      (is (= s/apply-page
+      (is (= {:post/page :home}
              (-> {:body-params
-                  {:pages
-                   {(list :page :with [:apply])
-                    {:page/name '?}}}}
+                  {:posts
+                   {(list :post :with [s/post-1-id])
+                    {:post/page '?}}}}
                  ring-handler
                  :body
-                 :pages
-                 :page))))))
+                 :posts
+                 :post))))))
 
 (defn http-request
   ([uri body]
@@ -123,17 +122,18 @@
     (let [resp (http-request "/wrong-route" ::PATTERN)]
       (is (= 204 (-> resp :status)))))
   (testing "Invalid http method so returns and index.html."
-    (let [resp (http-request :get "/pages/page" ::PATTERN)]
+    (let [resp (http-request :get "/posts/post" ::PATTERN)]
       (is (= 204 (-> resp :status)))))
   (testing "Invalid pattern so returns error 407."
-    (let [resp (http-request "/pages/page" {:invalid-key '?})]
+    (let [resp (http-request "/posts/post" {:invalid-key '?})]
       (is (= 407 (-> resp :status)))))
   (testing "Cannot delete user who does not exist so returns 409."
-    (let [resp (http-request "/pages/page"
-                             {:users
-                              {(list :removed-user :with [s/joshua-id])
-                               {:user/id '?}}})]
-      (is (= 409 (-> resp :status)))))
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [resp (http-request "/users/removed-user"
+                               {:users
+                                {(list :removed-user :with [s/joshua-id])
+                                 {:user/id '?}}})]
+        (is (= 409 (-> resp :status))))))
   (testing "User does not have permission so returns 413."
     (let [resp (http-request "/posts/new-post"
                              {:posts
@@ -159,30 +159,6 @@
                                   {:user/roles [{:role/name '?
                                                  :role/date-granted '?}]}}}})]
         (is (= 415 (-> resp :status))))))
-  
-  ;;---------- Pages
-  (testing "Execute a request for all pages."
-    (let [resp (http-request "/pages/all"
-                             {:pages
-                              {(list :all :with [])
-                               [{:page/name '?}]}})]
-      (is (= (set [{:page/name :home} {:page/name :apply}])
-             (set (-> resp :body :pages :all))))))
-  (testing "Execute a request for a page."
-    (let [resp (http-request "/pages/page"
-                             {:pages
-                              {(list :page :with [:home])
-                               {:page/name '?}}})]
-      (is (= s/home-page
-             (-> resp :body :pages :page)))))
-  (testing "Execute a request for a new page."
-    (with-redefs [auth/has-permission? (constantly true)]
-      (let [resp (http-request "/pages/new-page"
-                               {:pages
-                                {(list :new-page :with [{:page/name :about}])
-                                 {:page/name '?}}})]
-        (is (= {:page/name :about}
-               (-> resp :body :pages :new-page))))))
 
   ;;---------- Posts
   (testing "Execute a request for all posts."

@@ -19,7 +19,7 @@
          :post/page :blog
          :post/md-content "# [Hi there,](https://www.flybot.sg) Henlo!"))
 
-(def init-pages-and-posts
+(def init-data
   {:posts {:all [post-1]}
    :pages {:all [{:page/name :home}
                  {:page/name :apply}]}
@@ -38,7 +38,7 @@
   ;; Mock success http request
   (rf/reg-fx :http-xhrio
              (fn [_]
-               (rf/dispatch [:fx.http/all-success init-pages-and-posts])))
+               (rf/dispatch [:fx.http/all-success init-data])))
   ;; Initialize db
   (rf/dispatch [:evt.app/initialize]))
 

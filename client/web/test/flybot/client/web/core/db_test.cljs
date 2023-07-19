@@ -27,7 +27,7 @@
   ;; Mock success http request
   (rf/reg-fx :http-xhrio
              (fn [_]
-               (rf/dispatch [:fx.http/all-success s/init-pages-and-posts])))
+               (rf/dispatch [:fx.http/all-success s/init-data])))
   ;; Initialize db
   (rf/dispatch [:evt.app/initialize]))
 
@@ -57,7 +57,7 @@
      ;; Mock success http request
      (rf/reg-fx :http-xhrio
                 (fn [_]
-                  (rf/dispatch [:fx.http/all-success s/init-pages-and-posts])))
+                  (rf/dispatch [:fx.http/all-success s/init-data])))
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initial db state is accurate in case no server error."
@@ -67,7 +67,6 @@
        (is (= :reader @mode))
        (is (= false @navbar-open?))
        (is (= 2 (-> @posts count)))
-       (is (= [:home :apply] (-> @re-frame.db/app-db :app/pages keys)))
        (is (= s/bob-user @user))))))
 
 (deftest theme
