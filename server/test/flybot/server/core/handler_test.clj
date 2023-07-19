@@ -293,7 +293,7 @@
                   auth/redirect-302          (fn [resp _] resp)]
       (let [resp (http-request :get "/oauth/google/success" nil)]
         (is (= s/joshua-id
-               (-> resp :body :users :auth :registered :user/id))))))
+               (-> resp :body :users :auth :registered :user/id)))))) 
   (testing "Execute a request to grant admin role to an existing user."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [joshua-email (:user/email s/joshua-user)
