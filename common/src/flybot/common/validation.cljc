@@ -57,12 +57,7 @@
 
 (def page-schema
   [:map {:closed true}
-   [:page/name :keyword]
-   [:page/sorting-method
-    {:optional true}
-    [:map
-     [:sort/type :keyword]
-     [:sort/direction :keyword]]]])
+   [:page/name :keyword]])
 
 (def page-schema-create
   "The difference with `page-schema` is that:

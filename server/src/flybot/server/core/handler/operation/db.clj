@@ -47,19 +47,10 @@
    {:db/ident :post/last-editor
     :db/valueType :db.type/ref}])
 
-(def sort-config-schema
-  [{:db/ident :sort/type
-    :db/valueType :db.type/keyword}
-   {:db/ident :sort/direction
-    :db/valueType :db.type/keyword}])
-
 (def page-schema
   [{:db/ident :page/name
     :db/valueType :db.type/keyword
-    :db/unique :db.unique/identity}
-   {:db/ident :page/sorting-method
-    :db/valueType :db.type/ref
-    :db/isComponent true}])
+    :db/unique :db.unique/identity}])
 
 (def role-schema
   [{:db/ident :role/name
@@ -87,7 +78,6 @@
   (datomic-schema
    (concat
     image-schema
-    sort-config-schema
     post-schema
     page-schema
     role-schema
@@ -99,8 +89,7 @@
 ;;---------- Page ----------
 
 (def page-pull-pattern
-  [:page/name
-   {:page/sorting-method [:sort/type :sort/direction]}])
+  [:page/name])
 
 (defn get-page
   [db page-name]
