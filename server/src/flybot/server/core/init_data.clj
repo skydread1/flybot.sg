@@ -38,34 +38,40 @@
           :md-content (slurp-md "about" "company.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
-                                :alt "Flybot Logo"}}
+                                :alt "Flybot Logo"}
+          :default-order 0}
    #:post{:id (u/mk-uuid)
           :page :about
           :css-class "team"
           :creation-date (u/mk-date)
-          :md-content (slurp-md "about" "team.md")}])
+          :md-content (slurp-md "about" "team.md")
+          :default-order 1}])
 
 (def apply-posts
   [#:post{:id (u/mk-uuid)
           :page :apply
           :css-class "description"
           :creation-date (u/mk-date)
-          :md-content (slurp-md "apply" "description.md")}
+          :md-content (slurp-md "apply" "description.md")
+          :default-order 0}
    #:post{:id (u/mk-uuid)
           :page :apply
           :css-class "qualifications"
           :creation-date (u/mk-date)
-          :md-content (slurp-md "apply" "qualifications.md")}
+          :md-content (slurp-md "apply" "qualifications.md")
+          :default-order 3}
    #:post{:id (u/mk-uuid)
           :page :apply
           :css-class "goal"
           :creation-date (u/mk-date)
-          :md-content (slurp-md "apply" "goal.md")}
+          :md-content (slurp-md "apply" "goal.md")
+          :default-order 2}
    #:post{:id (u/mk-uuid)
           :page :apply
           :css-class "application"
           :creation-date (u/mk-date)
-          :md-content (slurp-md "apply" "application.md")}])
+          :md-content (slurp-md "apply" "application.md")
+          :default-order 1}])
 
 (def blog-posts
   [#:post{:id (u/mk-uuid)
@@ -99,7 +105,8 @@
           :md-content (slurp-md "home" "clojure.md")
           :image-beside #:image{:src "/assets/clojure-logo.svg"
                                 :src-dark "/assets/clojure-logo-dark-mode.svg"
-                                :alt "Clojure Logo"}}
+                                :alt "Clojure Logo"}
+          :default-order 0}
    #:post{:id (u/mk-uuid)
           :page :home
           :css-class "paradigms"
@@ -107,7 +114,8 @@
           :md-content (slurp-md "home" "paradigms.md")
           :image-beside #:image{:src "/assets/lambda-logo.svg"
                                 :src-dark "/assets/lambda-logo-dark-mode.svg"
-                                :alt "Lambda Logo"}}
+                                :alt "Lambda Logo"}
+          :default-order 1}
    #:post{:id (u/mk-uuid)
           :page :home
           :css-class "golden-island"
@@ -115,7 +123,8 @@
           :md-content (slurp-md "home" "golden-island.md")
           :image-beside #:image{:src "/assets/4suits.svg"
                                 :src-dark "/assets/4suits-dark-mode.svg"
-                                :alt "4 suits of a deck"}}
+                                :alt "4 suits of a deck"}
+          :default-order 2}
    #:post{:id (u/mk-uuid)
           :page :home
           :css-class "magic"
@@ -123,7 +132,8 @@
           :md-content (slurp-md "home" "magic.md")
           :image-beside #:image{:src "/assets/binary.svg"
                                 :src-dark "/assets/binary-dark-mode.svg"
-                                :alt "Love word written in base 2"}}])
+                                :alt "Love word written in base 2"}
+          :default-order 3}])
 
 (def posts
   (concat home-posts apply-posts about-posts blog-posts))

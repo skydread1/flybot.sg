@@ -28,18 +28,19 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [posts      (->> @(rf/subscribe [:subs.post/posts page-name])
-                        (map post/add-post-hiccup-content)
-                        (sort-by :post/creation-date)
-                        (reverse))
-        new-post   {:post/id "new-post-temp-id"}]
+  (let [posts (->> @(rf/subscribe [:subs.post/posts page-name])
+                   (map post/add-post-hiccup-content))
+        sorted-posts (if (= :blog page-name)
+                       (sort-by :post/creation-date #(compare %2 %1) posts)
+                       (sort-by :post/default-order posts))
+        new-post {:post/id "new-post-temp-id"}]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [:h1.page-title page-name]
      [page-post new-post]
      (doall
-      (for [post posts]
+      (for [post sorted-posts]
         (if (= :blog page-name)
           (blog-post-short post)
           (page-post post))))]))

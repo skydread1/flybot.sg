@@ -98,7 +98,8 @@
                                :post/md-content '?
                                :post/image-beside {:image/src '?
                                                    :image/src-dark '?
-                                                   :image/alt '?}}]}
+                                                   :image/alt '?}
+                               :post/default-order '?}]}
                             :users
                             {:auth
                              {(list :logged :with [])
