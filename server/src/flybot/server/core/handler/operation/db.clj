@@ -49,11 +49,6 @@
    {:db/ident :post/default-order
     :db/valueType :db.type/long}])
 
-(def page-schema
-  [{:db/ident :page/name
-    :db/valueType :db.type/keyword
-    :db/unique :db.unique/identity}])
-
 (def role-schema
   [{:db/ident :role/name
     :db/valueType :db.type/keyword
@@ -81,39 +76,11 @@
    (concat
     image-schema
     post-schema
-    page-schema
     role-schema
     user-schema)))
 
 (def initial-datalevin-schema
   (datomic->datalevin initial-datomic-schema))
-
-;;---------- Page ----------
-
-(def page-pull-pattern
-  [:page/name])
-
-(defn get-page
-  [db page-name]
-  (->> (d/q
-        '[:find (pull ?page pull-pattern)
-          :in $ ?page-name pull-pattern
-          :where [?page :page/name ?page-name]]
-        db
-        page-name
-        page-pull-pattern)
-       ffirst))
-
-(defn get-all-pages
-  [db]
-  (->> (d/q
-        '[:find (pull ?page pull-pattern)
-          :in $ pull-pattern
-          :where [?page :page/name]]
-        db
-        page-pull-pattern)
-       (map first)
-       vec))
 
 ;;---------- User ----------
 
@@ -154,8 +121,7 @@
           :where [?user :user/id]]
         db
         user-pull-pattern)
-       (map first)
-       vec))
+       (mapv first)))
 
 ;;---------- Post ----------
 
@@ -192,5 +158,17 @@
           :where [?posts :post/id]]
         db
         post-pull-pattern)
-       (map first)
-       vec))
+       (mapv first)))
+
+(defn get-all-posts-of
+  "Get all posts from `page-name`."
+  [db page-name]
+  (->> (d/q
+        '[:find (pull ?posts pull-pattern)
+          :in $ ?page pull-pattern
+          :where
+          [?posts :post/page ?page]]
+        db
+        page-name
+        post-pull-pattern)
+       (mapv first)))

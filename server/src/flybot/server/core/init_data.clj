@@ -138,19 +138,5 @@
 (def posts
   (concat home-posts apply-posts about-posts blog-posts))
 
-(def pages
-  [#:page{:name :home
-          :sorting-method #:sort{:type :creation-date
-                                 :direction :ascending}}
-   #:page{:name :apply
-          :sorting-method #:sort{:type :creation-date
-                                 :direction :ascending}}
-   #:page{:name :about
-          :sorting-method #:sort{:type :creation-date
-                                 :direction :ascending}}
-   #:page{:name :blog
-          :sorting-method #:sort{:type :creation-date
-                                 :direction :ascending}}])
-
 (def init-data
-  (concat posts pages users))
+  (concat posts users))

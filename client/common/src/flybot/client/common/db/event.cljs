@@ -24,17 +24,14 @@
 
 (rf/reg-event-fx
  :fx.http/all-success
- (fn [{:keys [db]} [_ {:keys [pages posts users]}]]
+ (fn [{:keys [db]} [_ {:keys [posts users]}]]
    (let [user (-> users :auth :logged)]
-     {:db (merge db {:app/pages (->> pages
-                                     :all
-                                     (utils/to-indexed-maps :page/name))
-                     :app/posts (->> posts
+     {:db (merge db {:app/posts (->> posts
                                      :all
                                      (map #(assoc % :post/mode :read))
                                      (utils/to-indexed-maps :post/id))
                      :app/user  (when (seq user) user)})
-      :fx [[:fx.log/message "Got all the posts and all the Pages configurations."]
+      :fx [[:fx.log/message "Got all the posts."]
            [:fx.log/message [(if (seq user)
                                (str "User " (:user/name user) " logged in.")
                                (str "No user logged in"))]]]})))

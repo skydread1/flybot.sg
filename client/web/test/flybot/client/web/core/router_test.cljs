@@ -24,7 +24,7 @@
   ;; Mock success http request
   (rf/reg-fx :http-xhrio
              (fn [_]
-               (rf/dispatch [:fx.http/all-success s/init-pages-and-posts])))
+               (rf/dispatch [:fx.http/all-success s/init-data])))
   ;; Initialize db
   (rf/dispatch [:evt.app/initialize]))
 

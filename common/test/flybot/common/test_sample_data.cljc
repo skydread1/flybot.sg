@@ -2,11 +2,6 @@
   "Sample data that can be used in both backend and frontend tests."
   (:require [flybot.common.utils :as u]))
 
-;;---------- Pages ----------
-
-(def home-page {:page/name :home})
-(def apply-page {:page/name :apply})
-
 ;;---------- Users ----------
 
 (def bob-id "bob-id")
@@ -84,7 +79,6 @@
          :creation-date post-3-create-date
          :author        #:user{:id bob-id}})
 
-(def init-pages-and-posts
+(def init-data
   {:posts {:all [post-1 post-2]}
-   :pages {:all [home-page apply-page]}
    :users {:auth {:logged bob-user}}})
