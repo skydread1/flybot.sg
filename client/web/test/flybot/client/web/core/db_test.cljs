@@ -8,8 +8,7 @@
             [flybot.client.web.core.router :as router]
             [flybot.common.test-sample-data :as s]
             [flybot.common.utils :as utils]
-            [re-frame.core :as rf]
-            [re-frame.db :as rf.db]))
+            [re-frame.core :as rf]))
 
 ;; ---------- Fixtures ----------
 
@@ -191,7 +190,8 @@
            new-post-form (rf/subscribe [:subs/pattern '{:form/fields ?x}])
            posts         (rf/subscribe [:subs.post/posts :home])
            new-post      (assoc empty-post
-                                :post/md-content "#New Content 1")]
+                                :post/md-content "#New Content 1"
+                                :post/default-order 2)]
      ;;---------- AUTOFILL POST FORM
      ;; Toggle mode
        (rf/dispatch [:evt.post/toggle-edit-mode temp-id])
