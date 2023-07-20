@@ -62,8 +62,8 @@
                    :post/default-order 1
                    :post/md-content "# a"}]
                  (update-with-new-post (assoc post-2
-                                  :post/default-order 1
-                                  :post/md-content "# a")))))
+                                              :post/default-order 1
+                                              :post/md-content "# a")))))
         (testing "Moved toward end."
           (is (= [{:post/id s/post-3-id :post/default-order 1}
                   {:post/id s/post-2-id :post/default-order 2}]
@@ -87,7 +87,7 @@
             post-out (assoc s/post-3 :post/author s/bob-user)]
         (is (= {:response post-out
                 :effects {:db {:payload
-                               [(assoc post-out :post/default-order 2)]}}}
+                               [(assoc post-in :post/default-order 2)]}}}
                (sut/add-post (d/db db-conn) post-in)))))))
 
 (deftest delete-post

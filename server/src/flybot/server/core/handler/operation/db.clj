@@ -51,8 +51,7 @@
 
 (def role-schema
   [{:db/ident :role/name
-    :db/valueType :db.type/keyword
-    :db/unique :db.unique/identity}
+    :db/valueType :db.type/keyword}
    {:db/ident :role/date-granted
     :db/valueType :db.type/instant}])
 

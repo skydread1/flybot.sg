@@ -56,7 +56,7 @@
         page (:post/page post)
         posts (-> db
                   (db/get-all-posts-of page)
-                  (update-post-orders-with full-post :new-post))]
+                  (update-post-orders-with post :new-post))]
     {:response full-post
      :effects  {:db {:payload posts}}}))
 
