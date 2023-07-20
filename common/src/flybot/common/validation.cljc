@@ -13,8 +13,9 @@
 ;;---------- Validation Schemas ----------
 
 (def author-schema
-  [:map
-   [:user/id :string]])
+  [:map {:closed true}
+   [:user/id :string]
+   [:user/name {:optional true} :string]])
 
 (def user-schema
   [:map {:closed true}

@@ -2,14 +2,25 @@
   "Sample data that can be used in both backend and frontend tests."
   (:require [flybot.common.utils :as u]))
 
+;;---------- Dates ----------
+
+(def dates
+  [#inst "2023-01-01"
+   #inst "2023-01-02"
+   #inst "2023-01-03"
+   #inst "2023-01-04"
+   #inst "2023-01-05"
+   #inst "2023-01-06"
+   #inst "2023-01-07"])
+
 ;;---------- Users ----------
 
 (def bob-id "bob-id")
 (def alice-id "alice-id")
 (def joshua-id "joshua-id")
-(def bob-date-granted (u/mk-date))
-(def alice-date-granted (u/mk-date))
-(def joshua-date-granted (u/mk-date))
+(def bob-date-granted (nth dates 0))
+(def alice-date-granted (nth dates 1))
+(def joshua-date-granted (nth dates 2))
 
 (def bob-user
   #:user{:id "bob-id"
@@ -44,10 +55,10 @@
 (def post-3-id (u/mk-uuid))
 (def post-4-id (u/mk-uuid))
 
-(def post-1-create-date (u/mk-date))
-(def post-1-edit-date (u/mk-date))
-(def post-2-create-date (u/mk-date))
-(def post-3-create-date (u/mk-date))
+(def post-1-create-date (nth dates 3))
+(def post-1-edit-date (nth dates 4))
+(def post-2-create-date (nth dates 5))
+(def post-3-create-date (nth dates 6))
 
 (def post-1
   #:post{:id             post-1-id

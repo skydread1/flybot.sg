@@ -79,7 +79,7 @@
                               #:post{:id s/post-3-id}}}
               :effects-desc [{:db
                               {:payload
-                               [(assoc post-out :post/default-order 2)]}}]
+                               [(assoc post-in :post/default-order 2)]}}]
               :session      {}}
              (saturn-handler {:body-params {:posts
                                             {(list :new-post :with [post-in])
@@ -246,8 +246,12 @@
     (let [resp (http-request "/users/all"
                              {:users
                               {(list :all :with [])
-                               [{:user/id '?}]}})]
-      (is (= [{:user/id s/alice-id} {:user/id s/bob-id}]
+                               [{:user/id '?
+                                 :user/name '?
+                                 :user/roles [{:role/name '?
+                                               :role/date-granted '?}]}]}})]
+      (is (= [(select-keys s/alice-user [:user/id :user/name :user/roles])
+              (select-keys s/bob-user [:user/id :user/name :user/roles])]
              (-> resp :body :users :all)))))
   (testing "Execute a request for a user."
     (let [resp (http-request "/users/user"

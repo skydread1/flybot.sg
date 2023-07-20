@@ -23,8 +23,8 @@
 ;;---------- Ops with effects ----------
 
 (defn add-post
-  "Add the post to the DB.
-   Returns the post with the full author/editor profile included."
+  "Add the post to the DB with only the author/editor IDs included.
+   Returns the post with the full author/editor profiles included."
   [db post]
   (let [author (db/get-user db (-> post :post/author :user/id))
         editor (db/get-user db (-> post :post/last-editor :user/id))
@@ -33,7 +33,7 @@
         page (:post/page post)
         posts (-> db
                   (db/get-all-posts-of page)
-                  (utils/update-post-orders-with full-post :new-post))]
+                  (utils/update-post-orders-with post :new-post))]
     {:response full-post
      :effects  {:db {:payload posts}}}))
 
