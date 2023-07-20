@@ -95,16 +95,14 @@
     (testing "User is admin so returns post delete effects."
       (is (= {:response {:post/id s/post-1-id}
               :effects  {:db {:payload [[:db.fn/retractEntity [:post/id s/post-1-id]]
-                                        (assoc s/post-2
-                                               :post/author s/bob-user
-                                               :post/default-order 0)]}}}
+                                        #:post{:id s/post-2-id
+                                               :default-order 0}]}}}
              (sut/delete-post (d/db db-conn) s/post-1-id s/bob-id))))
     (testing "User is author of post so returns post delete effects."
       (is (= {:response {:post/id s/post-1-id}
               :effects  {:db {:payload [[:db.fn/retractEntity [:post/id s/post-1-id]]
-                                        (assoc s/post-2
-                                               :post/author s/bob-user
-                                               :post/default-order 0)]}}}
+                                        #:post{:id s/post-2-id
+                                               :default-order 0}]}}}
              (sut/delete-post (d/db db-conn) s/post-1-id s/alice-id))))
     (testing "User is not author nor admin so returns error map."
       (is (= {:error {:type      :authorization

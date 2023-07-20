@@ -13,7 +13,7 @@
 ;;---------- Validation Schemas ----------
 
 (def author-schema
-  [:map
+  [:map {:closed true}
    [:user/id :string]])
 
 (def user-schema
