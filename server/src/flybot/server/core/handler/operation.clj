@@ -22,29 +22,6 @@
 
 ;;---------- Ops with effects ----------
 
-(defn update-post-orders-with
-  "Given the `posts` of a page and a `post` with a new default-order,
-   Returns all the posts of that page that have had their default-order affected.
-   - post: new/removed post
-   - option: type of action affetcing the post order: `new-post` or `removed-post`"
-  [posts {:post/keys [id default-order] :as post} option]
-  (let [page-posts (into #{} posts)
-        other-posts (->> page-posts
-                         (filter #(not= id (:post/id %)))
-                         (sort-by :post/default-order))
-        [posts-before posts-after] (if default-order
-                                     (split-at default-order other-posts)
-                                     [other-posts []])
-        updated-posts (->>
-                       (condp = option
-                         :new-post (concat posts-before [post] posts-after)
-                         :removed-post other-posts
-                         [])
-                       (map-indexed
-                        (fn [i post] (assoc post :post/default-order i)))
-                       (remove page-posts))]
-    updated-posts))
-
 (defn add-post
   "Add the post to the DB.
    Returns the post with the full author/editor profile included."
@@ -56,7 +33,7 @@
         page (:post/page post)
         posts (-> db
                   (db/get-all-posts-of page)
-                  (update-post-orders-with full-post :new-post))]
+                  (utils/update-post-orders-with full-post :new-post))]
     {:response full-post
      :effects  {:db {:payload posts}}}))
 
@@ -76,8 +53,8 @@
     (if (or admin? (= author-id user-id))
       (let [posts (-> db
                       (db/get-all-posts-of page)
-                      (update-post-orders-with post :removed-post))]
-        {:response {:post/id post-id}
+                      (utils/update-post-orders-with post :removed-post))]
+        {:response post
          :effects {:db {:payload (into
                                   [[:db.fn/retractEntity [:post/id post-id]]]
                                   posts)}}})

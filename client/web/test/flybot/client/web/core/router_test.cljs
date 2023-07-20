@@ -39,7 +39,8 @@
                        :post/page :blog
                        :post/mode :edit
                        :post/author {:user/id "bob-id" :user/name "Bob"}
-                       :post/creation-date (utils/mk-date)}
+                       :post/creation-date s/post-1-create-date
+                       :post/default-order 0}
            post-mode (rf/subscribe [:subs/pattern
                                     {:app/posts {temp-id '{:post/mode ?x}}}])
            posts (rf/subscribe [:subs.post/posts :blog])
