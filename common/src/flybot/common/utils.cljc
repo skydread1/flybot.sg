@@ -27,8 +27,8 @@
 
 (defn update-post-orders-with
   "Given the `posts` of a page and a new/edited/removed `post`, returns all
-  posts whose default orders need to be updated. If `post` is a new or edited
-  post, includes `post` with the correct default order as well.
+  posts that have had their default orders affected. If `post` is a new or
+  edited post, includes `post` with the correct default order as well.
 
   - `post`: New/edited/removed post
   - `option`: Type of action for the given post. Must be :new-post if `post`
