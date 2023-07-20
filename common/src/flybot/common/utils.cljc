@@ -24,3 +24,26 @@
   "Toggles 2 values."
   [cur [v1 v2]]
   (if (= cur v1) v2 v1))
+
+(defn update-post-orders-with
+  "Given the `posts` of a page and a `post` with a new default-order,
+   Returns all the posts of that page that have had their default-order affected.
+   - post: new/removed post
+   - option: type of action affetcing the post order: `new-post` or `removed-post`"
+  [posts {:post/keys [id default-order] :as post} option]
+  (let [page-posts (into #{} posts)
+        other-posts (->> page-posts
+                         (filter #(not= id (:post/id %)))
+                         (sort-by :post/default-order))
+        [posts-before posts-after] (if default-order
+                                     (split-at default-order other-posts)
+                                     [other-posts []])
+        updated-posts (->>
+                       (condp = option
+                         :new-post (concat posts-before [post] posts-after)
+                         :removed-post other-posts
+                         [])
+                       (map-indexed
+                        (fn [i post] (assoc post :post/default-order i)))
+                       (remove page-posts))]
+    updated-posts))
