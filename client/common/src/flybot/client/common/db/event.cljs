@@ -53,12 +53,12 @@
 (rf/reg-event-fx
  :fx.http/remove-post-success
  (fn [{:keys [db]} [_ {:keys [posts]}]]
-   (let [post-id   (-> posts :removed-post :post/id)
+   (let [post   (-> posts :removed-post)
          user-name (-> db :app/user :user/name)]
-     {:fx [[:dispatch [:evt.post/delete-post post-id]]
+     {:fx [[:dispatch [:evt.post/delete-post post]]
            [:dispatch [:evt.post.form/clear-form]]
            [:dispatch [:evt.error/clear-errors]]
-           [:fx.log/message ["Post " post-id " deleted by " user-name "."]]]})))
+           [:fx.log/message ["Post " (:post/id post) " deleted by " user-name "."]]]})))
 
 (rf/reg-event-fx
  :fx.http/logout-success
@@ -141,17 +141,27 @@
        {:db (assoc-in db [:app/posts post-id :post/mode] :edit)
         :fx [[:dispatch [:evt.post.form/autofill post-id]]]}))))
 
+(defn- update-posts-with
+  [posts {:post/keys [page] :as post} operation]
+  (let [posts-of-page (->> posts
+                           vals
+                           (filter #(= page (:post/page %))))
+        new-posts     (-> posts-of-page
+                          (utils/update-post-orders-with post operation)
+                          (#(utils/to-indexed-maps :post/id %)))]
+    (merge posts new-posts)))
+
 (rf/reg-event-db
  :evt.post/add-post
  [(rf/path :app/posts)]
- (fn [posts [_ {:post/keys [id] :as post}]]
-   (assoc posts id post)))
+ (fn [posts [_ post]]
+   (update-posts-with posts post :new-post)))
 
 (rf/reg-event-db
  :evt.post/delete-post
  [(rf/path :app/posts)]
- (fn [posts [_ post-id]]
-   (dissoc posts post-id)))
+ (fn [posts [_ {:post/keys [id] :as post}]]
+   (-> posts (dissoc id) (update-posts-with post :removed-post))))
 
 (rf/reg-event-fx
  :evt.post/remove-post
@@ -162,7 +172,9 @@
                    :headers         {:cookie (:user/cookie db)}
                    :params          {:posts
                                      {(list :removed-post :with [post-id user-id])
-                                      {:post/id '?}}}
+                                      {:post/id '?
+                                       :post/page '?
+                                       :post/default-order '?}}}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/remove-post-success]
