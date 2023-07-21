@@ -43,7 +43,7 @@
       (for [post sorted-posts]
         (if (= :blog page-name)
           (blog-post-short post)
-          (page-post post))))]))
+          (page-post post :demote-headings))))]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.
