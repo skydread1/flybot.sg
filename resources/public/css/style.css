@@ -75,34 +75,51 @@ footer {
 h1, h2, h3, h4, h5, h6 {
     padding-bottom: 0.5rem;
     padding-top: 0.5rem;
+    text-transform: capitalize;
+}
+
+h1 {
+    font-size: 1.7rem;
+    background-color: var(--text-primary-color);
+    color: var(--bg-secondary-color);
+    text-transform: uppercase;
+    text-align: center;
+    border-style: solid;
+    border-width: 1px;
+    border-color: var(--border-primary-color);
+    border-top: none;
 }
 
 @media (max-width: 1024px) {
     h1, h2, h3, h4, h5, h6 {
         text-align: center;
     }
+
+    h1 {
+        font-size: 1.3rem;
+    }
 }
 
-h1 {
-    font-size: 1.7rem;
+h2 {
+    font-size: 1.6rem;
     color: var(--text-primary-color);
     text-transform: uppercase;
 }
 
-h2 {
+h3 {
     font-size: 1.3rem;
     color: var(--text-secondary-color);
 }
 
-h3 {
+h4 {
     color: var(--text-primary-color);
 }
 
-h4 {
+h5 {
     color: var(--text-secondary-color);
 }
 
-h5 {
+h6 {
     color: var(--text-primary-color);
 }
 
@@ -402,16 +419,6 @@ footer p {
 
 /* Page - all pages */
 
-section h1.page-title {
-    background-color: var(--text-primary-color);
-    color: var(--bg-secondary-color);
-    text-align: center;
-    border-style: solid;
-    border-width: 1px;
-    border-color: var(--border-primary-color);
-    border-top: none;
-}
-
 section .post {
     padding: 2.5rem;
     border-bottom-style: solid;
@@ -574,7 +581,6 @@ section .team img {
 /* Admin */
 
 .admin {
-    padding: 1rem;
     border-bottom-style: solid;
     border-bottom-width: 1px;
     border-bottom-color: var(--border-primary-color);
@@ -596,6 +602,12 @@ section.admin h1 {
 
 .blog .post .post-body>.text {
     width: 100%;
+}
+
+.blog .post.short h2 {
+    font-size: 1.3rem;
+    color: var(--text-secondary-color);
+    text-transform: none;
 }
 
 .blog .post.short {

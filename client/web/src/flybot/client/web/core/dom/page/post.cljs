@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.dom.page.post
-  (:require [flybot.client.web.core.dom.common.error :refer [errors]]
+  (:require [clojure.walk :as walk]
+            [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.svg :as svg]
             [flybot.client.web.core.dom.hiccup :as h]
@@ -264,18 +265,39 @@
      [post-form])])
 
 (defn page-post
-  [{:post/keys [id] :as post}]
-  (let [post-mode      @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?x}}}])
-        user-mode      @(rf/subscribe [:subs/pattern '{:user/mode ?x}])
-        active-post-id @(rf/subscribe [:subs/pattern '{:form/fields {:post/id ?x}}])]
-    (cond (= :reader user-mode)
-          (post-read-only post)
-          (= :edit post-mode)
-          (post-edit post)
-          (and active-post-id (not= active-post-id id))
-          (post-read-only post)
-          :else
-          (post-read post))))
+  "Renders a post as part of a page.
+
+  - `post`: Post to be rendered
+  - `demote-headings?`: If omitted or logical false, renders `post` as-is. If
+  logical true, renders `post` with all headings demoted (e.g., h1 to h2, h5 to
+  h6).
+
+  On multi-post pages, the only h1 heading should be the page name. See
+  https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements"
+  ([post]
+   (page-post post nil))
+  ([{:post/keys [id] :as post} demote-headings?]
+   (let [post-mode      @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?x}}}])
+         user-mode      @(rf/subscribe [:subs/pattern '{:user/mode ?x}])
+         active-post-id @(rf/subscribe [:subs/pattern '{:form/fields {:post/id ?x}}])]
+     (->>
+      (cond (= :reader user-mode)
+            (post-read-only post)
+            (= :edit post-mode)
+            (post-edit post)
+            (and active-post-id (not= active-post-id id))
+            (post-read-only post)
+            :else
+            (post-read post))
+      ((if demote-headings?
+         #(walk/prewalk-replace {:h1 :h2
+                                 :h2 :h3
+                                 :h3 :h4
+                                 :h4 :h5
+                                 :h5 :h6
+                                 :h6 :strong}
+                                %)
+         identity))))))
 
 (defn blog-post-short
   [{:post/keys [css-class id] :as post}]
