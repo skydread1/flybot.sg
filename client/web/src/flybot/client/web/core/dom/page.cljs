@@ -37,7 +37,7 @@
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
-     [:h1.page-title page-name]
+     [:h1 page-name]
      [page-post new-post]
      (doall
       (for [post sorted-posts]
