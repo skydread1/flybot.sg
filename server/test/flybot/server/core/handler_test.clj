@@ -126,20 +126,20 @@
       (is (= 204 (-> resp :status)))))
   (testing "Invalid pattern so returns error 407."
     (let [resp (http-request "/posts/post" {:invalid-key '?})]
-      (is (= 407 (-> resp :status)))))
+      (is (= 470 (-> resp :status)))))
   (testing "Cannot delete user who does not exist so returns 409."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/users/removed-user"
                                {:users
                                 {(list :removed-user :with [s/joshua-id])
                                  {:user/id '?}}})]
-        (is (= 409 (-> resp :status))))))
+        (is (= 472 (-> resp :status))))))
   (testing "User does not have permission so returns 413."
     (let [resp (http-request "/posts/new-post"
                              {:posts
                               {(list :new-post :with [::POST])
                                {:post/id '?}}})]
-      (is (= 413 (-> resp :status)))))
+      (is (= 476 (-> resp :status)))))
   (testing "User is not found so returns 414."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [resp (http-request "/users/new-role/admin"
@@ -148,7 +148,7 @@
                                  {(list :admin :with ["unknown.email@basecity.com"])
                                   {:user/roles [{:role/name '?
                                                  :role/date-granted '?}]}}}})]
-        (is (= 414 (-> resp :status))))))
+        (is (= 473 (-> resp :status))))))
   (testing "User is already admin so returns 415."
     (with-redefs [auth/has-permission? (constantly true)]
       (let [bob-email (:user/email s/bob-user)
@@ -158,7 +158,7 @@
                                  {(list :admin :with [bob-email])
                                   {:user/roles [{:role/name '?
                                                  :role/date-granted '?}]}}}})]
-        (is (= 415 (-> resp :status))))))
+        (is (= 474 (-> resp :status))))))
 
   ;;---------- Posts
   (testing "Execute a request for all posts."
