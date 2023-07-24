@@ -38,9 +38,8 @@
      {:class (name page-name)
       :key   (name page-name)}
      [:h1 page-name]
-     [page-post new-post]
      (doall
-      (for [post sorted-posts]
+      (for [post (conj sorted-posts new-post)]
         (if (= :blog page-name)
           (blog-post-short post)
           (page-post post :demote-headings))))]))
