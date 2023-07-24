@@ -7,7 +7,8 @@
             [flybot.common.utils :as utils :refer [toggle]]
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]
-            [sg.flybot.pullable :as pull]))
+            [sg.flybot.pullable :as pull]
+            [clojure.edn :as edn]))
 
 ;; ---------- http success/failure ----------
 
@@ -141,3 +142,9 @@
  :evt.page/set-current-view
  (fn [db [_ new-match]]
    (assoc db :app/current-view new-match)))
+
+(rf/reg-event-db
+ :evt.page.form/set-blog-sorting-options
+ [(rf/path [:app/blog-sorting])]
+ (fn [current-options [_ new-options]]
+   (merge current-options (edn/read-string new-options))))

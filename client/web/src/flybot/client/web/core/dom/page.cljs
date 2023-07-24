@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
             [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
+            [flybot.client.web.core.dom.page.options :as page.options]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 
@@ -28,18 +29,30 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [posts (->> @(rf/subscribe [:subs.post/posts page-name])
+  (let [{blog-sort-by :sort/by
+         blog-sort-direction :sort/direction} @(rf/subscribe
+                                                [:subs/pattern
+                                                 {:app/blog-sorting '?x}])
+        posts (->> @(rf/subscribe [:subs.post/posts page-name])
                    (map post/add-post-hiccup-content))
-        sorted-posts (if (= :blog page-name)
-                       (sort-by :post/creation-date #(compare %2 %1) posts)
+        sorted-posts (case page-name
+                       :blog (sort-by (or blog-sort-by :post/creation-date)
+                                      (case blog-sort-direction
+                                        :ascending compare
+                                        #(compare %2 %1))
+                                      posts)
                        (sort-by :post/default-order posts))
-        new-post {:post/id "new-post-temp-id"}]
+        new-post {:post/id "new-post-temp-id"}
+        all-posts (case @(rf/subscribe [:subs/pattern {:user/mode '?x}])
+                    :editor (cons new-post sorted-posts)
+                    sorted-posts)]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [:h1 page-name]
+     [:div.post [page.options/blog-sorting-form]]
      (doall
-      (for [post (conj sorted-posts new-post)]
+      (for [post all-posts]
         (if (= :blog page-name)
           (blog-post-short post)
           (page-post post :demote-headings))))]))
