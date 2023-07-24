@@ -29,24 +29,20 @@
 (defn page
   "Given the `page-name`, returns the page content."
   [page-name]
-  (let [{blog-sort-by :sort/by
-         blog-sort-direction :sort/direction} @(rf/subscribe
-                                                [:subs/pattern
-                                                 {:app/blog-sorting '?x}])
-        posts (->> @(rf/subscribe [:subs.post/posts page-name])
+  (let [posts (->> @(rf/subscribe [:subs.post/posts page-name])
                    (map post/add-post-hiccup-content))
         sorted-posts (case page-name
-                       :blog (sort-by (cond
-                                        (= :fn-post->title blog-sort-by)
-                                        web.utils/post->title
-                                        blog-sort-by
-                                        blog-sort-by
-                                        :else
-                                        :post/creation-date)
-                                      (case blog-sort-direction
-                                        :ascending compare
-                                        #(compare %2 %1))
-                                      posts)
+                       :blog (let [{:sort/keys [by direction]}
+                                   @(rf/subscribe [:subs/pattern
+                                                   {:app/blog-sorting '?x}])]
+                               (sort-by (case by
+                                          nil :post/creation-date
+                                          :fn-post->title web.utils/post->title
+                                          by)
+                                        (case direction
+                                          :ascending compare
+                                          #(compare %2 %1))
+                                        posts))
                        (sort-by :post/default-order posts))
         new-post {:post/id "new-post-temp-id"}
         all-posts (case @(rf/subscribe [:subs/pattern {:user/mode '?x}])

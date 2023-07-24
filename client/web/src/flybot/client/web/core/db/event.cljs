@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.db.event
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [day8.re-frame.http-fx]
             [flybot.client.common.db.event]
@@ -7,8 +8,7 @@
             [flybot.common.utils :as utils :refer [toggle]]
             [re-frame.core :as rf]
             [reitit.frontend.easy :as rfe]
-            [sg.flybot.pullable :as pull]
-            [clojure.edn :as edn]))
+            [sg.flybot.pullable :as pull]))
 
 ;; ---------- http success/failure ----------
 
@@ -142,6 +142,8 @@
  :evt.page/set-current-view
  (fn [db [_ new-match]]
    (assoc db :app/current-view new-match)))
+
+;; ------ Post sorting ------
 
 (rf/reg-event-db
  :evt.page.form/set-blog-sorting-options
