@@ -232,8 +232,6 @@
    {:key id
     :id id}
    [:div.post-header
-    (when (= id "new-post-temp-id")
-      [:h1 "New Post"])
     [:form
      [edit-button id]
      (when (and (= :edit @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?x}}}]))
