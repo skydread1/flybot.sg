@@ -128,9 +128,12 @@
             ["/user"           {:post ring-handler}]
             ["/logged-in-user" {:post ring-handler}]
             ["/removed-user"   {:post       ring-handler
-                                :middleware [[auth/authorization-middleware [:admin]]]}]
-            ["/new-role/admin" {:post       ring-handler
-                                :middleware [[auth/authorization-middleware [:admin]]]}]]
+                                :middleware [[auth/authorization-middleware [:owner]]]}]
+            ["/new-role"
+             ["/admin" {:post       ring-handler
+                        :middleware [[auth/authorization-middleware [:owner]]]}]
+             ["/owner" {:post       ring-handler
+                        :middleware [[auth/authorization-middleware [:owner]]]}]]]
            ["/oauth/google/success" {:get        ring-handler
                                      :middleware [[auth/authentification-middleware client-root-path]]}]
            ["/*" {:get {:handler index-handler}}]])
