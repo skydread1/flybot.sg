@@ -44,18 +44,16 @@
                                           #(compare %2 %1))
                                         posts))
                        (sort-by :post/default-order posts))
-        new-post {:post/id "new-post-temp-id"}
-        all-posts (case @(rf/subscribe [:subs/pattern {:user/mode '?x}])
-                    :editor (cons new-post sorted-posts)
-                    sorted-posts)]
+        new-post {:post/id "new-post-temp-id"}]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [:h1 page-name]
      (when (= :blog page-name)
        [:div.post [page.options/blog-sorting-form]])
+     [page-post new-post]
      (doall
-      (for [post all-posts]
+      (for [post sorted-posts]
         (if (= :blog page-name)
           (blog-post-short post)
           (page-post post :demote-headings))))]))
