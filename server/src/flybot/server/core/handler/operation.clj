@@ -75,7 +75,13 @@
 (defn register-user
   [db user-id email name picture]
   (if-let [{:user/keys [id roles] :as user} (db/get-user db user-id)]
-    (let [updated-user (assoc user :user/name name :user/picture picture)]
+    (let [updated-user (-> user
+                           (select-keys [:user/id
+                                         :user/email
+                                         :user/name
+                                         :user/picture])
+                           (merge #:user{:name name
+                                         :picture picture}))]
     ;; already in db so update user (name or picture could have changed).
       {:response updated-user
        :effects  {:db {:payload [updated-user]}}
