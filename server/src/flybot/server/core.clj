@@ -21,7 +21,7 @@
     :client-root-path "/"}})
 
 (defn load-initial-data
-  "Loads the initial posts and the admin-user to the db
+  "Loads the initial posts and the owner-user to the db
    If the db already has some content, do nothing."
   [conn init-data]
   (when-not (seq (db/get-all-posts (d/db conn)))

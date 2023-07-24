@@ -159,6 +159,15 @@
                                   {:user/roles [{:role/name '?
                                                  :role/date-granted '?}]}}}})]
         (is (= 474 (-> resp :status))))))
+  (testing "User does not have the required role to upgrade to new role so returns 477."
+    (with-redefs [auth/has-permission? (constantly true)]
+      (let [alice-email (:user/email s/alice-user)
+            resp (http-request "/users/new-role/owner"
+                               {:users
+                                {:new-role
+                                 {(list :owner :with [alice-email])
+                                  {:user/id '?}}}})]
+        (is (= 477 (-> resp :status))))))
 
   ;;---------- Posts
   (testing "Execute a request for all posts."

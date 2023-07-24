@@ -92,7 +92,8 @@
               [:registered [:=> [:cat :string user-email-schema :string :string] user-schema]]
               [:logged [:=> [:cat] user-schema]]]]
       [:new-role [:map
-                  [:admin [:=> [:cat user-email-schema] user-schema]]]]]]]))
+                  [:admin [:=> [:cat user-email-schema] user-schema]]
+                  [:owner [:=> [:cat user-email-schema] user-schema]]]]]]]))
 
 ;;---------- Frontend validation ----------
 
