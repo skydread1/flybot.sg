@@ -13,20 +13,20 @@
                                  (.. % -target -value)])}
       [:option
        {:selected true
-        :value "#:sort{:by :post/creation-date :direction :descending}"}
+        :value "[:date-created :descending]"}
        "Date created (newest first)"]
       [:option
-       {:value "#:sort{:by :post/creation-date :direction :ascending}"}
+       {:value "[:date-created :ascending]"}
        "Date created (oldest first)"]
       [:option
-       {:value "#:sort{:by :post/last-edit-date :direction :descending}"}
+       {:value "[:date-updated :descending]"}
        "Date updated (latest first)"]
       [:option
-       {:value "#:sort{:by :post/last-edit-date :direction :ascending}"}
+       {:value "[:date-updated :ascending]"}
        "Date updated (oldest first)"]
       [:option
-       {:value "#:sort{:by :fn-post->title :direction :ascending}"}
+       {:value "[:title :ascending]"}
        "Title (A–Z)"]
       [:option
-       {:value "#:sort{:by :fn-post->title :direction :descending}"}
+       {:value "[:title :descending]"}
        "Title (Z–A)"]]])])

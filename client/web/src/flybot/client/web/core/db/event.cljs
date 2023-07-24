@@ -148,5 +148,5 @@
 (rf/reg-event-db
  :evt.page.form/set-blog-sorting-options
  [(rf/path [:app/blog-sorting])]
- (fn [current-options [_ new-options]]
-   (merge current-options (edn/read-string new-options))))
+ (fn [_ [_ new-options]]
+   (edn/read-string new-options)))
