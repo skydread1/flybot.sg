@@ -52,7 +52,8 @@
      {:class (name page-name)
       :key   (name page-name)}
      [:h1 page-name]
-     [:div.post [page.options/blog-sorting-form]]
+     (when (= :blog page-name)
+       [:div.post [page.options/blog-sorting-form]])
      (doall
       (for [post all-posts]
         (if (= :blog page-name)
