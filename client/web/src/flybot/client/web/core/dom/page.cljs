@@ -36,7 +36,13 @@
         posts (->> @(rf/subscribe [:subs.post/posts page-name])
                    (map post/add-post-hiccup-content))
         sorted-posts (case page-name
-                       :blog (sort-by (or blog-sort-by :post/creation-date)
+                       :blog (sort-by (cond
+                                        (= :fn-post->title blog-sort-by)
+                                        web.utils/post->title
+                                        blog-sort-by
+                                        blog-sort-by
+                                        :else
+                                        :post/creation-date)
                                       (case blog-sort-direction
                                         :ascending compare
                                         #(compare %2 %1))
