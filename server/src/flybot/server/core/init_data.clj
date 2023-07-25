@@ -6,22 +6,37 @@
 
 ;; ---------- Initial Data ----------
 
-(def user-admin
-  (-> (edn/read-string (or (System/getenv "ADMIN_USER")
-                           (slurp "config/admin.edn")))
+(def owner-user
+  "Reads the credentials from env or owner.edn and grants owner role."
+  (-> (edn/read-string (or (System/getenv "OWNER_USER")
+                           (slurp "config/owner.edn")))
       (assoc :user/roles [#:role{:name :editor
                                  :date-granted (u/mk-date)}
                           #:role{:name :admin
+                                 :date-granted (u/mk-date)}
+                          #:role{:name :owner
                                  :date-granted (u/mk-date)}])))
 
-(def user-alice
+(def bob-user
+  "Bob is admin"
+  #:user{:id "bob-id"
+         :email "bob@basecity.com"
+         :name "Bob Smith"
+         :roles [#:role{:name :editor
+                        :date-granted (u/mk-date)}
+                 #:role{:name :admin
+                        :date-granted (u/mk-date)}]})
+
+(def alice-user
+  "Alice is editor"
   #:user{:id "alice-id"
          :email "alice@basecity.com"
          :name "Alice Martin"
          :roles [#:role{:name :editor
                         :date-granted (u/mk-date)}]})
+
 (def users
-  [user-admin user-alice])
+  [owner-user bob-user alice-user])
 
 (defn slurp-md
   "Slurp the sample files with the markdown."
@@ -79,8 +94,8 @@
           :css-class "welcome"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :author (select-keys user-admin [:user/id])
-          :last-editor (select-keys user-admin [:user/id])
+          :author (select-keys bob-user [:user/id])
+          :last-editor (select-keys alice-user [:user/id])
           :md-content (slurp-md "blog" "welcome.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
@@ -90,8 +105,8 @@
           :css-class "md-example"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :author (select-keys user-alice [:user/id])
-          :last-editor (select-keys user-admin [:user/id])
+          :author (select-keys owner-user [:user/id])
+          :last-editor (select-keys owner-user [:user/id])
           :md-content (slurp-md "blog" "mdsample.md")
           :image-beside #:image{:src "https://octodex.github.com/images/dojocat.jpg"
                                 :src-dark "https://octodex.github.com/images/stormtroopocat.jpg"

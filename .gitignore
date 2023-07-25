@@ -17,7 +17,7 @@ build
 
 ## config
 oauth2.edn
-admin.edn
+owner.edn
 
 ## build
 target

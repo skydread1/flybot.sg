@@ -13,7 +13,7 @@ on:
 
 env:
   OAUTH2: ""
-  ADMIN_USER: ""
+  OWNER_USER: ""
 
 jobs:
   build:
