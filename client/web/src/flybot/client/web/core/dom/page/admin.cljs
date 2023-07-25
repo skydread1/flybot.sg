@@ -3,45 +3,51 @@
             [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
-(defn admin?
-  []
-  (some #{:admin} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?} ?x]}}])
-                       (map :role/name))))
+(defn has-role?
+  [role]
+  (some #{role} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?} ?x]}}])
+                     (map :role/name))))
 
 ;;---------- Button ----------
-(defn submit-admin-button
-  []
+(defn submit-role-button
+  [role]
   [:button
    {:type "button"
-    :on-click #(rf/dispatch [:evt.user.form/grant-admin])}
+    :on-click #(rf/dispatch [:evt.user.form/grant-role role])}
    svg/done-icon])
 
 ;;---------- From ----------
 
-(defn admin-form
-  []
-  [:form
-   [:fieldset
-    [:label {:for "add-admin"} "Email of new admin:"]
-    [:br]
-    [:input
-     {:type "text"
-      :name "add-admin"
-      :placeholder "somebody@basecity.com"
-      :value @(rf/subscribe [:subs/pattern '{:form/fields {:new-admin/email ?x}}])
-      :on-change #(rf/dispatch [:evt.post.form/set-field
-                                :new-admin/email
-                                (.. % -target -value)])}]]])
+(defn grant-role-from
+  [role] 
+  (let [role-str (name role)
+        for-val  (str "add-role" role-str)]
+    [:form
+     [:fieldset
+      [:label {:for for-val} (str "Email of new " role-str ":")]
+      [:br]
+      [:input
+       {:type "text"
+        :name for-val
+        :placeholder "somebody@basecity.com"
+        :value @(rf/subscribe [:subs/pattern {:form.role/fields {role '{:new-role/email ?x}}}])
+        :on-change #(rf/dispatch [:evt.role.form/set-field
+                                  role
+                                  :new-role/email
+                                  (.. % -target -value)])}]]]))
 
 ;;---------- Admin div ----------
 
 (defn admin-panel
   []
-  (when (admin?)
+  (when (has-role? :owner)
     [:section.container.admin
      [:h1 "Admin"]
      [:<>
       [errors "admin-page" [:validation-errors :failure-http-result]]
       [:form
-       [submit-admin-button]]
-      [admin-form]]]))
+       [submit-role-button :admin]]
+      [grant-role-from :admin]
+      [:form
+       [submit-role-button :owner]]
+      [grant-role-from :owner]]]))
