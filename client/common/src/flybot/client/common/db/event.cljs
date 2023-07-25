@@ -1,8 +1,9 @@
 (ns flybot.client.common.db.event
-  (:require [flybot.common.utils :as utils :refer [toggle]]
-            [flybot.common.validation :as valid]
-            [ajax.edn :refer [edn-request-format edn-response-format]]
+  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
+            [clojure.edn :as edn]
             [day8.re-frame.http-fx]
+            [flybot.common.utils :as utils :refer [toggle]]
+            [flybot.common.validation :as valid]
             [re-frame.core :as rf]))
 
 ;; Overridden by the figwheel config option :closure-defines
@@ -290,6 +291,14 @@
  (fn [post [_ show?]]
    (merge (assoc post :post/to-delete? show?)
           (when show? {:post/view :preview}))))
+
+;; ------ View Options ------
+
+(rf/reg-event-db
+ :evt.page.form/set-blog-sorting-options
+ [(rf/path [:app/blog-sorting])]
+ (fn [_ [_ new-options]]
+   (edn/read-string new-options)))
 
 ;; ---------- Errors ----------
 

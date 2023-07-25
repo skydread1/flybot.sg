@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
             [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
+            [flybot.client.web.core.dom.page.options :as page.options]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 
@@ -31,13 +32,26 @@
   (let [posts (->> @(rf/subscribe [:subs.post/posts page-name])
                    (map post/add-post-hiccup-content))
         sorted-posts (if (= :blog page-name)
-                       (sort-by :post/creation-date #(compare %2 %1) posts)
+                       (let [[by direction] @(rf/subscribe [:subs/pattern
+                                                            {:app/blog-sorting
+                                                             '?x}])]
+                         (sort-by (case by
+                                    :date-created :post/creation-date
+                                    :date-updated :post/last-edit-date
+                                    :title web.utils/post->title
+                                    :post/creation-date)
+                                  (if (= :ascending direction)
+                                    compare
+                                    #(compare %2 %1))
+                                  posts))
                        (sort-by :post/default-order posts))
         new-post {:post/id "new-post-temp-id"}]
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
      [:h1 page-name]
+     (when (= :blog page-name)
+       [:div.post [page.options/blog-sorting-form]])
      (doall
       (for [post (conj sorted-posts new-post)]
         (if (= :blog page-name)
