@@ -37,7 +37,7 @@
            role-form   (rf/subscribe [:subs/pattern '{:form.role/fields ?x}])
            errors      (rf/subscribe [:subs/pattern '{:app/errors ?x}])]
 
-       ;;---------- GRANT ROLE ROLE ERROR
+       ;;---------- GRANT ROLE ERROR
        (rf/dispatch [:evt.role.form/set-field :admin :user/email "email@wrong.com"])
        ;; Send role but validation error
        (rf/dispatch [:evt.user.form/grant-role :admin])
@@ -45,7 +45,7 @@
          (is @role-form)
          (is @errors))
 
-       ;;---------- GRANT ROLE ROLE SUCCESS
+       ;;---------- GRANT ROLE SUCCESS
        (rf/reg-fx :http-xhrio
                   (fn [_] (rf/dispatch
                            [:fx.http/grant-role-success

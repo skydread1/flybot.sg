@@ -18,7 +18,7 @@
 
 ;;---------- From ----------
 
-(defn grant-role-from
+(defn grant-role-form
   [role] 
   (let [role-str (name role)
         for-val  (str "add-role" role-str)]
@@ -48,11 +48,11 @@
       [:div
        [:form
         [submit-role-button :admin]]
-       [grant-role-from :admin]]
+       [grant-role-form :admin]]
       [:div
        [:form
         [submit-role-button :owner]]
-       [grant-role-from :owner]]]
+       [grant-role-form :owner]]]
      [:div
       [:h2 "You do not have the required permissions."]
       [:p "This section is dedicated to the owners of the website."]])])
