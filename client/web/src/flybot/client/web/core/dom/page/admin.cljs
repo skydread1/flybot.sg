@@ -40,9 +40,9 @@
 
 (defn admin-panel
   []
-  (when (has-role? :owner)
-    [:section.container.admin
-     [:h1 "Admin"]
+  [:section.container.admin
+   [:h1 "Admin"]
+   (if (has-role? :owner)
      [:<>
       [errors "admin-page" [:validation-errors :failure-http-result]]
       [:div
@@ -52,4 +52,7 @@
       [:div
        [:form
         [submit-role-button :owner]]
-       [grant-role-from :owner]]]]))
+       [grant-role-from :owner]]]
+     [:div
+      [:h2 "You do not have the required permissions."]
+      [:p "This section is dedicated to the owners of the website."]])])
