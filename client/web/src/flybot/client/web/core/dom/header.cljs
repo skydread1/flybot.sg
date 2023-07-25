@@ -1,7 +1,6 @@
 (ns flybot.client.web.core.dom.header
   (:require [flybot.client.web.core.dom.common.link :refer [internal-link]]
             [flybot.client.web.core.dom.common.svg :as svg]
-            [flybot.client.web.core.dom.page.admin :as admin]
             [re-frame.core :as rf]))
 
 (defn login-link
@@ -19,7 +18,6 @@
    (internal-link :flybot/about "About Us")
    (internal-link :flybot/blog "Blog")
    (internal-link :flybot/contact "Contact" false)
-   (when (admin/admin?) (internal-link :flybot/admin "Admin"))
    (login-link)])
 
 (defn navbar-web []
