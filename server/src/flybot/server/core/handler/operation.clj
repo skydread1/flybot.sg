@@ -122,10 +122,9 @@
                    :user-email    email}}
           
           :else
-          (let [new-user (update user :user/roles conj {:role/name         role-to-grant
-                                                        :role/date-granted (utils/mk-date)})]
-            {:response new-user
-             :effects  {:db {:payload [new-user]}}}))))
+          (let [new-role {:role/name role-to-grant :role/date-granted (utils/mk-date)}]
+            {:response (update user :user/roles conj new-role)
+             :effects  {:db {:payload [(assoc user :user/roles [new-role])]}}}))))
 
 (def grant-admin-role
   #(grant-role % %2 :editor :admin))
