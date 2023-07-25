@@ -45,9 +45,11 @@
      [:h1 "Admin"]
      [:<>
       [errors "admin-page" [:validation-errors :failure-http-result]]
-      [:form
-       [submit-role-button :admin]]
-      [grant-role-from :admin]
-      [:form
-       [submit-role-button :owner]]
-      [grant-role-from :owner]]]))
+      [:div
+       [:form
+        [submit-role-button :admin]]
+       [grant-role-from :admin]]
+      [:div
+       [:form
+        [submit-role-button :owner]]
+       [grant-role-from :owner]]]]))

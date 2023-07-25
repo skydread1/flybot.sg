@@ -586,8 +586,8 @@ section .team img {
     border-bottom-color: var(--border-primary-color);
 }
 
-section.admin h1 {
-    text-align: center;
+.admin div {
+    margin: 1rem;
 }
 
 /* Blog Page */
