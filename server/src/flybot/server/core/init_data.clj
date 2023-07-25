@@ -94,8 +94,8 @@
           :css-class "welcome"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :author bob-user
-          :last-editor alice-user
+          :author (select-keys bob-user [:user/id])
+          :last-editor (select-keys alice-user [:user/id])
           :md-content (slurp-md "blog" "welcome.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
@@ -105,8 +105,8 @@
           :css-class "md-example"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :author owner-user
-          :last-editor owner-user
+          :author (select-keys owner-user [:user/id])
+          :last-editor (select-keys owner-user [:user/id])
           :md-content (slurp-md "blog" "mdsample.md")
           :image-beside #:image{:src "https://octodex.github.com/images/dojocat.jpg"
                                 :src-dark "https://octodex.github.com/images/stormtroopocat.jpg"
