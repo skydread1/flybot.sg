@@ -13,14 +13,15 @@
 (def exception-middleware
   "When a ex-data :type is matched, create a handler with custom status and error message."
   (exception/create-exception-middleware
-   {:pattern/schema            (partial handler 470 "Invalid pattern provided")
-    :user/login                (partial handler 471 "Cannot login because user does not exist")
-    :user/delete               (partial handler 472 "Cannot delete because user does not exist")
-    :user.admin/not-found      (partial handler 473 "User does not exist")
-    :user.admin/already-admin  (partial handler 474 "User is already admin")
-    :api.google/fetch-user     (partial handler 475 "Could not fecth google user info")
-    :authorization             (partial handler 476 "User does not have the required permission.")
-    ::exception/default        (partial handler 500 "Default")}))
+   {:pattern/schema         (partial handler 470 "Invalid pattern provided")
+    :user/login             (partial handler 471 "Cannot login because user does not exist")
+    :user/delete            (partial handler 472 "Cannot delete because user does not exist")
+    :user/not-found         (partial handler 473 "User does not exist")
+    :user/already-have-role (partial handler 474 "User already has the requested role")
+    :user/missing-role      (partial handler 477 "User does not have the required role to upgrade to new role")
+    :api.google/fetch-user  (partial handler 475 "Could not fecth google user info")
+    :authorization          (partial handler 476 "User does not have the required permission.")
+    ::exception/default     (partial handler 500 "Default")}))
 
 (defn ring-cfg
   [session-store]

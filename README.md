@@ -21,13 +21,13 @@ _Note_: not providing the creds will prevent you from login/logout
 
 _Note 2_: the `redirect-uri` is specified in the `system.edn` because it depends on the environment.
 
-3) `admin.edn`
+3) `owner.edn`
 
-It contains the admin user, who is loaded to the DB at system start, so you can dev/test the admin panel features. You need to use a google account that is allowed by your `Location` (i.e. company account)
+It contains the owner user, who is loaded to the DB at system start, so you can dev/test the admin panel features. You need to use a google account that is allowed by your `Location` (i.e. company account)
 
 _Note_: your google account needs to belong to the google application linked to the app.
 
-_Note 2_: not providing your acc id will prevent you from doing admin tasks.
+_Note 2_: not providing your acc id will prevent you from doing admin/owner tasks.
 
 ## frontend : WEB
 
@@ -132,7 +132,7 @@ Build:
 To run the uberjar
 ```
 OAUTH2="secret" \
-ADMIN_USER="secret" \
+OWNER_USER="secret" \
 SYSTEM="{:http-port 8123, :db-uri \"datalevin/prod/flybotdb\", :oauth2-callback \"https://localhost:8123/oauth/google/callback\"}" \
 java -jar target/flybot.sg-{version}-standalone.jar
 ```
@@ -162,7 +162,7 @@ docker run \
 -p 8123:8123 \
 -v db-volume:/datalevin/prod/flybotdb \
 -e OAUTH2="secret" \
--e ADMIN_USER="secret" \
+-e OWNER_USER="secret" \
 -e SYSTEM="{:http-port 8123, :db-uri \"/datalevin/prod/flybotdb\", :oauth2-callback \"https://localhost:8123/oauth/google/callback\"}" \
 some-image-uri:latest
 ```

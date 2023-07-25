@@ -98,20 +98,29 @@
                       :user-id "unknown-user"}}
              (sut/delete-user (d/db db-conn) "unknown-user"))))))
 
-(deftest grant-admin
+(deftest grant-role
   (let [db-conn (-> test-system :db-conn :conn)]
+    (testing "User does not have the required role to upgrade to new role."
+      (let [editor-email (:user/email s/alice-user)]
+        (is (= {:error {:type    :user/missing-role
+                        :missing-role   :admin
+                        :requested-role :owner
+                        :user-email editor-email}}
+               (sut/grant-owner-role (d/db db-conn) editor-email)))))
     (testing "User exits so returns user with new admin role effect."
       (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
         (let [updated-alice (update s/alice-user :user/roles conj {:role/name :admin
                                                                    :role/date-granted (utils/mk-date)})]
           (is (= {:response updated-alice
                   :effects  {:db {:payload [updated-alice]}}}
-                 (sut/grant-admin (d/db db-conn) "alice@basecity.com"))))))
+                 (sut/grant-admin-role (d/db db-conn) (:user/email s/alice-user)))))))
     (testing "User does not exist so returns error map."
-      (is (= {:error {:type    :user.admin/not-found
+      (is (= {:error {:type    :user/not-found
                       :user-email "unknown-email"}}
-             (sut/grant-admin (d/db db-conn) "unknown-email"))))
+             (sut/grant-admin-role (d/db db-conn) "unknown-email"))))
     (testing "User is already admin so returns error."
-      (is (= {:error {:type    :user.admin/already-admin
-                      :user-email "bob@basecity.com"}}
-             (sut/grant-admin (d/db db-conn) "bob@basecity.com"))))))
+      (let [admin-email (:user/email s/bob-user)]
+        (is (= {:error {:type    :user/already-have-role
+                        :role    :admin
+                        :user-email admin-email}}
+               (sut/grant-admin-role (d/db db-conn) admin-email)))))))
