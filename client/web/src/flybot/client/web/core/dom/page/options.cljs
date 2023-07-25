@@ -4,29 +4,29 @@
 (defn blog-sorting-form
   []
   [:form
-   (into
-    [:fieldset]
-    [[:label {:for "sort-by"} "Sort posts by:"]
-     [:select#blog-sorting-options
-      {:name "Sort by"
-       :on-change #(rf/dispatch [:evt.page.form/set-blog-sorting-options
-                                 (.. % -target -value)])}
-      [:option
-       {:selected true
-        :value "[:date-created :descending]"}
-       "Date created (newest first)"]
-      [:option
-       {:value "[:date-created :ascending]"}
-       "Date created (oldest first)"]
-      [:option
-       {:value "[:date-updated :descending]"}
-       "Date updated (latest first)"]
-      [:option
-       {:value "[:date-updated :ascending]"}
-       "Date updated (oldest first)"]
-      [:option
-       {:value "[:title :ascending]"}
-       "Title (A–Z)"]
-      [:option
-       {:value "[:title :descending]"}
-       "Title (Z–A)"]]])])
+   [:fieldset
+    [:legend "Sorting Options"]
+    [:label {:for "blog-sorting-options"} "Sort posts by:"]
+    [:select#blog-sorting-options
+     {:name "blog-sorting-options"
+      :value "[:date-created :descending]"
+      :on-change #(rf/dispatch [:evt.page.form/set-blog-sorting-options
+                                (.. % -target -value)])}
+     [:option
+      {:value "[:date-created :descending]"}
+      "Date created (newest first)"]
+     [:option
+      {:value "[:date-created :ascending]"}
+      "Date created (oldest first)"]
+     [:option
+      {:value "[:date-updated :descending]"}
+      "Date updated (newest first)"]
+     [:option
+      {:value "[:date-updated :ascending]"}
+      "Date updated (oldest first)"]
+     [:option
+      {:value "[:title :ascending]"}
+      "Title (A–Z)"]
+     [:option
+      {:value "[:title :descending]"}
+      "Title (Z–A)"]]]])

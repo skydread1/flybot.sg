@@ -31,19 +31,19 @@
   [page-name]
   (let [posts (->> @(rf/subscribe [:subs.post/posts page-name])
                    (map post/add-post-hiccup-content))
-        sorted-posts (case page-name
-                       :blog (let [[by direction]
-                                   @(rf/subscribe [:subs/pattern
-                                                   {:app/blog-sorting '?x}])]
-                               (sort-by (case by
-                                          :date-created :post/creation-date
-                                          :date-updated :post/last-edit-date
-                                          :title web.utils/post->title
-                                          :post/creation-date)
-                                        (case direction
-                                          :ascending compare
-                                          #(compare %2 %1))
-                                        posts))
+        sorted-posts (if (= :blog page-name)
+                       (let [[by direction] @(rf/subscribe [:subs/pattern
+                                                            {:app/blog-sorting
+                                                             '?x}])]
+                         (sort-by (case by
+                                    :date-created :post/creation-date
+                                    :date-updated :post/last-edit-date
+                                    :title web.utils/post->title
+                                    :post/creation-date)
+                                  (if (= :ascending direction)
+                                    compare
+                                    #(compare %2 %1))
+                                  posts))
                        (sort-by :post/default-order posts))
         new-post {:post/id "new-post-temp-id"}]
     [:section.container
@@ -52,9 +52,8 @@
      [:h1 page-name]
      (when (= :blog page-name)
        [:div.post [page.options/blog-sorting-form]])
-     [page-post new-post]
      (doall
-      (for [post sorted-posts]
+      (for [post (conj sorted-posts new-post)]
         (if (= :blog page-name)
           (blog-post-short post)
           (page-post post :demote-headings))))]))
