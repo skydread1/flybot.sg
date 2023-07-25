@@ -78,7 +78,7 @@
                                                     :user/email
                                                     :user/name
                                                     :user/picture])]
-        (is (= {:response new-bob-shortened
+        (is (= {:response new-bob
                 :effects  {:db {:payload [new-bob-shortened]}}
                 :session  {:user-id    s/bob-id
                            :user-roles [:admin :editor]}}
