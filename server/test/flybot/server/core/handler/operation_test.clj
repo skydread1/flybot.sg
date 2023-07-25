@@ -73,9 +73,13 @@
 (deftest register-user
   (let [db-conn (-> test-system :db-conn :conn)]
     (testing "The user exists so update it and add to session."
-      (let [new-bob (assoc s/bob-user :user/name "Bobby" :user/picture "bob-new-pic")]
+      (let [new-bob (assoc s/bob-user :user/name "Bobby" :user/picture "bob-new-pic")
+            new-bob-shortened (select-keys new-bob [:user/id
+                                                    :user/email
+                                                    :user/name
+                                                    :user/picture])]
         (is (= {:response new-bob
-                :effects  {:db {:payload [new-bob]}}
+                :effects  {:db {:payload [new-bob-shortened]}}
                 :session  {:user-id    s/bob-id
                            :user-roles [:admin :editor]}}
                (sut/register-user (d/db db-conn) s/bob-id ::NOUSE "Bobby" "bob-new-pic")))))

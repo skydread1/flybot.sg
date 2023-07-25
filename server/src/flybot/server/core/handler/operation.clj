@@ -78,7 +78,10 @@
     (let [updated-user (assoc user :user/name name :user/picture picture)]
     ;; already in db so update user (name or picture could have changed).
       {:response updated-user
-       :effects  {:db {:payload [updated-user]}}
+       :effects  {:db {:payload [(select-keys updated-user [:user/id
+                                                            :user/email
+                                                            :user/name
+                                                            :user/picture])]}}
        :session  {:user-id    id
                   :user-roles (map :role/name roles)}})
     ;; first login so create user
