@@ -38,7 +38,7 @@
            errors      (rf/subscribe [:subs/pattern '{:app/errors ?x}])]
 
        ;;---------- GRANT ROLE ROLE ERROR
-       (rf/dispatch [:evt.role.form/set-field :admin :new-role/email "email@wrong.com"])
+       (rf/dispatch [:evt.role.form/set-field :admin :user/email "email@wrong.com"])
        ;; Send role but validation error
        (rf/dispatch [:evt.user.form/grant-role :admin])
        (testing "Form not cleared and error added to db."
@@ -51,7 +51,7 @@
                            [:fx.http/grant-role-success
                             {:users {:new-role {:admin admin-alice}}}])))
        ;; fill the new role form
-       (rf/dispatch [:evt.role.form/set-field :admin :new-role/email email])
+       (rf/dispatch [:evt.role.form/set-field :admin :user/email email])
        ;; grant new role to user in the server
        (rf/dispatch [:evt.user.form/grant-role :admin])
        (testing "Form and error cleared."

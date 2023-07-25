@@ -30,10 +30,10 @@
        {:type "text"
         :name for-val
         :placeholder "somebody@basecity.com"
-        :value @(rf/subscribe [:subs/pattern {:form.role/fields {role '{:new-role/email ?x}}}])
+        :value @(rf/subscribe [:subs/pattern {:form.role/fields {role '{:user/email ?x}}}])
         :on-change #(rf/dispatch [:evt.role.form/set-field
                                   role
-                                  :new-role/email
+                                  :user/email
                                   (.. % -target -value)])}]]]))
 
 ;;---------- Admin div ----------

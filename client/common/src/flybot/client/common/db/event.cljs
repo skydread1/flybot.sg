@@ -101,7 +101,7 @@
 (rf/reg-event-fx
  :evt.user.form/grant-role
  (fn [{:keys [db]} [_ role]]
-   (let [new-role-email (-> db :form.role/fields role :new-role/email (valid/validate valid/user-email-schema))]
+   (let [new-role-email (-> db :form.role/fields role :user/email (valid/validate valid/user-email-schema))]
      (if (:errors new-role-email)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-role-email)]]]}
        {:http-xhrio {:method          :post
