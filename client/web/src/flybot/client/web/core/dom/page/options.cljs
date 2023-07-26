@@ -9,7 +9,7 @@
     [:label {:for "blog-sorting-options"} "Sort posts by:"]
     [:select#blog-sorting-options
      {:name "blog-sorting-options"
-      :value "[:date-created :descending]"
+      :defaultValue "[:date-created :descending]"
       :on-change #(rf/dispatch [:evt.page.form/set-blog-sorting-options
                                 (.. % -target -value)])}
      [:option
