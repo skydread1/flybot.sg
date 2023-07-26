@@ -57,7 +57,7 @@
    (let [post   (-> posts :removed-post)
          user-name (-> db :app/user :user/name)]
      {:fx [[:dispatch [:evt.post/delete-post post]]
-           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:fx.log/message ["Post " (:post/id post) " deleted by " user-name "."]]]})))
 
@@ -68,14 +68,20 @@
     :fx [[:fx.log/message ["User logged out."]]]}))
 
 (rf/reg-event-fx
- :fx.http/grant-admin-success
- (fn [_ [_ {:keys [users]}]]
-   (let [{:user/keys [name roles]} (-> users :new-role :admin)]
-     {:fx [[:dispatch [:evt.post.form/clear-form]]
+ :fx.http/grant-role-success
+ (fn [_ [_ role-granted {:keys [users]}]]
+   (let [{:user/keys [name roles]} (-> users :new-role role-granted)]
+     {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:fx.log/message ["User " name " 's roles are now " (map :role/name roles)]]]})))
 
 ;; ---------- User ----------
+
+(rf/reg-event-db
+ :evt.role.form/set-field
+ [(rf/path :form.role/fields)]
+ (fn [form [_ role id value]]
+   (assoc-in form [role id] value)))
 
 (rf/reg-event-db
  :evt.user/toggle-mode
@@ -93,23 +99,23 @@
                  :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-fx
- :evt.user.form/grant-admin
- (fn [{:keys [db]} _]
-   (let [new-admin-email (-> db :form/fields :new-admin/email (valid/validate valid/user-email-schema))]
-     (if (:errors new-admin-email)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-admin-email)]]]}
+ :evt.user.form/grant-role
+ (fn [{:keys [db]} [_ role]]
+   (let [new-role-email (-> db :form.role/fields role :user/email (valid/validate valid/user-email-schema))]
+     (if (:errors new-role-email)
+       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-role-email)]]]}
        {:http-xhrio {:method          :post
-                     :uri             (base-uri "/users/new-role/admin")
+                     :uri             (base-uri (str "/users/new-role/" (name role)))
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:users
                                        {:new-role
-                                        {(list :admin :with [new-admin-email])
+                                        {(list role :with [new-role-email])
                                          {:user/name '?
                                           :user/roles [{:role/name '?
                                                         :role/date-granted '?}]}}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/grant-admin-success]
+                     :on-success      [:fx.http/grant-role-success role]
                      :on-failure      [:fx.http/failure]}}))))
 
 ;; ---------- Post ----------
@@ -137,7 +143,7 @@
    (let [post (-> db :app/posts (get post-id))]
      (if (= :edit (:post/mode post))
        {:db (assoc-in db [:app/posts post-id :post/mode] :read)
-        :fx [[:dispatch [:evt.post.form/clear-form]]
+        :fx [[:dispatch [:evt.form/clear :form/fields]]
              [:dispatch [:evt.error/clear-errors]]]}
        {:db (assoc-in db [:app/posts post-id :post/mode] :edit)
         :fx [[:dispatch [:evt.post.form/autofill post-id]]]}))))
@@ -273,9 +279,9 @@
    (assoc post id value)))
 
 (rf/reg-event-db
- :evt.post.form/clear-form
- (fn [db _]
-   (dissoc db :form/fields)))
+ :evt.form/clear
+ (fn [db [_ form]]
+   (dissoc db form)))
 
 ;; post deletion
 

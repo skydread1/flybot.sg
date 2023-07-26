@@ -12,7 +12,7 @@
  (fn [_ [_ {:keys [posts]}]]
    (let [{:post/keys [id] :as post} (:new-post posts)]
      {:fx [[:dispatch [:evt.post/add-post post]]
-           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]
@@ -102,7 +102,7 @@
  :evt.post.edit/cancel
  (fn [_ [_ post-id]]
    (let [go-back-screen (if (temporary-id? (str post-id)) "posts-list" "post-read")]
-     {:fx [[:dispatch [:evt.post.form/clear-form]]
+     {:fx [[:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.nav/navigate go-back-screen post-id]]]})))
 
