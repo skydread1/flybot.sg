@@ -19,6 +19,7 @@
     :user/not-found         (partial handler 473 "User does not exist")
     :user/already-have-role (partial handler 474 "User already has the requested role")
     :user/missing-role      (partial handler 477 "User does not have the required role to upgrade to new role")
+    :user/cannot-edit-post  (partial handler 478 "User does not have the required role to edit this post")
     :api.google/fetch-user  (partial handler 475 "Could not fecth google user info")
     :authorization          (partial handler 476 "User does not have the required permission.")
     ::exception/default     (partial handler 500 "Default")}))
