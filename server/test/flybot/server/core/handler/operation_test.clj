@@ -111,12 +111,13 @@
                         :requested-role :owner
                         :user-email editor-email}}
                (sut/grant-owner-role (d/db db-conn) editor-email)))))
-    (testing "User exits so returns user with new admin role effect."
+    (testing "User exits and has required role so returns user with new admin role effect."
       (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
-        (let [updated-alice (update s/alice-user :user/roles conj {:role/name :admin
-                                                                   :role/date-granted (utils/mk-date)})]
+        (let [new-role {:role/name :admin :role/date-granted (utils/mk-date)}
+              updated-alice (update s/alice-user :user/roles conj new-role)
+              effects (assoc s/alice-user :user/roles [new-role])]
           (is (= {:response updated-alice
-                  :effects  {:db {:payload [updated-alice]}}}
+                  :effects  {:db {:payload [effects]}}}
                  (sut/grant-admin-role (d/db db-conn) (:user/email s/alice-user)))))))
     (testing "User does not exist so returns error map."
       (is (= {:error {:type    :user/not-found
