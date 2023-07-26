@@ -40,7 +40,7 @@
         (is (= {:response post-out
                 :effects {:db {:payload [post-in]}}}
                (sut/add-post (d/db db-conn) post-in)))))
-    (testing "User is not admin and tries tp edit post of other so returns error map."
+    (testing "User is not admin and tries to edit post of other so returns error map."
       (let [post-in (assoc-in s/post-1 [:post/last-editor :user/id] s/joshua-id)]
         (is (= {:error {:type :user/cannot-edit-post
                         :author-id s/alice-id
