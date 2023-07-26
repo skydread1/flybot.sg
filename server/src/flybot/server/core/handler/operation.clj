@@ -22,20 +22,32 @@
 
 ;;---------- Ops with effects ----------
 
+(defn admin?
+  [user]
+  (->> user :user/roles (map :role/name) (filter #(= :admin %)) seq))
+
 (defn add-post
   "Add the post to the DB with only the author/editor IDs included.
    Returns the post with the full author/editor profiles included."
   [db post]
-  (let [author (db/get-user db (-> post :post/author :user/id))
-        editor (db/get-user db (-> post :post/last-editor :user/id))
+  (let [author-id (-> post :post/author :user/id)
+        editor-id (-> post :post/last-editor :user/id)
+        author (db/get-user db author-id)
+        editor (db/get-user db editor-id)
         full-post (cond-> (assoc post :post/author author)
                     editor (assoc :post/last-editor editor))
         page (:post/page post)
         posts (-> db
                   (db/get-all-posts-of page)
                   (utils/update-post-orders-with post :new-post))]
-    {:response full-post
-     :effects  {:db {:payload posts}}}))
+    (if (and editor-id (not= author-id editor-id) (not (admin? editor)))
+      {:error {:type :user/cannot-edit-post
+               :author-id author-id
+               :editor-id editor-id
+               :required-role :admin
+               :current-role :editor}}
+      {:response full-post
+       :effects  {:db {:payload posts}}})))
 
 (defn delete-post
   "Delete the post if
@@ -44,13 +56,9 @@
   [db post-id user-id]
   (let [post (db/get-post db post-id)
         author-id (-> post :post/author :user/id)
-        admin?    (->> (db/get-user db user-id)
-                       :user/roles
-                       (map :role/name)
-                       (filter #(= :admin %))
-                       seq)
+        user (db/get-user db user-id)
         page (:post/page post)]
-    (if (or admin? (= author-id user-id))
+    (if (or (admin? user) (= author-id user-id))
       (let [posts (-> db
                       (db/get-all-posts-of page)
                       (utils/update-post-orders-with post :removed-post))]
