@@ -50,6 +50,7 @@
           :page :about
           :css-class "company"
           :creation-date (u/mk-date)
+          :author (select-keys bob-user [:user/id])
           :md-content (slurp-md "about" "company.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
@@ -59,6 +60,7 @@
           :page :about
           :css-class "team"
           :creation-date (u/mk-date)
+          :author (select-keys bob-user [:user/id])
           :md-content (slurp-md "about" "team.md")
           :default-order 1}])
 
@@ -67,24 +69,28 @@
           :page :apply
           :css-class "description"
           :creation-date (u/mk-date)
+          :author (select-keys alice-user [:user/id])
           :md-content (slurp-md "apply" "description.md")
           :default-order 0}
    #:post{:id (u/mk-uuid)
           :page :apply
           :css-class "qualifications"
           :creation-date (u/mk-date)
+          :author (select-keys alice-user [:user/id])
           :md-content (slurp-md "apply" "qualifications.md")
           :default-order 3}
    #:post{:id (u/mk-uuid)
           :page :apply
           :css-class "goal"
           :creation-date (u/mk-date)
+          :author (select-keys alice-user [:user/id])
           :md-content (slurp-md "apply" "goal.md")
           :default-order 2}
    #:post{:id (u/mk-uuid)
           :page :apply
           :css-class "application"
           :creation-date (u/mk-date)
+          :author (select-keys alice-user [:user/id])
           :md-content (slurp-md "apply" "application.md")
           :default-order 1}])
 
@@ -94,8 +100,8 @@
           :css-class "welcome"
           :creation-date (u/mk-date)
           :last-edit-date (u/mk-date)
-          :author (select-keys bob-user [:user/id])
-          :last-editor (select-keys alice-user [:user/id])
+          :author (select-keys alice-user [:user/id])
+          :last-editor (select-keys bob-user [:user/id])
           :md-content (slurp-md "blog" "welcome.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
@@ -117,6 +123,7 @@
           :page :home
           :css-class "clojure"
           :creation-date (u/mk-date)
+          :author (select-keys owner-user [:user/id])
           :md-content (slurp-md "home" "clojure.md")
           :image-beside #:image{:src "/assets/clojure-logo.svg"
                                 :src-dark "/assets/clojure-logo-dark-mode.svg"
@@ -126,6 +133,7 @@
           :page :home
           :css-class "paradigms"
           :creation-date (u/mk-date)
+          :author (select-keys owner-user [:user/id])
           :md-content (slurp-md "home" "paradigms.md")
           :image-beside #:image{:src "/assets/lambda-logo.svg"
                                 :src-dark "/assets/lambda-logo-dark-mode.svg"
@@ -135,6 +143,7 @@
           :page :home
           :css-class "golden-island"
           :creation-date (u/mk-date)
+          :author (select-keys owner-user [:user/id])
           :md-content (slurp-md "home" "golden-island.md")
           :image-beside #:image{:src "/assets/4suits.svg"
                                 :src-dark "/assets/4suits-dark-mode.svg"
@@ -144,6 +153,7 @@
           :page :home
           :css-class "magic"
           :creation-date (u/mk-date)
+          :author (select-keys owner-user [:user/id])
           :md-content (slurp-md "home" "magic.md")
           :image-beside #:image{:src "/assets/binary.svg"
                                 :src-dark "/assets/binary-dark-mode.svg"

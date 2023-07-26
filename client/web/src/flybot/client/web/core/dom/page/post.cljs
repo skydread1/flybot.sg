@@ -2,6 +2,7 @@
   (:require [clojure.walk :as walk]
             [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.link :as link]
+            [flybot.client.web.core.dom.common.role :as role]
             [flybot.client.web.core.dom.common.svg :as svg]
             [flybot.client.web.core.dom.hiccup :as h]
             [flybot.client.web.core.utils :as web.utils]
@@ -274,12 +275,16 @@
   https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements"
   ([post]
    (page-post post nil))
-  ([{:post/keys [id] :as post} demote-headings?]
+  ([{:post/keys [id author] :as post} demote-headings?]
    (let [post-mode      @(rf/subscribe [:subs/pattern {:app/posts {id {:post/mode '?x}}}])
          user-mode      @(rf/subscribe [:subs/pattern '{:user/mode ?x}])
-         active-post-id @(rf/subscribe [:subs/pattern '{:form/fields {:post/id ?x}}])]
+         active-post-id @(rf/subscribe [:subs/pattern '{:form/fields {:post/id ?x}}])
+         user-id        @(rf/subscribe [:subs/pattern '{:app/user {:user/id ?x}}])
+         diff-authors?  (not= (:user/id author) user-id)]
      (->>
       (cond (= :reader user-mode)
+            (post-read-only post)
+            (and diff-authors? (not (role/has-role? :admin)) (not (utils/temporary-id? id)))
             (post-read-only post)
             (= :edit post-mode)
             (post-edit post)
