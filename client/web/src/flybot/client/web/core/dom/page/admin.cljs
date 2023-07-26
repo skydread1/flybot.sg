@@ -1,12 +1,10 @@
 (ns flybot.client.web.core.dom.page.admin
   (:require [flybot.client.web.core.dom.common.error :refer [errors]]
+            [flybot.client.web.core.dom.common.role :as role]
             [flybot.client.web.core.dom.common.svg :as svg]
             [re-frame.core :as rf]))
 
-(defn has-role?
-  [role]
-  (some #{role} (->> @(rf/subscribe [:subs/pattern '{:app/user {:user/roles [{:role/name ?} ?x]}}])
-                     (map :role/name))))
+
 
 ;;---------- Button ----------
 (defn submit-role-button
@@ -42,7 +40,7 @@
   []
   [:section.container.admin
    [:h1 "Admin"]
-   (if (has-role? :owner)
+   (if (role/has-role? :owner)
      [:<>
       [errors "admin-page" [:validation-errors :failure-http-result]]
       [:div
