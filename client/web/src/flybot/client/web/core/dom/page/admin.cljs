@@ -21,7 +21,7 @@
 (defn grant-role-form
   [role] 
   (let [role-str (name role)
-        for-val  (str "add-role" role-str)]
+        for-val  (str "email-input-name-" role-str)]
     [:form
      [:fieldset
       [:label {:for for-val} (str "Email of new " role-str ":")]
