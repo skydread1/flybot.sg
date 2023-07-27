@@ -1,7 +1,7 @@
 (ns flybot.server.core.handler.operation-test
-  (:require [flybot.server.core :as core]
-            [flybot.server.core.handler.operation :as sut] 
+  (:require [flybot.server.core.handler.operation :as sut]
             [flybot.server.systems :as sys]
+            [flybot.server.systems.config :as config]
             [flybot.common.test-sample-data :as s]
             [flybot.common.utils :as utils]
             [clojure.test :refer [deftest is testing use-fixtures]]
@@ -11,8 +11,8 @@
 (def test-data [s/post-1 s/post-2
                 s/bob-user s/alice-user])
 (def test-system
-  (-> (sys/system-config :test)
-      core/system
+  (-> (config/system-config :test)
+      sys/system
       (dissoc :oauth2-config)
       (assoc :db-conn (sys/db-conn-system test-data))))
 

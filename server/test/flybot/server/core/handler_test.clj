@@ -1,6 +1,6 @@
 (ns flybot.server.core.handler-test
-  (:require [flybot.server.core :as core]
-            [flybot.server.systems :as sys]
+  (:require [flybot.server.systems :as sys]
+            [flybot.server.systems.config :as config]
             [flybot.server.core.handler :as sut]
             [flybot.server.core.handler.auth :as auth]
             [flybot.common.test-sample-data :as s]
@@ -15,8 +15,8 @@
                 s/bob-user s/alice-user])
 (defn test-system
   []
-  (-> (sys/system-config :test)
-      core/system
+  (-> (config/system-config :test)
+      sys/system
       (dissoc :oauth2-config)
       (assoc :db-conn (sys/db-conn-system test-data))))
 
