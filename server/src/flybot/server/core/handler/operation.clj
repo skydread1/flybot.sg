@@ -135,10 +135,10 @@
              :effects  {:db {:payload [(assoc user :user/roles [new-role])]}}}))))
 
 (def grant-admin-role
-  #(grant-role % %2 :editor :admin))
+  #(grant-role %1 %2 :editor :admin))
 
 (def grant-owner-role
-  #(grant-role % %2 :admin :owner))
+  #(grant-role %1 %2 :admin :owner))
 
 (defn- revoke-role
   [db email role]
@@ -160,7 +160,7 @@
                                        {:user/id id :user/roles updated-roles}]}}}))))
 
 (def revoke-admin-role
-  #(revoke-role % %2 :admin))
+  #(revoke-role %1 %2 :admin))
 
 ;;---------- Pullable data ----------
 
