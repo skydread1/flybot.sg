@@ -125,16 +125,17 @@
        [:br]
        [:label {:for "position"} "Post position in the page:"]
        [:br]
-       [:select
-        {:name "position"
-         :value (or @(rf/subscribe [:subs/pattern '{:form/fields {:post/default-order ?x}}]) 0)
-         :on-change #(rf/dispatch [:evt.post.form/set-field
-                                   :post/default-order
-                                   (.. % -target -value)])}
-        (for [num (range nb-posts-in-page)]
-          [:option
-           {:value num :key (str "position-" num)} 
-           num])]
+       (when-not (= :blog page)
+         [:select
+          {:name "position"
+           :value (or @(rf/subscribe [:subs/pattern '{:form/fields {:post/default-order ?x}}]) 0)
+           :on-change #(rf/dispatch [:evt.post.form/set-field
+                                     :post/default-order
+                                     (.. % -target -value)])}
+          (for [num (range nb-posts-in-page)]
+            [:option
+             {:value num :key (str "position-" num)} 
+             num])])
        [:br]
        [svg/theme-logo]]
       [:br]
