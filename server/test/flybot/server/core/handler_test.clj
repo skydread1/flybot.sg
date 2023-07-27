@@ -70,21 +70,21 @@
 
 (deftest saturn-handler
   (testing "Returns the proper saturn response."
-    (let [saturn-handler (:saturn-handler @a-test-system)
-          db-conn        (-> @a-test-system :db-conn :conn)
-          post-in        s/post-3
-          post-out       (assoc s/post-3 :post/author s/bob-user)]
-      (is (= {:response     {:posts
-                             {:new-post
-                              #:post{:id s/post-3-id}}}
-              :effects-desc [{:db
-                              {:payload
-                               [(assoc post-in :post/default-order 2)]}}]
-              :session      {}}
-             (saturn-handler {:body-params {:posts
-                                            {(list :new-post :with [post-in])
-                                             {:post/id '?}}}
-                              :db (d/db db-conn)}))))))
+    (with-redefs [auth/has-permission? (constantly true)]
+     (let [saturn-handler (:saturn-handler @a-test-system)
+           db-conn        (-> @a-test-system :db-conn :conn)
+           post-in        s/post-3]
+       (is (= {:response     {:posts
+                              {:new-post
+                               #:post{:id s/post-3-id}}}
+               :effects-desc [{:db
+                               {:payload
+                                [(assoc post-in :post/default-order 2)]}}]
+               :session      {}}
+              (saturn-handler {:body-params {:posts
+                                             {(list :new-post :with [post-in])
+                                              {:post/id '?}}}
+                               :db (d/db db-conn)})))))))
 
 (deftest ring-handler
   (testing "Returns the proper ring response."
@@ -137,7 +137,7 @@
     (testing "User does not have permission so returns 413."
       (let [resp (http-request "/posts/new-post"
                                {:posts
-                                {(list :new-post :with [::POST])
+                                {(list :new-post :with [s/post-3])
                                  {:post/id '?}}})]
         (is (= 476 (-> resp :status)))))
     (testing "User is not found so returns 414."
@@ -260,16 +260,17 @@
 
   (testing "/users endpoints:"
     (testing "Execute a request for all users."
-      (let [resp (http-request "/users/all"
-                               {:users
-                                {(list :all :with [])
-                                 [{:user/id '?
-                                   :user/name '?
-                                   :user/roles [{:role/name '?
-                                                 :role/date-granted '?}]}]}})]
-        (is (= [(select-keys s/alice-user [:user/id :user/name :user/roles])
-                (select-keys s/bob-user [:user/id :user/name :user/roles])]
-               (-> resp :body :users :all)))))
+      (with-redefs [auth/has-permission? (constantly true)]
+        (let [resp (http-request "/users/all"
+                                 {:users
+                                  {(list :all :with [])
+                                   [{:user/id '?
+                                     :user/name '?
+                                     :user/roles [{:role/name '?
+                                                   :role/date-granted '?}]}]}})]
+          (is (= [(select-keys s/alice-user [:user/id :user/name :user/roles])
+                  (select-keys s/bob-user [:user/id :user/name :user/roles])]
+                 (-> resp :body :users :all))))))
     (testing "Execute a request for a user."
       (let [resp (http-request "/users/user"
                                {:users

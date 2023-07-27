@@ -1,6 +1,7 @@
 (ns flybot.server.core.handler.operation
-  (:require [flybot.server.core.handler.operation.db :as db]
-            [flybot.common.utils :as utils]))
+  (:require [flybot.common.utils :as utils]
+            [flybot.server.core.handler.auth :refer [with-role]]
+            [flybot.server.core.handler.operation.db :as db]))
 
 ;;---------- No Effect Ops ----------
 
@@ -171,13 +172,20 @@
   [db session]
   {:posts {:all          (fn [] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
-           :new-post     (fn [post] (add-post db post))
-           :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
-   :users {:all          (fn [] (get-all-users db))
+           :new-post     (with-role session :editor
+                           (fn [post] (add-post db post)))
+           :removed-post (with-role session :editor
+                           (fn [post-id user-id] (delete-post db post-id user-id)))}
+   :users {:all          (with-role session :owner
+                           (fn [] (get-all-users db)))
            :user         (fn [id] (get-user db id))
-           :removed-user (fn [id] (delete-user db id))
+           :removed-user (with-role session :owner
+                           (fn [id] (delete-user db id)))
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
                           :logged     (fn [] (login-user db (:user-id session)))}
-           :new-role     {:admin (fn [email] (grant-admin-role db email))
-                          :owner (fn [email] (grant-owner-role db email))}
-           :revoked-role {:admin (fn [email] (revoke-admin-role db email))}}})
+           :new-role     {:admin (with-role session :owner
+                                   (fn [email] (grant-admin-role db email)))
+                          :owner (with-role session :owner
+                                   (fn [email] (grant-owner-role db email)))}
+           :revoked-role {:admin (with-role session :owner
+                                   (fn [email] (revoke-admin-role db email)))}}})
