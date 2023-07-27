@@ -2,7 +2,6 @@
   (:require [aleph.http :as http]
             [cheshire.core :as cheshire]
             [clj-commons.byte-streams :as bs]
-            [clojure.set :as set]
             [clojure.string :as str]
             [clojure.walk :as walk]
             [reitit.oauth2 :as reitit]))
@@ -63,18 +62,18 @@
       (redirect-302 resp client-root-path))))
 
 (defn has-permission?
-  [session-permissions required-permissions]
-  (set/subset? (set required-permissions) (set session-permissions)))
+  [user-roles role-to-have]
+  (some #{role-to-have} user-roles))
 
-(defn authorization-middleware
-  [ring-handler required-permissions]
-  (fn [request]
-    (let [session-permissions (->> request :session :user-roles)]
-      (if (has-permission? session-permissions required-permissions)
-        (ring-handler request)
+(defn with-role
+  [session role-to-have f]
+  (fn [& args]
+    (let [session-permissions (:user-roles session)]
+      (if (has-permission? session-permissions role-to-have)
+        (apply f args)
         (throw (ex-info "Authorization error" {:type            :authorization
                                                :has-permission  session-permissions
-                                               :need-permission required-permissions}))))))
+                                               :need-permission role-to-have}))))))
 
 (defn logout-handler
   [client-root-path]
