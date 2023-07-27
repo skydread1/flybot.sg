@@ -156,7 +156,7 @@
         new-posts     (-> posts-of-page
                           (utils/update-post-orders-with post operation)
                           (#(utils/to-indexed-maps :post/id %)))]
-    (merge posts new-posts)))
+    (merge-with merge posts new-posts)))
 
 (rf/reg-event-db
  :evt.post/add-post
@@ -241,7 +241,8 @@
                                          )
                           :post/mode :edit
                           :post/author (-> db :app/user (select-keys [:user/id :user/name]))
-                          :post/creation-date (utils/mk-date)})}
+                          :post/creation-date (utils/mk-date)
+                          :post/default-order 0})}
      {:http-xhrio {:method          :post
                    :uri             (base-uri "/posts/post")
                    :params          {:posts

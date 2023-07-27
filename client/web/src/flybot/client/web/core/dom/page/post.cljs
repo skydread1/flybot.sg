@@ -72,70 +72,85 @@
 
 (defn post-form
   []
-  [:div.post-body
-   [:form
-    [:fieldset
-     [:legend "Post Properties (Optional)"]
-     [:br]
-     [:label {:for "css-class"} "Optional css class:"]
-     [:br]
-     [:input
-      {:type "text"
-       :name "css-class"
-       :placeholder "my-post-1"
-       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/css-class ?x}}])
-       :on-change #(rf/dispatch [:evt.post.form/set-field
-                                 :post/css-class
-                                 (.. % -target -value)])}]
-     [:br]
-     [:label {:for "img-src" :required "required"} "Side Image source for LIGHT mode:"]
-     [:br]
-     [:input
-      {:type "url"
-       :name "img-src"
-       :placeholder "https://my.image.com/photo-1"
-       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?x}}}])
-       :on-change #(rf/dispatch [:evt.form.image/set-field
-                                 :image/src
-                                 (.. % -target -value)])}]
-     [:br]
-     [:label {:for "img-src-dark" :required "required"} "Side Image source for DARK mode:"]
-     [:br]
-     [:input
-      {:type "url"
-       :name "img-src-dark"
-       :placeholder "https://my.image.com/photo-1"
-       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?x}}}])
-       :on-change #(rf/dispatch [:evt.form.image/set-field
-                                 :image/src-dark
-                                 (.. % -target -value)])}]
-     [:br]
-     [:label {:for "img-alt"} "Side Image description:"]
-     [:br]
-     [:input
-      {:type "text"
-       :name "img-alt"
-       :placeholder "Coffee on table"
-       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?x}}}])
-       :on-change #(rf/dispatch [:evt.form.image/set-field
-                                 :image/alt
-                                 (.. % -target -value)])}]
-     [:br]
-     [svg/theme-logo]]
-    [:br]
-    [:fieldset
-     [:legend "Post Content (Required)"]
-     [:br]
-     [:label {:for "md-content"} "Write your Markdown:"]
-     [:br]
-     [:textarea
-      {:name "md-content"
-       :required "required"
-       :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
-       :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?x}}])
-       :on-change #(rf/dispatch [:evt.post.form/set-field
-                                 :post/md-content
-                                 (.. % -target -value)])}]]]])
+  (let [page @(rf/subscribe [:subs/pattern '{:app/current-view {:data {:page-name ?x}}}])
+        nb-posts-in-page (-> @(rf/subscribe [:subs.post/posts page]) count inc)]
+    [:div.post-body
+     [:form
+      [:fieldset
+       [:legend "Post Properties (Optional)"]
+       [:br]
+       [:label {:for "css-class"} "Optional css class:"]
+       [:br]
+       [:input
+        {:type "text"
+         :name "css-class"
+         :placeholder "my-post-1"
+         :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/css-class ?x}}])
+         :on-change #(rf/dispatch [:evt.post.form/set-field
+                                   :post/css-class
+                                   (.. % -target -value)])}]
+       [:br]
+       [:label {:for "img-src" :required "required"} "Side Image source for LIGHT mode:"]
+       [:br]
+       [:input
+        {:type "url"
+         :name "img-src"
+         :placeholder "https://my.image.com/photo-1"
+         :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src ?x}}}])
+         :on-change #(rf/dispatch [:evt.form.image/set-field
+                                   :image/src
+                                   (.. % -target -value)])}]
+       [:br]
+       [:label {:for "img-src-dark" :required "required"} "Side Image source for DARK mode:"]
+       [:br]
+       [:input
+        {:type "url"
+         :name "img-src-dark"
+         :placeholder "https://my.image.com/photo-1"
+         :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/src-dark ?x}}}])
+         :on-change #(rf/dispatch [:evt.form.image/set-field
+                                   :image/src-dark
+                                   (.. % -target -value)])}]
+       [:br]
+       [:label {:for "img-alt"} "Side Image description:"]
+       [:br]
+       [:input
+        {:type "text"
+         :name "img-alt"
+         :placeholder "Coffee on table"
+         :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/image-beside {:image/alt ?x}}}])
+         :on-change #(rf/dispatch [:evt.form.image/set-field
+                                   :image/alt
+                                   (.. % -target -value)])}]
+       [:br]
+       [:label {:for "position"} "Post position in the page:"]
+       [:br]
+       [:select
+        {:name "position"
+         :value (or @(rf/subscribe [:subs/pattern '{:form/fields {:post/default-order ?x}}]) 0)
+         :on-change #(rf/dispatch [:evt.post.form/set-field
+                                   :post/default-order
+                                   (.. % -target -value)])}
+        (for [num (range nb-posts-in-page)]
+          [:option
+           {:value num :key (str "position-" num)} 
+           num])]
+       [:br]
+       [svg/theme-logo]]
+      [:br]
+      [:fieldset
+       [:legend "Post Content (Required)"]
+       [:br]
+       [:label {:for "md-content"} "Write your Markdown:"]
+       [:br]
+       [:textarea
+        {:name "md-content"
+         :required "required"
+         :placeholder "# My Post Title\n\n## Part 1\n\nSome content of part 1\n..."
+         :value @(rf/subscribe [:subs/pattern '{:form/fields {:post/md-content ?x}}])
+         :on-change #(rf/dispatch [:evt.post.form/set-field
+                                   :post/md-content
+                                   (.. % -target -value)])}]]]]))
 
 ;;---------- (pre)View ----------
 
