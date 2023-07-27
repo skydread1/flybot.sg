@@ -302,6 +302,24 @@
                                                    :role/date-granted '?}]}}}})]
           (is (= [:editor :admin]
                  (->> resp :body :users :new-role :admin :user/roles (map :role/name)))))))
+    (testing "Execute a request to revoke admin role to an existing user."
+      (with-redefs [auth/has-permission? (constantly true)]
+        (let [joshua-email (:user/email s/joshua-user)
+              resp (http-request "/users/revoke-role/admin"
+                                 {:users
+                                  {:revoked-role
+                                   {(list :admin :with [joshua-email])
+                                    {:user/roles [{:role/name '?
+                                                   :role/date-granted '?}]}}}})]
+          (is (= [:editor]
+                 (->> resp :body :users :revoked-role :admin :user/roles (map :role/name))))) 
+        (let [resp (http-request "/users/user"
+                                 {:users
+                                  {(list :user :with [s/joshua-id])
+                                   {:user/roles [{:role/name '?
+                                                  :role/date-granted '?}]}}})]
+          (is (= [:editor]
+                 (->> resp :body :users :user :user/roles (map :role/name)))))))
     (testing "Execute a request for a delete user."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [resp (http-request "/users/removed-user"

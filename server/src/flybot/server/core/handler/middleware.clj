@@ -7,7 +7,7 @@
   {:status status
    :headers {"content-type" "application/edn"}
    :body {:message message
-          :data (ex-data exception)
+          :data (or (ex-data exception) (.getMessage exception))
           :uri (:uri request)}})
 
 (def exception-middleware
@@ -20,8 +20,9 @@
     :user/already-have-role (partial handler 474 "User already has the requested role")
     :user/missing-role      (partial handler 477 "User does not have the required role to upgrade to new role")
     :user/cannot-edit-post  (partial handler 478 "User does not have the required role to edit this post")
+    :role/not-found         (partial handler 479 "User does not have the role to be revoked")
     :api.google/fetch-user  (partial handler 475 "Could not fecth google user info")
-    :authorization          (partial handler 476 "User does not have the required permission.")
+    :authorization          (partial handler 476 "User does not have the required permission")
     ::exception/default     (partial handler 500 "Default")}))
 
 (defn ring-cfg

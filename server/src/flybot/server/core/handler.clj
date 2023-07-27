@@ -133,6 +133,9 @@
              ["/admin" {:post       ring-handler
                         :middleware [[auth/authorization-middleware [:owner]]]}]
              ["/owner" {:post       ring-handler
+                        :middleware [[auth/authorization-middleware [:owner]]]}]]
+            ["/revoke-role"
+             ["/admin" {:post       ring-handler
                         :middleware [[auth/authorization-middleware [:owner]]]}]]]
            ["/oauth/google/success" {:get        ring-handler
                                      :middleware [[auth/authentification-middleware client-root-path]]}]
