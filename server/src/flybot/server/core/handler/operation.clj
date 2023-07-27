@@ -135,10 +135,32 @@
              :effects  {:db {:payload [(assoc user :user/roles [new-role])]}}}))))
 
 (def grant-admin-role
-  #(grant-role % %2 :editor :admin))
+  #(grant-role %1 %2 :editor :admin))
 
 (def grant-owner-role
-  #(grant-role % %2 :admin :owner))
+  #(grant-role %1 %2 :admin :owner))
+
+(defn- revoke-role
+  [db email role]
+  (let [{:user/keys [id roles] :as user} (db/get-user-by-email db email)]
+    (cond (not user)
+          {:error {:type       :user/not-found
+                   :user-email email}}
+
+          (not (some #{role} (map :role/name roles)))
+          {:error {:type :role/not-found
+                   :role-to-revoke role
+                   :user-roles (map :role/name roles)
+                   :user-email email}}
+
+          :else
+          (let [updated-roles (vec (filter #(not= role (:role/name %)) roles))]
+            {:response (assoc user :user/roles updated-roles)
+             :effects  {:db {:payload [[:db/retract [:user/id id] :user/roles]
+                                       {:user/id id :user/roles updated-roles}]}}}))))
+
+(def revoke-admin-role
+  #(revoke-role %1 %2 :admin))
 
 ;;---------- Pullable data ----------
 
@@ -157,4 +179,5 @@
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
                           :logged     (fn [] (login-user db (:user-id session)))}
            :new-role     {:admin (fn [email] (grant-admin-role db email))
-                          :owner (fn [email] (grant-owner-role db email))}}})
+                          :owner (fn [email] (grant-owner-role db email))}
+           :revoked-role {:admin (fn [email] (revoke-admin-role db email))}}})

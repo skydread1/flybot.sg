@@ -27,9 +27,9 @@
          :email "bob@basecity.com"
          :name "Bob"
          :picture "bob-pic"
-         :roles [#:role{:name :admin
+         :roles [#:role{:name :editor
                         :date-granted bob-date-granted}
-                 #:role{:name :editor
+                 #:role{:name :admin
                         :date-granted bob-date-granted}]})
 
 (def alice-user
