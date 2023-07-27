@@ -176,7 +176,8 @@
                            (fn [post] (add-post db post)))
            :removed-post (with-role session :editor
                            (fn [post-id user-id] (delete-post db post-id user-id)))}
-   :users {:all          (fn [] (get-all-users db))
+   :users {:all          (with-role session :owner
+                           (fn [] (get-all-users db)))
            :user         (fn [id] (get-user db id))
            :removed-user (with-role session :owner
                            (fn [id] (delete-user db id)))

@@ -260,16 +260,17 @@
 
   (testing "/users endpoints:"
     (testing "Execute a request for all users."
-      (let [resp (http-request "/users/all"
-                               {:users
-                                {(list :all :with [])
-                                 [{:user/id '?
-                                   :user/name '?
-                                   :user/roles [{:role/name '?
-                                                 :role/date-granted '?}]}]}})]
-        (is (= [(select-keys s/alice-user [:user/id :user/name :user/roles])
-                (select-keys s/bob-user [:user/id :user/name :user/roles])]
-               (-> resp :body :users :all)))))
+      (with-redefs [auth/has-permission? (constantly true)]
+        (let [resp (http-request "/users/all"
+                                 {:users
+                                  {(list :all :with [])
+                                   [{:user/id '?
+                                     :user/name '?
+                                     :user/roles [{:role/name '?
+                                                   :role/date-granted '?}]}]}})]
+          (is (= [(select-keys s/alice-user [:user/id :user/name :user/roles])
+                  (select-keys s/bob-user [:user/id :user/name :user/roles])]
+                 (-> resp :body :users :all))))))
     (testing "Execute a request for a user."
       (let [resp (http-request "/users/user"
                                {:users
