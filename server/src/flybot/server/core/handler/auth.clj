@@ -1,25 +1,9 @@
 (ns flybot.server.core.handler.auth
   (:require [aleph.http :as http]
-            [cheshire.core :as cheshire]
+            [camel-snake-kebab.core :as csk]
+            [clojure.data.json :as json]
             [clj-commons.byte-streams :as bs]
-            [clojure.string :as str]
-            [clojure.walk :as walk]
             [reitit.oauth2 :as reitit]))
-
-(defn decode-key
-  "Converts a train case string/keyword into a snake case keyword."
-  [key]
-  (if (keyword? key)
-    (-> key name (str/replace "_" "-") keyword)
-    (keyword (str/replace key "_" "-"))))
-
-(defn to-snake-case
-  "Recursively transforms all map keys in coll with the transform-key fn."
-  [coll]
-  (letfn [(transform [x] (if (map? x)
-                           (into {} (map (fn [[k v]] [(decode-key k) v]) x))
-                           x))]
-    (walk/postwalk transform coll)))
 
 (defn google-api-fetch-user
   [access-tokens]
@@ -37,10 +21,9 @@
     (if (= status 200)
       (-> body
           bs/to-string
-          (cheshire/parse-string true)
-          to-snake-case)
-       {:error {:type           :api.google/fetch-user
-                :google-api-url google-api-url}})))
+          (json/read-str :key-fn csk/->kebab-case-keyword))
+      {:error {:type           :api.google/fetch-user
+               :google-api-url google-api-url}})))
 
 (defn redirect-302
   [resp landing-uri]
