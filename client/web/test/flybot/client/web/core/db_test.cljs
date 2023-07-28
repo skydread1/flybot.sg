@@ -186,7 +186,7 @@
                           :post/mode :edit
                           :post/author {:user/id "bob-id" :user/name "Bob"}
                           :post/creation-date (utils/mk-date)
-                          :post/default-order 0}
+                          :post/default-order 2}
            new-post-mode (rf/subscribe [:subs/pattern {:app/posts {temp-id '{:post/mode ?x}}}])
            new-post-form (rf/subscribe [:subs/pattern '{:form/fields ?x}])
            posts         (rf/subscribe [:subs.post/posts :home])
