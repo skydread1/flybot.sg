@@ -12,8 +12,7 @@ on:
     types: [closed]
 
 env:
-  OAUTH2: ""
-  OWNER_USER: ""
+  SYSTEM: ""
 
 jobs:
   build:

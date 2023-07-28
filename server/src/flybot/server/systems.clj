@@ -6,7 +6,7 @@
   (:require [flybot.server.core.handler :as handler] 
             [flybot.server.core.handler.operation.db :as db]
             [flybot.server.systems.init-data :as id]
-            [flybot.server.systems.config :as config]
+            [flybot.server.systems.config :as config :refer [ENV]]
             [aleph.http :as http]
             [datalevin.core :as d]
             [ring.middleware.session.memory :refer [memory-store]]
@@ -76,17 +76,19 @@
    Figwheel just needs a handler and starts its own server hence we dissoc the http-server.
    If some changes are made in one of the backend component (such as handler for instance),
    you can halt!, reload ns and touch again the system."
-  (-> (config/system-config :figwheel)
-      system
-      (assoc :db-conn (db-conn-system id/init-data))
-      (dissoc :http-port :http-server)))
+  (when (= :dev ENV)
+    (-> (config/system-config :figwheel)
+        system
+        (assoc :db-conn (db-conn-system id/init-data))
+        (dissoc :http-port :http-server))))
 
 (def figwheel-handler
   "Provided to figwheel-main.edn.
    Figwheel uses this handler to starts a server on port 9500."
-  (-> figwheel-system
-      touch
-      :reitit-router))
+  (when (= :dev ENV)
+    (-> figwheel-system
+        touch
+        :reitit-router)))
 
 (comment
   (touch figwheel-system)
@@ -100,8 +102,9 @@
   "The dev system starts a server on port 8123.
    It loads some real data sample. The data is deleted when the system halt!.
    It is convenient if you want to see your backend changes in action in the UI."
-  (-> (system (config/system-config :dev))
-      (assoc :db-conn (db-conn-system id/init-data))))
+  (when (= :dev ENV)
+    (-> (system (config/system-config :dev))
+        (assoc :db-conn (db-conn-system id/init-data)))))
 
 (comment
   (touch dev-system)
@@ -115,8 +118,9 @@
   "The prod system starts a server on port 8123.
    It does not load any init-data on touch and it does not delete any data on halt!.
    You can use it in your local environment as well."
-  (let [prod-cfg (config/system-config :prod)]
-    (system prod-cfg)))
+  (when (= :prod ENV)
+    (let [prod-cfg (config/system-config :prod)]
+      (system prod-cfg))))
 
 (comment
   (touch prod-system)

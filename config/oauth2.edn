@@ -1,3 +1,0 @@
-{:google-creds {:client-id     "secret" ;; use the google id
-                :client-secret "secret" ;; use the google secret
-                }}

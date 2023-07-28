@@ -1,15 +1,15 @@
 (ns flybot.server.systems.init-data
   "Realistic sample data that can be used for api or figwheel developement."
   (:require [flybot.common.utils :as u]
-            [clojure.edn :as edn]
+            [flybot.server.systems.config :refer [CONFIG]]
             [clojure.java.io :as io]))
 
 ;; ---------- Initial Data ----------
 
 (def owner-user
   "Reads the credentials from env or owner.edn and grants owner role."
-  (-> (edn/read-string (or (System/getenv "OWNER_USER")
-                           (slurp "config/owner.edn")))
+  (-> CONFIG
+      :owner
       (assoc :user/roles [#:role{:name :editor
                                  :date-granted (u/mk-date)}
                           #:role{:name :admin
