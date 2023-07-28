@@ -1,3 +1,5 @@
+/* From https://www.npmjs.com/package/react-toastify by fkhadra */
+
 :root {
   --toastify-color-light: #fff;
   --toastify-color-dark: #121212;
@@ -10,11 +12,11 @@
   --toastify-icon-color-success: var(--toastify-color-success);
   --toastify-icon-color-warning: var(--toastify-color-warning);
   --toastify-icon-color-error: var(--toastify-color-error);
-  --toastify-toast-width: 320px;
+  --toastify-toast-width: 480px;
   --toastify-toast-background: #fff;
   --toastify-toast-min-height: 64px;
   --toastify-toast-max-height: 800px;
-  --toastify-font-family: sans-serif;
+  --toastify-font-family: inherit;
   --toastify-z-index: 9999;
   --toastify-text-color-light: #757575;
   --toastify-text-color-dark: #fff;
@@ -140,7 +142,7 @@
 .Toastify__toast-icon {
   -webkit-margin-end: 10px;
           margin-inline-end: 10px;
-  width: 20px;
+  width: 32px;
   -ms-flex-negative: 0;
       flex-shrink: 0;
   display: -ms-flexbox;
@@ -617,5 +619,3 @@
     transform: rotate(360deg);
   }
 }
-
-/*# sourceMappingURL=ReactToastify.css.map */
