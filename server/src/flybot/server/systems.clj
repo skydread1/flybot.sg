@@ -1,5 +1,8 @@
 (ns flybot.server.systems
-  "Systems for backend dev and frontend dev/test with figwheel"
+  "Systems for the different environments:
+   - figwheel-system: automatically touched when you launch the clj/cljs repl
+   - dev-system: can be use anytime to start a system with aleph on port 8123
+   - prod-system: similar to dev-system but without loading/deleting db data."
   (:require [flybot.server.core.handler :as handler] 
             [flybot.server.core.handler.operation.db :as db]
             [flybot.server.systems.init-data :as id]
@@ -14,7 +17,7 @@
    If the db already has some content, does nothing."
   [conn init-data]
   (when-not (seq (db/get-all-posts (d/db conn)))
-      @(d/transact conn init-data)))
+    @(d/transact conn init-data)))
 
 (defn system
   [{:keys [http-port db-uri google-creds oauth2-callback client-root-path]
@@ -66,17 +69,21 @@
           #(d/clear conn)))))
 
 ;;---------- System for front-end dev ----------
-;; Figwheel automatically start the system for us via the figwheel-main.edn on port 9500
-;; If some changes are made in one of the component (such as handler for instance),
-;; just reload this namespace and refresh your browser.
+;; Figwheel automatically touches the system on repl launch via the figwheel-main.edn on port 9500
 
 (def figwheel-system
+  "Figwheel automatically touches the system via the figwheel-main.edn on port 9500.
+   Figwheel just needs a handler and starts its own server hence we dissoc the http-server.
+   If some changes are made in one of the backend component (such as handler for instance),
+   you can halt!, reload ns and touch again the system."
   (-> (config/system-config :figwheel)
       system
       (assoc :db-conn (db-conn-system id/init-data))
       (dissoc :http-port :http-server)))
 
 (def figwheel-handler
+  "Provided to figwheel-main.edn.
+   Figwheel uses this handler to starts a server on port 9500."
   (-> figwheel-system
       touch
       :reitit-router))
@@ -87,9 +94,12 @@
   )
 
 ;;---------- System for backend dev ----------
-;; be sure to have a main.js in resources/public to have the UI on port 8123
+;; Be sure to have a main.js in resources/public to have the UI on port 8123
 
 (def dev-system
+  "The dev system starts a server on port 8123.
+   It loads some real data sample. The data is deleted when the system halt!.
+   It is convenient if you want to see your backend changes in action in the UI."
   (-> (system (config/system-config :dev))
       (assoc :db-conn (db-conn-system id/init-data))))
 
@@ -99,9 +109,12 @@
   )
 
 ;;---------- System for backend prod ----------
-;; be sure to have a main.js in resources/public to have the UI on port 8123
+;; Be sure to have a main.js in resources/public to have the UI on port 8123
 
 (def prod-system
+  "The prod system starts a server on port 8123.
+   It does not load any init-data on touch and it does not delete any data on halt!.
+   You can use it in your local environment as well."
   (let [prod-cfg (config/system-config :prod)]
     (system prod-cfg)))
 
