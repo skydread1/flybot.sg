@@ -22,7 +22,8 @@
     ;; result is a map containing details of the failure
    (-> db
        (assoc-in [:app/errors :failure-http-result] result)
-       (assoc :app/notification #:notification{:type :error
+       (assoc :app/notification #:notification{:id (utils/mk-uuid)
+                                               :type :error
                                                :title "HTTP failure"
                                                :body result}))))
 
@@ -319,7 +320,8 @@
  (fn [db [_ validation-err]]
    (-> db
        (assoc-in [:app/errors :validation-errors] validation-err)
-       (assoc :app/notification #:notification{:type :error
+       (assoc :app/notification #:notification{:id (utils/mk-uuid)
+                                               :type :error
                                                :title "Validation error"
                                                :body validation-err}))))
 
