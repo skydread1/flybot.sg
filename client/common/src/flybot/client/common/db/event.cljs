@@ -18,10 +18,13 @@
 
 (rf/reg-event-db
  :fx.http/failure
- [(rf/path :app/errors)]
- (fn [errors [_ result]]
+ (fn [db [_ result]]
     ;; result is a map containing details of the failure
-   (assoc errors :failure-http-result result)))
+   (-> db
+       (assoc-in [:app/errors :failure-http-result] result)
+       (assoc :app/notification #:notification{:type :error
+                                               :title "HTTP failure"
+                                               :body result}))))
 
 (rf/reg-event-fx
  :fx.http/all-success
@@ -313,9 +316,12 @@
 
 (rf/reg-event-db
  :evt.error/set-validation-errors
- [(rf/path :app/errors)]
- (fn [errors [_ validation-err]]
-   (assoc errors :validation-errors validation-err)))
+ (fn [db [_ validation-err]]
+   (-> db
+       (assoc-in [:app/errors :validation-errors] validation-err)
+       (assoc :app/notification #:notification{:type :error
+                                               :title "Validation error"
+                                               :body validation-err}))))
 
 (rf/reg-event-db
  :evt.error/clear-errors
