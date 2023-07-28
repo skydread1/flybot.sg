@@ -1,12 +1,13 @@
 (ns flybot.client.web.test-runner
   (:require
-    [figwheel.main.testing :refer-macros [run-tests-async]]
+   [figwheel.main.testing :refer-macros [run-tests-async]]
     ;; require all the namespaces that have tests in them
-    [flybot.client.web.core.db-test]
-    [flybot.client.web.core.dom.common.link-test]
-    [flybot.client.web.core.dom.page.post-test]
-    [flybot.client.web.core.router-test]
-    [flybot.common.validation.markdown-test]))
+   [flybot.client.web.core.db-test]
+   [flybot.client.web.core.dom.common.link-test]
+   [flybot.client.web.core.dom.page.admin-test]
+   [flybot.client.web.core.dom.page.post-test]
+   [flybot.client.web.core.router-test]
+   [flybot.common.validation.markdown-test]))
 
 (defn -main [& args]
   ;; this needs to be the last statement in the main function so that it can

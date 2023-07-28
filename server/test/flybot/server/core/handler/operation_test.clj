@@ -31,6 +31,22 @@
         (is (= {:response post-out
                 :effects {:db {:payload
                                [(assoc post-in :post/default-order 2)]}}}
+               (sut/add-post (d/db db-conn) post-in)))))
+    (testing "User is admin and edits post of other so returns new post."
+      (let [post-in s/post-1
+            post-out (assoc s/post-1
+                            :post/author s/alice-user
+                            :post/last-editor s/bob-user)]
+        (is (= {:response post-out
+                :effects {:db {:payload [post-in]}}}
+               (sut/add-post (d/db db-conn) post-in)))))
+    (testing "User is not admin and tries to edit post of other so returns error map."
+      (let [post-in (assoc-in s/post-1 [:post/last-editor :user/id] s/joshua-id)]
+        (is (= {:error {:type :user/cannot-edit-post
+                        :author-id s/alice-id
+                        :editor-id s/joshua-id
+                        :required-role :admin
+                        :current-role :editor}}
                (sut/add-post (d/db db-conn) post-in)))))))
 
 (deftest delete-post
@@ -63,7 +79,7 @@
     (testing "The user exists so returns it and add to session."
       (is (= {:response s/bob-user
               :session  {:user-id    s/bob-id
-                         :user-roles [:admin :editor]}}
+                         :user-roles [:editor :admin]}}
            (sut/login-user (d/db db-conn) s/bob-id))))
     (testing "User does not exist so returns error map."
       (is (= {:error {:type    :user/login
@@ -81,7 +97,7 @@
         (is (= {:response new-bob
                 :effects  {:db {:payload [new-bob-shortened]}}
                 :session  {:user-id    s/bob-id
-                           :user-roles [:admin :editor]}}
+                           :user-roles [:editor :admin]}}
                (sut/register-user (d/db db-conn) s/bob-id ::NOUSE "Bobby" "bob-new-pic")))))
     (testing "User does not exist so returns effect to add the user to db."
       (let [{:user/keys [email name picture]} s/joshua-user]
@@ -111,12 +127,13 @@
                         :requested-role :owner
                         :user-email editor-email}}
                (sut/grant-owner-role (d/db db-conn) editor-email)))))
-    (testing "User exits so returns user with new admin role effect."
+    (testing "User exits and has required role so returns user with new admin role effect."
       (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
-        (let [updated-alice (update s/alice-user :user/roles conj {:role/name :admin
-                                                                   :role/date-granted (utils/mk-date)})]
+        (let [new-role {:role/name :admin :role/date-granted (utils/mk-date)}
+              updated-alice (update s/alice-user :user/roles conj new-role)
+              effects (assoc s/alice-user :user/roles [new-role])]
           (is (= {:response updated-alice
-                  :effects  {:db {:payload [updated-alice]}}}
+                  :effects  {:db {:payload [effects]}}}
                  (sut/grant-admin-role (d/db db-conn) (:user/email s/alice-user)))))))
     (testing "User does not exist so returns error map."
       (is (= {:error {:type    :user/not-found
@@ -128,3 +145,24 @@
                         :role    :admin
                         :user-email admin-email}}
                (sut/grant-admin-role (d/db db-conn) admin-email)))))))
+
+(deftest revoke-role
+  (let [db-conn (-> test-system :db-conn :conn)]
+    (testing "User does not have the role to be revoked so returns error."
+      (let [editor-email (:user/email s/alice-user)]
+        (is (= {:error {:type :role/not-found
+                        :role-to-revoke :admin
+                        :user-roles [:editor]
+                        :user-email editor-email}}
+               (sut/revoke-admin-role (d/db db-conn) editor-email)))))
+    (testing "User exits and has the role to revoke so returns user with new updated roles."
+      (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
+        (let [updated-bob (assoc s/bob-user :user/roles (->> s/bob-user :user/roles (take 1)))]
+          (is (= {:response updated-bob
+                  :effects  {:db {:payload [[:db/retract [:user/id s/bob-id] :user/roles]
+                                            (select-keys updated-bob [:user/id :user/roles])]}}}
+                 (sut/revoke-admin-role (d/db db-conn) (:user/email s/bob-user)))))))
+    (testing "User does not exist so returns error map."
+      (is (= {:error {:type    :user/not-found
+                      :user-email "unknown-email"}}
+             (sut/revoke-admin-role (d/db db-conn) "unknown-email"))))))

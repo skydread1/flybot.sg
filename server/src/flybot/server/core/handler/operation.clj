@@ -1,6 +1,7 @@
 (ns flybot.server.core.handler.operation
-  (:require [flybot.server.core.handler.operation.db :as db]
-            [flybot.common.utils :as utils]))
+  (:require [flybot.common.utils :as utils]
+            [flybot.server.core.handler.auth :refer [with-role]]
+            [flybot.server.core.handler.operation.db :as db]))
 
 ;;---------- No Effect Ops ----------
 
@@ -22,20 +23,32 @@
 
 ;;---------- Ops with effects ----------
 
+(defn admin?
+  [user]
+  (->> user :user/roles (map :role/name) (filter #(= :admin %)) seq))
+
 (defn add-post
   "Add the post to the DB with only the author/editor IDs included.
    Returns the post with the full author/editor profiles included."
   [db post]
-  (let [author (db/get-user db (-> post :post/author :user/id))
-        editor (db/get-user db (-> post :post/last-editor :user/id))
+  (let [author-id (-> post :post/author :user/id)
+        editor-id (-> post :post/last-editor :user/id)
+        author (db/get-user db author-id)
+        editor (db/get-user db editor-id)
         full-post (cond-> (assoc post :post/author author)
                     editor (assoc :post/last-editor editor))
         page (:post/page post)
         posts (-> db
                   (db/get-all-posts-of page)
                   (utils/update-post-orders-with post :new-post))]
-    {:response full-post
-     :effects  {:db {:payload posts}}}))
+    (if (and editor-id (not= author-id editor-id) (not (admin? editor)))
+      {:error {:type :user/cannot-edit-post
+               :author-id author-id
+               :editor-id editor-id
+               :required-role :admin
+               :current-role :editor}}
+      {:response full-post
+       :effects  {:db {:payload posts}}})))
 
 (defn delete-post
   "Delete the post if
@@ -44,13 +57,9 @@
   [db post-id user-id]
   (let [post (db/get-post db post-id)
         author-id (-> post :post/author :user/id)
-        admin?    (->> (db/get-user db user-id)
-                       :user/roles
-                       (map :role/name)
-                       (filter #(= :admin %))
-                       seq)
+        user (db/get-user db user-id)
         page (:post/page post)]
-    (if (or admin? (= author-id user-id))
+    (if (or (admin? user) (= author-id user-id))
       (let [posts (-> db
                       (db/get-all-posts-of page)
                       (utils/update-post-orders-with post :removed-post))]
@@ -122,16 +131,37 @@
                    :user-email    email}}
           
           :else
-          (let [new-user (update user :user/roles conj {:role/name         role-to-grant
-                                                        :role/date-granted (utils/mk-date)})]
-            {:response new-user
-             :effects  {:db {:payload [new-user]}}}))))
+          (let [new-role {:role/name role-to-grant :role/date-granted (utils/mk-date)}]
+            {:response (update user :user/roles conj new-role)
+             :effects  {:db {:payload [(assoc user :user/roles [new-role])]}}}))))
 
 (def grant-admin-role
-  #(grant-role % %2 :editor :admin))
+  #(grant-role %1 %2 :editor :admin))
 
 (def grant-owner-role
-  #(grant-role % %2 :admin :owner))
+  #(grant-role %1 %2 :admin :owner))
+
+(defn- revoke-role
+  [db email role]
+  (let [{:user/keys [id roles] :as user} (db/get-user-by-email db email)]
+    (cond (not user)
+          {:error {:type       :user/not-found
+                   :user-email email}}
+
+          (not (some #{role} (map :role/name roles)))
+          {:error {:type :role/not-found
+                   :role-to-revoke role
+                   :user-roles (map :role/name roles)
+                   :user-email email}}
+
+          :else
+          (let [updated-roles (vec (filter #(not= role (:role/name %)) roles))]
+            {:response (assoc user :user/roles updated-roles)
+             :effects  {:db {:payload [[:db/retract [:user/id id] :user/roles]
+                                       {:user/id id :user/roles updated-roles}]}}}))))
+
+(def revoke-admin-role
+  #(revoke-role %1 %2 :admin))
 
 ;;---------- Pullable data ----------
 
@@ -142,12 +172,20 @@
   [db session]
   {:posts {:all          (fn [] (get-all-posts db))
            :post         (fn [post-id] (get-post db post-id))
-           :new-post     (fn [post] (add-post db post))
-           :removed-post (fn [post-id user-id] (delete-post db post-id user-id))}
-   :users {:all          (fn [] (get-all-users db))
+           :new-post     (with-role session :editor
+                           (fn [post] (add-post db post)))
+           :removed-post (with-role session :editor
+                           (fn [post-id user-id] (delete-post db post-id user-id)))}
+   :users {:all          (with-role session :owner
+                           (fn [] (get-all-users db)))
            :user         (fn [id] (get-user db id))
-           :removed-user (fn [id] (delete-user db id))
+           :removed-user (with-role session :owner
+                           (fn [id] (delete-user db id)))
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
                           :logged     (fn [] (login-user db (:user-id session)))}
-           :new-role     {:admin (fn [email] (grant-admin-role db email))
-                          :owner (fn [email] (grant-owner-role db email))}}})
+           :new-role     {:admin (with-role session :owner
+                                   (fn [email] (grant-admin-role db email)))
+                          :owner (with-role session :owner
+                                   (fn [email] (grant-owner-role db email)))}
+           :revoked-role {:admin (with-role session :owner
+                                   (fn [email] (revoke-admin-role db email)))}}})

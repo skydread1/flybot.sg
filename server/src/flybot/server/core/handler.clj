@@ -118,22 +118,19 @@
           [["/posts"
             ["/all"          {:post ring-handler}]
             ["/post"         {:post ring-handler}]
-            ["/new-post"     {:post       ring-handler
-                              :middleware [[auth/authorization-middleware [:editor]]]}]
-            ["/removed-post" {:post       ring-handler
-                              :middleware [[auth/authorization-middleware [:editor]]]}]]
+            ["/new-post"     {:post ring-handler}]
+            ["/removed-post" {:post ring-handler}]]
            ["/users"
             ["/logout"         {:get (auth/logout-handler client-root-path)}]
             ["/all"            {:post ring-handler}]
             ["/user"           {:post ring-handler}]
             ["/logged-in-user" {:post ring-handler}]
-            ["/removed-user"   {:post       ring-handler
-                                :middleware [[auth/authorization-middleware [:owner]]]}]
+            ["/removed-user"   {:post ring-handler}]
             ["/new-role"
-             ["/admin" {:post       ring-handler
-                        :middleware [[auth/authorization-middleware [:owner]]]}]
-             ["/owner" {:post       ring-handler
-                        :middleware [[auth/authorization-middleware [:owner]]]}]]]
+             ["/admin" {:post ring-handler}]
+             ["/owner" {:post ring-handler}]]
+            ["/revoke-role"
+             ["/admin" {:post ring-handler}]]]
            ["/oauth/google/success" {:get        ring-handler
                                      :middleware [[auth/authentification-middleware client-root-path]]}]
            ["/*" {:get {:handler index-handler}}]])

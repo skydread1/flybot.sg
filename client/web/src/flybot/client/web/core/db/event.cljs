@@ -16,7 +16,7 @@
  (fn [_ [_ {:keys [posts]}]]
    (let [{:post/keys [id] :as post} (:new-post posts)]
      {:fx [[:dispatch [:evt.post/add-post post]]
-           [:dispatch [:evt.post.form/clear-form]]
+           [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]]})))
