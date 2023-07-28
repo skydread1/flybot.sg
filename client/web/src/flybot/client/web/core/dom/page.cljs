@@ -1,10 +1,12 @@
 (ns flybot.client.web.core.dom.page
-  (:require [clojure.string :as str]
-            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
+  (:require [cljsjs.react-toastify]
+            [clojure.string :as str]
             [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
             [flybot.client.web.core.dom.page.options :as page.options]
+            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
             [flybot.client.web.core.utils :as web.utils]
-            [re-frame.core :as rf]))
+            [re-frame.core :as rf]
+            [flybot.client.web.core.dom.page.notifications :as notifications]))
 
 (defn get-post-by-id-page
   "Retrieves a post (or posts) with the given page name, ID ending and URL
@@ -56,7 +58,9 @@
       (for [post (conj sorted-posts new-post)]
         (if (= :blog page-name)
           (blog-post-short post)
-          (page-post post :demote-headings))))]))
+          (page-post post :demote-headings))))
+     [notifications/toast-notifications]
+     notifications/toast-notification-container]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.
@@ -83,7 +87,9 @@
        (page-post queried-post)
        [:div.post
         [:h2 "No blog posts reside here (yet…)"]
-        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
+        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])
+     [notifications/toast-notifications]
+     notifications/toast-notification-container]))
 
 (defn admin-page
   "Returns the admin content."
