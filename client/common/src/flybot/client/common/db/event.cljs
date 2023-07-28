@@ -160,7 +160,7 @@
         new-posts     (-> posts-of-page
                           (utils/update-post-orders-with post operation)
                           (#(utils/to-indexed-maps :post/id %)))]
-    (merge posts new-posts)))
+    (merge-with merge posts new-posts)))
 
 (rf/reg-event-db
  :evt.post/add-post
@@ -238,14 +238,16 @@
  :evt.post.form/autofill
  (fn [{:keys [db]} [_ post-id]]
    (if (utils/temporary-id? post-id)
-     {:db         (assoc db :form/fields
-                         {:post/id   post-id
-                          :post/page (or (-> db :app/current-view :data :page-name) ;; web page
-                                         :blog ;; mobile screen
-                                         )
-                          :post/mode :edit
-                          :post/author (-> db :app/user (select-keys [:user/id :user/name]))
-                          :post/creation-date (utils/mk-date)})}
+     (let [page (or (-> db :app/current-view :data :page-name) ;; web page
+                    :blog ;; mobile screen
+                    )]
+       {:db (assoc db :form/fields
+                   {:post/id post-id
+                    :post/page page
+                    :post/mode :edit
+                    :post/author (-> db :app/user (select-keys [:user/id :user/name]))
+                    :post/creation-date (utils/mk-date)
+                    :post/default-order (->> db :app/posts vals (filter #(= page (:post/page %))) count)})})
      {:http-xhrio {:method          :post
                    :uri             (base-uri "/posts/post")
                    :params          {:posts

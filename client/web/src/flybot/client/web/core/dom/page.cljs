@@ -54,8 +54,9 @@
      [:h1 page-name]
      (when (= :blog page-name)
        [:div.post [page.options/blog-sorting-form]])
+     [page-post new-post :demote-headings]
      (doall
-      (for [post (conj sorted-posts new-post)]
+      (for [post sorted-posts]
         (if (= :blog page-name)
           (blog-post-short post)
           (page-post post :demote-headings))))
