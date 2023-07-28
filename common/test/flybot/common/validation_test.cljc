@@ -41,8 +41,9 @@
       (let [post {:post/id            "new-post-temp-id"
                   :post/page          :home
                   :post/css-class     "post-2"
-                  :post/md-content    "#Some content 2"}]
-        (is (= (dissoc s/post-2 :post/default-order)
+                  :post/md-content    "#Some content 2"
+                  :post/default-order 1}]
+        (is (= s/post-2
                (sut/prepare-post post "bob-id"))))))
   (testing "Edition of a post."
     (with-redefs [utils/mk-date (constantly s/post-1-edit-date)]
@@ -54,6 +55,7 @@
                                         :image/src-dark "https://some-image-dark-mode.svg"
                                         :image/alt "something"}
                   :post/creation-date  s/post-1-create-date
-                  :post/author         {:user/id s/alice-id}}]
-        (is (= (dissoc s/post-1 :post/default-order)
+                  :post/author         {:user/id s/alice-id}
+                  :post/default-order 0}]
+        (is (= s/post-1
                (sut/prepare-post post "bob-id")))))))

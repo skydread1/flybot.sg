@@ -115,6 +115,10 @@
        :errors
        (map #(select-keys % [:path :type]))))
 
+(defn str->int
+  [s]
+  #?(:clj (Integer/parseInt (str s)) :cljs (js/parseInt s)))
+
 (defn prepare-post
   "Given a `post` from the post form and the `user-id`,
    returns a post matching server format requirements."
@@ -126,4 +130,5 @@
         (dissoc :post/view :post/mode :post/to-delete?)
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
         (assoc date-field (u/mk-date))
-        (assoc-in [writer-field :user/id] user-id))))
+        (assoc-in [writer-field :user/id] user-id)
+        (update :post/default-order str->int))))
