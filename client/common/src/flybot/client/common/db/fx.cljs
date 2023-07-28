@@ -34,7 +34,7 @@
                                   "autoClose" 10000
                                   "pauseOnHover" true}
                         :error {"type" "error"
-                                "autoClose" false
+                                "autoClose" 10000
                                 "pauseOnHover" true}
                         {})]
      (.toast js/ReactToastify
