@@ -38,5 +38,5 @@
                                 "pauseOnHover" true}
                         {})]
      (.toast js/ReactToastify
-             (r/as-element [:<> [:strong title] [:p body]])
+             (r/as-element [:<> [:strong (str title)] [:p (str body)]])
              (clj->js (merge type-options options))))))

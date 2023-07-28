@@ -23,5 +23,4 @@
   []
   (let [notification @(rf/subscribe [:subs/pattern {:app/notification '?x}])]
      (when notification
-       (print "notification notifying")
        (rf/dispatch [:evt.ui/toast-notify notification]))))
