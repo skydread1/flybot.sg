@@ -1,6 +1,6 @@
 {:env     :dev ;; can be either :dev or :prod
  :systems {:prod     {:http-port       8123
-                      ;; note the initial `/` because prod system is run in a container
+                      ;; note the initial `/` because prod-system is run in a container
                       :db-uri          "/datalevin/prod/flybotdb"
                       :oauth2-callback "https://flybot.sg/oauth/google/callback"}
            :dev      {:http-port       8123
@@ -8,7 +8,9 @@
                       :oauth2-callback "http://localhost:8123/oauth/google/callback"}
            :figwheel {:db-uri          "datalevin/figwheel/db"
                       :oauth2-callback "http://localhost:9500/oauth/google/callback"
-                      ;; "flybot-app://" for mobile, default to "/" for web
+                      ;; where the user is redirected after oatuh2:
+                      ;; "flybot-app://" for mobile
+                      ;; default to "/" for web
                       :client-root-path "/"}
            :test     {:http-port       8100
                       :db-uri          "datalevin/test/db"}}
