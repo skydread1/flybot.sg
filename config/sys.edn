@@ -1,4 +1,4 @@
-{:env     :dev ;; can be either :dev or :prod
+{:figwheel?          true ;; set to true if you want to use figwheel system (frontend)
  :systems {:prod     {:http-port       8123
                       ;; note the initial `/` because prod-system is run in a container
                       :db-uri          "/datalevin/prod/flybotdb"
@@ -18,5 +18,4 @@
                          :client-secret "secret"}}
  :owner #:user{:id    "google-personal-acc-id" ;; replace with your google acc id
                :email "bob@company.com"
-               :name  "Bob Smith"}
- }
+               :name  "Bob Smith"}}

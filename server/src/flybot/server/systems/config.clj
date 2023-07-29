@@ -1,16 +1,10 @@
 (ns flybot.server.systems.config
-  (:require [clojure.edn :as edn]
-            [clojure.string :as str]))
+  (:require [clojure.edn :as edn]))
 
 (def CONFIG
   "To see an example of the config data shape, refer to config/sys.edn."
   (or (-> (System/getenv "SYSTEM") edn/read-string)
       (-> (slurp "config/sys.edn") edn/read-string)))
-
-(def ENV
-  "ENV can be either :dev or :prod to prevent evaluating unecessary systems."
-  (or (cond-> (System/getenv "ENV") str/lower-case keyword)
-      (:env CONFIG)))
 
 (def oauth2-default-config
   {:google
