@@ -11,9 +11,6 @@ on:
   pull_request_target:
     types: [closed]
 
-env:
-  SYSTEM: ""
-
 jobs:
   build:
     runs-on: ubuntu-latest
