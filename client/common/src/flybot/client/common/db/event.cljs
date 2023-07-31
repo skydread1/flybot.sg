@@ -309,8 +309,7 @@
 ;; ------- Notifications ------
 
 (rf/reg-event-fx
- ;; FIXME: Naming: :evt.ui/ or :evt.app/?
- :evt.ui/toast-notify
+ :evt.app/toast-notify
  (fn [{:keys [db]} [_ notification]]
    (let [theme (-> db :app/theme name)]
      {:fx [[:fx.ui/toast-notify [notification {"theme" theme}]]]})))

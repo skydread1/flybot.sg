@@ -23,7 +23,7 @@
   []
   (let [notification @(rf/subscribe [:subs/pattern {:app/notification '?x}])]
      (when notification
-       (rf/dispatch [:evt.ui/toast-notify notification]))))
+       (rf/dispatch [:evt.app/toast-notify notification]))))
 
 (defn toast-notification-comp
   []

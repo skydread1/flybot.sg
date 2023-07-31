@@ -20,7 +20,6 @@
 ;; ---- Toast notifications ----
 
 (rf/reg-fx
- ;; FIXME: Naming: :fx.ui/ or :fx.app/?
  :fx.ui/toast-notify
  (fn [[{:notification/keys [type title body]} options]]
    (let [type-options (case type
