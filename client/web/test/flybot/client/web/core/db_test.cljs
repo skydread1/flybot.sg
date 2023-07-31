@@ -41,7 +41,9 @@
          user         (rf/subscribe [:subs/pattern '{:app/user ?x}])
          navbar-open? (rf/subscribe [:subs/pattern '{:nav/navbar-open? ?x}])
          posts        (rf/subscribe [:subs.post/posts :home])
-         http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])]
+         http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])
+         http-error-notification
+         (rf/subscribe [:subs/pattern {:app/notification '?x}])]
      ;;---------- SERVER ERROR
      ;; Mock failure http request
      (rf/reg-fx :http-xhrio
@@ -50,7 +52,11 @@
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initital db state is accurate in case of server error."
-       (is (= "ERROR-SERVER" @http-error)))
+       (is (= "ERROR-SERVER" @http-error))
+       (is (= #:notification{:type :error
+                             :body "ERROR-SERVER"}
+              (select-keys @http-error-notification [:notification/type
+                                                     :notification/body]))))
 
      ;;---------- SUCCESS
      ;; Mock success http request
@@ -125,6 +131,8 @@
            posts            (rf/subscribe [:subs.post/posts :home])
            errors           (rf/subscribe [:subs/pattern '{:app/errors ?x}])
            validation-error (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])
+           validation-error-notification
+           (rf/subscribe [:subs/pattern {:app/notification '?x}])
            new-post-1       (assoc s/post-1
                                    :post/md-content     "#New Content 1"
                                    :post/last-edit-date (utils/mk-date))]
@@ -156,7 +164,8 @@
      ;; Send post but validation error
        (rf/dispatch [:evt.post.form/send-post])
        (testing "Validation error added to db."
-         (is @validation-error))
+         (is @validation-error)
+         (is @validation-error-notification))
 
      ;;---------- SEND POST SUCCESS
      ;; Mock success http request

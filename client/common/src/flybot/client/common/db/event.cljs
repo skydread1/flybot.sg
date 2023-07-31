@@ -18,10 +18,14 @@
 
 (rf/reg-event-db
  :fx.http/failure
- [(rf/path :app/errors)]
- (fn [errors [_ result]]
+ (fn [db [_ result]]
     ;; result is a map containing details of the failure
-   (assoc errors :failure-http-result result)))
+   (-> db
+       (assoc-in [:app/errors :failure-http-result] result)
+       (assoc :app/notification #:notification{:id (utils/mk-uuid)
+                                               :type :error
+                                               :title "HTTP failure"
+                                               :body result}))))
 
 (rf/reg-event-fx
  :fx.http/all-success
@@ -302,13 +306,25 @@
  (fn [_ [_ new-options]]
    (edn/read-string new-options)))
 
+;; ------- Notifications ------
+
+(rf/reg-event-fx
+ :evt.app/toast-notify
+ (fn [{:keys [db]} [_ notification]]
+   (let [theme (-> db :app/theme name)]
+     {:fx [[:fx.ui/toast-notify [notification {"theme" theme}]]]})))
+
 ;; ---------- Errors ----------
 
 (rf/reg-event-db
  :evt.error/set-validation-errors
- [(rf/path :app/errors)]
- (fn [errors [_ validation-err]]
-   (assoc errors :validation-errors validation-err)))
+ (fn [db [_ validation-err]]
+   (-> db
+       (assoc-in [:app/errors :validation-errors] validation-err)
+       (assoc :app/notification #:notification{:id (utils/mk-uuid)
+                                               :type :error
+                                               :title "Validation error"
+                                               :body validation-err}))))
 
 (rf/reg-event-db
  :evt.error/clear-errors
