@@ -59,9 +59,7 @@
       (for [post sorted-posts]
         (if (= :blog page-name)
           (blog-post-short post)
-          (page-post post :demote-headings))))
-     [notifications/toast-notifications]
-     notifications/toast-notification-container]))
+          (page-post post :demote-headings))))]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.
@@ -88,9 +86,7 @@
        (page-post queried-post)
        [:div.post
         [:h2 "No blog posts reside here (yet…)"]
-        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])
-     [notifications/toast-notifications]
-     notifications/toast-notification-container]))
+        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
 
 (defn admin-page
   "Returns the admin content."

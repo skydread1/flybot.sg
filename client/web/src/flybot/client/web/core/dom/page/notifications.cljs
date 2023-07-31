@@ -19,8 +19,14 @@
                                             "closeButton" false}))
           clj->js)])
 
-(defn toast-notifications
+(defn toast-notification-subscription
   []
   (let [notification @(rf/subscribe [:subs/pattern {:app/notification '?x}])]
      (when notification
        (rf/dispatch [:evt.ui/toast-notify notification]))))
+
+(defn toast-notification-comp
+  []
+  [:<>
+   [toast-notification-subscription]
+   toast-notification-container])
