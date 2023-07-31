@@ -115,24 +115,9 @@
   (reitit/ring-handler
    (reitit/router
     (into (auth/auth-routes oauth2-config)
-          [["/posts"
-            ["/all"          {:post ring-handler}]
-            ["/post"         {:post ring-handler}]
-            ["/new-post"     {:post ring-handler}]
-            ["/removed-post" {:post ring-handler}]]
-           ["/users"
-            ["/logout"         {:get (auth/logout-handler client-root-path)}]
-            ["/all"            {:post ring-handler}]
-            ["/user"           {:post ring-handler}]
-            ["/logged-in-user" {:post ring-handler}]
-            ["/removed-user"   {:post ring-handler}]
-            ["/new-role"
-             ["/admin" {:post ring-handler}]
-             ["/owner" {:post ring-handler}]]
-            ["/revoke-role"
-             ["/admin" {:post ring-handler}]]]
-           ["/oauth/google/success" {:get        ring-handler
-                                     :middleware [[auth/authentification-middleware client-root-path]]}]
+          [["/pattern" {:post ring-handler}]
+           ["/users/logout" {:get (auth/logout-handler client-root-path)}]
+           ["/oauth/google/success" {:get ring-handler :middleware [[auth/authentification-middleware client-root-path]]}]
            ["/*" {:get {:handler index-handler}}]])
     {:conflicts (constantly nil)
      :data      {:muuntaja   m/instance

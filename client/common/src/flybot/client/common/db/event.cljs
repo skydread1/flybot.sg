@@ -105,7 +105,7 @@
      (if (:errors new-role-email)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-role-email)]]]}
        {:http-xhrio {:method          :post
-                     :uri             (base-uri (str "/users/new-role/" (name role)))
+                     :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:users
                                        {:new-role
@@ -175,7 +175,7 @@
  (fn [{:keys [db]} [_ post-id]]
    (let [user-id (-> db :app/user :user/id)]
      {:http-xhrio {:method          :post
-                   :uri             (base-uri "/posts/removed-post")
+                   :uri             (base-uri "/pattern")
                    :headers         {:cookie (:user/cookie db)}
                    :params          {:posts
                                      {(list :removed-post :with [post-id user-id])
@@ -205,7 +205,7 @@
      (if (:errors post)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
-                     :uri             (base-uri "/posts/new-post")
+                     :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:posts
                                        {(list :new-post :with [post])
@@ -245,7 +245,7 @@
                     :post/creation-date (utils/mk-date)
                     :post/default-order (->> db :app/posts vals (filter #(= page (:post/page %))) count)})})
      {:http-xhrio {:method          :post
-                   :uri             (base-uri "/posts/post")
+                   :uri             (base-uri "/pattern")
                    :params          {:posts
                                      {(list :post :with [post-id])
                                       {:post/id '?

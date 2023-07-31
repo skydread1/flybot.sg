@@ -80,7 +80,7 @@
                    :user/mode        :reader
                    :nav/navbar-open? false)
       :http-xhrio {:method          :post
-                   :uri             "/posts/all"
+                   :uri             "/pattern"
                    :params {:posts
                             {(list :all :with [])
                              [{:post/id '?
