@@ -5,8 +5,8 @@
    - prod-system: similar to dev-system but without loading/deleting db data."
   (:require [flybot.server.core.handler :as handler] 
             [flybot.server.core.handler.operation.db :as db]
-            [flybot.server.systems.init-data :as id]
-            [flybot.server.systems.config :as config]
+            [flybot.server.systems.init-data :as data]
+            [flybot.server.systems.config :as config :refer [CONFIG]]
             [aleph.http :as http]
             [datalevin.core :as d]
             [ring.middleware.session.memory :refer [memory-store]]
@@ -26,7 +26,7 @@
    {:db-uri         db-uri
     :db-conn        (fnk [db-uri]
                          (let [conn (d/get-conn db-uri db/initial-datalevin-schema)]
-                           (load-initial-data conn id/init-data)
+                           (load-initial-data conn data/init-data)
                            (closeable
                             {:conn conn}
                             #(d/close conn))))
@@ -78,15 +78,18 @@
    you can halt!, reload ns and touch again the system."
   (-> (config/system-config :figwheel)
       system
-      (assoc :db-conn (db-conn-system id/init-data))
+      (assoc :db-conn (db-conn-system data/init-data))
       (dissoc :http-port :http-server)))
 
 (def figwheel-handler
   "Provided to figwheel-main.edn.
-   Figwheel uses this handler to starts a server on port 9500."
-  (-> figwheel-system
-      touch
-      :reitit-router))
+   Figwheel uses this handler to starts a server on port 9500.
+   Since the system is touched on namespace load, you need to have
+   the flag :fighweel? set to true in the config."
+  (when (:figwheel? CONFIG)
+    (-> figwheel-system
+        touch
+        :reitit-router)))
 
 (comment
   (touch figwheel-system)
@@ -101,7 +104,7 @@
    It loads some real data sample. The data is deleted when the system halt!.
    It is convenient if you want to see your backend changes in action in the UI."
   (-> (system (config/system-config :dev))
-      (assoc :db-conn (db-conn-system id/init-data))))
+      (assoc :db-conn (db-conn-system data/init-data))))
 
 (comment
   (touch dev-system)

@@ -1,6 +1,11 @@
 (ns flybot.server.systems.config
   (:require [clojure.edn :as edn]))
 
+(def CONFIG
+  "To see an example of the config data shape, refer to config/sys.edn."
+  (or (-> (System/getenv "SYSTEM") edn/read-string)
+      (-> (slurp "config/sys.edn") edn/read-string)))
+
 (def oauth2-default-config
   {:google
    {:project-id       "flybot-website"
@@ -12,13 +17,8 @@
     :landing-uri      "/oauth/google/success"
     :client-root-path "/"}})
 
-(def oauth2-config
-  (edn/read-string (or (System/getenv "OAUTH2")
-                       (slurp "config/oauth2.edn"))))
-
 (defn system-config
-  [env]
-  (let [env-cfg (or (-> (when-let [cfg (System/getenv "SYSTEM")]
-                          (edn/read-string cfg)))
-                    (-> (slurp "config/system.edn") edn/read-string env))]
-    (merge env-cfg oauth2-config)))
+  [system-type]
+  (let [sys-cfg (-> CONFIG :systems system-type)
+        oauth2-config (:oauth2 CONFIG)]
+    (merge sys-cfg oauth2-config)))
