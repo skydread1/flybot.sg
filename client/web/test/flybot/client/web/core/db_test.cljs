@@ -41,7 +41,9 @@
          user         (rf/subscribe [:subs/pattern '{:app/user ?x}])
          navbar-open? (rf/subscribe [:subs/pattern '{:nav/navbar-open? ?x}])
          posts        (rf/subscribe [:subs.post/posts :home])
-         http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])]
+         http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])
+         http-error-notification
+         (rf/subscribe [:subs/pattern {:app/notification '?x}])]
      ;;---------- SERVER ERROR
      ;; Mock failure http request
      (rf/reg-fx :http-xhrio
@@ -50,7 +52,11 @@
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initital db state is accurate in case of server error."
-       (is (= "ERROR-SERVER" @http-error)))
+       (is (= "ERROR-SERVER" @http-error))
+       (is (= #:notification{:type :error
+                             :body "ERROR-SERVER"}
+              (select-keys @http-error-notification [:notification/type
+                                                     :notification/body]))))
 
      ;;---------- SUCCESS
      ;; Mock success http request
@@ -125,6 +131,8 @@
            posts            (rf/subscribe [:subs.post/posts :home])
            errors           (rf/subscribe [:subs/pattern '{:app/errors ?x}])
            validation-error (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])
+           validation-error-notification
+           (rf/subscribe [:subs/pattern {:app/notification '?x}])
            new-post-1       (assoc s/post-1
                                    :post/md-content     "#New Content 1"
                                    :post/last-edit-date (utils/mk-date))]
@@ -156,7 +164,8 @@
      ;; Send post but validation error
        (rf/dispatch [:evt.post.form/send-post])
        (testing "Validation error added to db."
-         (is @validation-error))
+         (is @validation-error)
+         (is @validation-error-notification))
 
      ;;---------- SEND POST SUCCESS
      ;; Mock success http request
@@ -261,62 +270,3 @@
      (rf/dispatch [:evt.post/remove-post s/post-1-id])
      (testing "Post got removed."
        (is (= [] @posts))))))
-
-;; ---------- NOTIFICATIONS ----------
-
-(deftest app-notifications-test
-  (rf-test/run-test-sync
-   (test-fixtures)
-   (testing "HTTP failure:"
-     (let [sample-uuid-1 #uuid "550e8400-e29b-41d4-a716-446655440000"
-           sample-uuid-2 #uuid "00112233-4455-6677-8899-aabbccddeeff"
-           http-failure-result {:result "Simulated HTTP failure."}
-           expected-notification #:notification{:id sample-uuid-1
-                                                :type :error
-                                                :title "HTTP failure"
-                                                :body http-failure-result}]
-       (testing "Notification is made."
-         (with-redefs [utils/mk-uuid (constantly sample-uuid-1)]
-           (rf/reg-fx :http-xhrio
-                      (fn [_]
-                        (rf/dispatch [:fx.http/failure http-failure-result])))
-           (rf/dispatch [:evt.app/initialize])
-           (is (= expected-notification
-                  @(rf/subscribe [:subs/pattern {:app/notification '?x}])))))
-       (testing "Notification remains after HTTP success."
-         (with-redefs [utils/mk-uuid (constantly sample-uuid-2)]
-           (rf/reg-fx :http-xhrio
-                      (fn [_]
-                        (rf/dispatch [:fx.http/all-success s/init-data])))
-           (rf/dispatch [:evt.app/initialize])
-           (is (= expected-notification
-                  @(rf/subscribe [:subs/pattern {:app/notification '?x}])))))))
-   (testing "Post validation error:"
-     (let [sample-uuid-1 #uuid "550e8400-e29b-41d4-a716-446655440000"
-           sample-uuid-2 #uuid "00112233-4455-6677-8899-aabbccddeeff"
-           missing-title-error '({:path [:post/md-content 1]})
-           expected-notification #:notification{:id sample-uuid-1
-                                                :type :error
-                                                :title "Validation error"
-                                                :body missing-title-error}]
-       (testing "Notification is made."
-         (with-redefs [utils/mk-uuid (constantly sample-uuid-1)]
-           (rf/dispatch [:evt.post/toggle-edit-mode "new-post-temp-id"])
-           (rf/dispatch [:evt.post.form/set-field :post/md-content "## No H1"])
-           (rf/dispatch [:evt.post.form/send-post])
-           (is (= expected-notification
-                  @(rf/subscribe [:subs/pattern {:app/notification '?x}])))))
-       (testing "Notification remains after validation error is resolved."
-         (with-redefs [utils/mk-uuid (constantly sample-uuid-2)]
-           (rf/dispatch [:evt.post.form/set-field :post/md-content "# One H1"])
-           (rf/reg-fx :http-xhrio
-                      (fn [_]
-                        (rf/dispatch [:fx.http/send-post-success
-                                      {:posts
-                                       {:new-post (assoc s/post-1
-                                                         :post/md-content
-                                                         "# One H1")}}])))
-           (rf/dispatch [:evt.post.form/send-post])
-           (is (= expected-notification
-                  @(rf/subscribe [:subs/pattern
-                                  {:app/notification '?x}])))))))))
