@@ -1,3 +1,0 @@
-#:user{:id "google-personal-acc-id" ;; can be fetched via google api
-       :email "bob@company.com"
-       :name "Bob Smith"}

@@ -11,10 +11,6 @@ on:
   pull_request_target:
     types: [closed]
 
-env:
-  OAUTH2: ""
-  OWNER_USER: ""
-
 jobs:
   build:
     runs-on: ubuntu-latest
