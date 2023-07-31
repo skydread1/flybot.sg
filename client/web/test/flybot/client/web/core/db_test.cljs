@@ -42,8 +42,7 @@
          navbar-open? (rf/subscribe [:subs/pattern '{:nav/navbar-open? ?x}])
          posts        (rf/subscribe [:subs.post/posts :home])
          http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])
-         http-error-notification
-         (rf/subscribe [:subs/pattern {:app/notification '?x}])]
+         notification (rf/subscribe [:subs/pattern {:app/notification '?x}])]
      ;;---------- SERVER ERROR
      ;; Mock failure http request
      (rf/reg-fx :http-xhrio
@@ -55,8 +54,8 @@
        (is (= "ERROR-SERVER" @http-error))
        (is (= #:notification{:type :error
                              :body "ERROR-SERVER"}
-              (select-keys @http-error-notification [:notification/type
-                                                     :notification/body]))))
+              (select-keys @notification [:notification/type
+                                          :notification/body]))))
 
      ;;---------- SUCCESS
      ;; Mock success http request
@@ -131,8 +130,7 @@
            posts            (rf/subscribe [:subs.post/posts :home])
            errors           (rf/subscribe [:subs/pattern '{:app/errors ?x}])
            validation-error (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])
-           validation-error-notification
-           (rf/subscribe [:subs/pattern {:app/notification '?x}])
+           notification     (rf/subscribe [:subs/pattern {:app/notification '?x}])
            new-post-1       (assoc s/post-1
                                    :post/md-content     "#New Content 1"
                                    :post/last-edit-date (utils/mk-date))]
@@ -165,7 +163,10 @@
        (rf/dispatch [:evt.post.form/send-post])
        (testing "Validation error added to db."
          (is @validation-error)
-         (is @validation-error-notification))
+         (is (= #:notification{:type :error
+                               :title "Validation error"}
+                (select-keys @notification [:notification/type
+                                            :notification/title]))))
 
      ;;---------- SEND POST SUCCESS
      ;; Mock success http request
@@ -183,7 +184,12 @@
                 @posts)))
        (testing "Form and errors cleared."
          (is (not @p1-form))
-         (is (not @errors)))))))
+         (is (not @errors)))
+       (testing "Notification sent."
+         (is (= #:notification{:type :success
+                               :title "Post edited"
+                               :body "New Content 1"}
+                (dissoc @notification :notification/id))))))))
 
 (deftest create-post
   (with-redefs [utils/mk-date (constantly s/post-1-create-date)]
@@ -198,6 +204,7 @@
                           :post/default-order 2}
            new-post-mode (rf/subscribe [:subs/pattern {:app/posts {temp-id '{:post/mode ?x}}}])
            new-post-form (rf/subscribe [:subs/pattern '{:form/fields ?x}])
+           notification  (rf/subscribe [:subs/pattern {:app/notification '?x}])
            posts         (rf/subscribe [:subs.post/posts :home])
            new-post      (assoc empty-post
                                 :post/md-content "#New Content 1"
@@ -233,23 +240,37 @@
                  (assoc new-post :post/mode :read)]
                 @posts)))
        (testing "Form cleared."
-         (is (not @new-post-form)))))))
+         (is (not @new-post-form)))
+       (testing "Notification sent."
+         (is (= #:notification{:type :success
+                               :title "New post created"
+                               :body "New Content 1"}
+                (dissoc @notification :notification/id))))))))
 
 (deftest delete-post
   (rf-test/run-test-sync
    (test-fixtures)
    (let [posts   (rf/subscribe [:subs.post/posts :home])
          p1-form (rf/subscribe [:subs/pattern '{:form/fields ?x}])
-         p1-mode (rf/subscribe [:subs/pattern {:app/posts {s/post-1-id '{:post/mode ?x}}}])]
+         p1-mode (rf/subscribe [:subs/pattern {:app/posts {s/post-1-id '{:post/mode ?x}}}])
+         notification (rf/subscribe [:subs/pattern {:app/notification '?x}])]
      ;;---------- DELETE POST - READ MODE
      (rf/reg-fx :http-xhrio
                 (fn [_]
                   (rf/dispatch [:fx.http/remove-post-success
-                                {:posts {:removed-post {:post/id s/post-2-id}}}])))
+                                {:posts
+                                 {:removed-post
+                                  (select-keys s/post-2
+                                               [:post/id
+                                                :post/md-content])}}])))
      (rf/dispatch [:evt.post/remove-post s/post-2-id])
-     (testing "Post got removed and form cleared."
+     (testing "Post got removed, form cleared and notification sent."
        (is (= [(assoc s/post-1 :post/mode :read)] @posts))
-       (is (not @p1-form)))
+       (is (not @p1-form))
+       (is (= #:notification{:type :success
+                             :title "Post removed"
+                             :body "Some content 2"}
+              (dissoc @notification :notification/id))))
 
      ;;---------- DELETE POST - EDIT MODE
      ;; Mock success http request
@@ -266,7 +287,15 @@
      (rf/reg-fx :http-xhrio
                 (fn [_]
                   (rf/dispatch [:fx.http/remove-post-success
-                                {:posts {:removed-post {:post/id s/post-1-id}}}])))
+                                {:posts
+                                 {:removed-post
+                                  (select-keys s/post-1
+                                               [:post/id
+                                                :post/md-content])}}])))
      (rf/dispatch [:evt.post/remove-post s/post-1-id])
      (testing "Post got removed."
-       (is (= [] @posts))))))
+       (is (= [] @posts))
+       (is (= #:notification{:type :success
+                             :title "Post removed"
+                             :body "Some content 1"}
+              (dissoc @notification :notification/id)))))))

@@ -2,6 +2,7 @@
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
             [clojure.edn :as edn]
             [day8.re-frame.http-fx]
+            [flybot.client.web.core.utils :as web.utils]
             [flybot.common.utils :as utils :refer [toggle]]
             [flybot.common.validation :as valid]
             [re-frame.core :as rf]))
@@ -59,11 +60,16 @@
  :fx.http/remove-post-success
  (fn [{:keys [db]} [_ {:keys [posts]}]]
    (let [post   (-> posts :removed-post)
+         post-title (web.utils/post->title post)
          user-name (-> db :app/user :user/name)]
      {:fx [[:dispatch [:evt.post/delete-post post]]
            [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
-           [:fx.log/message ["Post " (:post/id post) " deleted by " user-name "."]]]})))
+           [:fx.log/message ["Post " (:post/id post) " deleted by " user-name "."]]
+           [:dispatch [:evt.notification/set-notification
+                       :success
+                       "Post removed"
+                       post-title]]]})))
 
 (rf/reg-event-fx
  :fx.http/logout-success
@@ -77,7 +83,18 @@
    (let [{:user/keys [name roles]} (-> users :new-role role-granted)]
      {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
            [:dispatch [:evt.error/clear-errors]]
-           [:fx.log/message ["User " name " 's roles are now " (map :role/name roles)]]]})))
+           [:fx.log/message ["User " name "'s roles are now " (map :role/name roles)]]
+           [:dispatch [:evt.notification/set-notification
+                       :success
+                       "New role granted"
+                       (str name
+                            " is now "
+                            (case role-granted
+                              :owner "an owner"
+                              :admin "an administrator"
+                              :editor "an editor"
+                              "a user")
+                            ".")]]]})))
 
 ;; ---------- User ----------
 
@@ -184,8 +201,8 @@
                    :params          {:posts
                                      {(list :removed-post :with [post-id user-id])
                                       {:post/id '?
-                                       :post/page '?
-                                       :post/default-order '?}}}
+                                       :post/md-content '?
+                                       :post/page '?}}}
                    :format          (edn-request-format {:keywords? true})
                    :response-format (edn-response-format {:keywords? true})
                    :on-success      [:fx.http/remove-post-success]
@@ -307,6 +324,15 @@
    (edn/read-string new-options)))
 
 ;; ------- Notifications ------
+
+(rf/reg-event-db
+ :evt.notification/set-notification
+ [(rf/path :app/notification)]
+ (fn [_ [_ type title body]]
+   #:notification{:id (utils/mk-uuid)
+                  :type type
+                  :title title
+                  :body body}))
 
 (rf/reg-event-fx
  :evt.app/toast-notify
