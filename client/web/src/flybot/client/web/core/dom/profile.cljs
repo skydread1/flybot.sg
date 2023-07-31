@@ -39,7 +39,7 @@
    [:div {:key "page-icon"} svg/page-icon]
    [:div {:key "page"} (-> page name str/upper-case)]])
 
-(defn blog-post-short
+(defn post-short
   [{:post/keys [id page css-class creation-date last-edit-date] :as post}]
   (let [post-title (web.utils/post->title post)]
     [:div.post.short
@@ -82,7 +82,7 @@
          [:h2 "Your Posts"]
          (doall
           (for [post posts-created]
-            (blog-post-short post)))]]
+            (post-short post)))]]
        [:div
         [:h2 "You are not logged in."]
         [:p "This section is dedicated to logged-in users."]]))])
