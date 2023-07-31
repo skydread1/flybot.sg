@@ -3,17 +3,17 @@
 (defn footer-comp []
   [:footer#footer-contact.container
    [:div
-    [:h2 "Address"]
+    [:h3 "Address"]
     [:p "1 Commonwealth Lane"]
     [:p "#08-14"]
     [:p "One Commonwealth"]
     [:p "Singapore 149544"]]
    [:div
-    [:h2
+    [:h3
      "Business Hours"]
     [:p "Monday - Friday, 08:30 - 17:00"]]
    [:div
-    [:h2 "Contact"]
+    [:h3 "Contact"]
     [:p "zhengliming@basecity.com"]
     [:a
      {:rel "noreferrer",

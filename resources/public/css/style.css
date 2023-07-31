@@ -666,10 +666,6 @@ section .team img {
 
 /* Profile */
 
-.profile>div {
-    padding: 1.5rem;
-}
-
 .profile .perso-details {
     padding: 1rem;
     display: flex;
@@ -682,6 +678,10 @@ section .team img {
 
 .profile h4 {
     text-transform: none;
+}
+
+.profile .blog h2 {
+    padding: 1rem;
 }
 
 @media (max-width: 1024px) {

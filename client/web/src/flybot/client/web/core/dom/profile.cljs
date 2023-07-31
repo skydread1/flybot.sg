@@ -48,14 +48,14 @@
      [post-link post
       [:div.post-body
        {:class css-class}
-       [:h2 post-title]
+       [:h3 post-title]
        [:div.post-authors
         (user-info "You" creation-date last-edit-date page)]]]]))
 
 (defn profile-page
   []
   [:section.container.profile
-   (let [{:user/keys [id email roles] user-name :name}
+   (let [{:user/keys [id email roles] user-name :user/name}
          @(rf/subscribe [:subs/pattern '{:app/user ?x}])
          all-posts      (vals @(rf/subscribe [:subs/pattern {:app/posts '?x}]))
          posts-created  (filter #(= id (-> % :post/author :user/id)) all-posts)
@@ -72,14 +72,14 @@
           [:p (str "Total Posts Created: ") [:strong (count posts-created)]]
           [:p (str "Total Posts Edited: ") [:strong (count posts-edited)]]]
          [:div
-          [:h2 "Your Roles:"]
+          [:h2 "Your Roles"]
           (doall
            (for [role roles
                  :let [{role-name :role/name date :role/date-granted} role]]
              [:p {:key role-name}
               [:strong (-> role-name name str/upper-case)] (str " role granted on " (format-date date))]))]]
         [:div.blog
-         [:h2 "Your Posts:"]
+         [:h2 "Your Posts"]
          (doall
           (for [post posts-created]
             (blog-post-short post)))]]
