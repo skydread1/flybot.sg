@@ -1,6 +1,5 @@
 (ns flybot.client.web.core.dom.page.post
   (:require [clojure.walk :as walk]
-            [flybot.client.web.core.dom.common.error :refer [errors]]
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.role :as role]
             [flybot.client.web.core.dom.common.svg :as svg]
@@ -270,8 +269,7 @@
        [submit-button]
        [edit-button id]
        (when-not (utils/temporary-id? id)
-         [trash-button])])
-    [errors id [:validation-errors :failure-http-result]]]
+         [trash-button])])]
    (when @(rf/subscribe [:subs/pattern '{:form/fields {:post/to-delete? ?x}}])
      [delete-form id])
    (if (= :preview @(rf/subscribe [:subs/pattern '{:form/fields {:post/view ?x}}]))
