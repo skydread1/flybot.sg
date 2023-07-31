@@ -122,27 +122,27 @@
       (let [resp (http-request "/wrong-route" ::PATTERN)]
         (is (= 204 (-> resp :status)))))
     (testing "Invalid http method so returns and index.html."
-      (let [resp (http-request :get "/posts/post" ::PATTERN)]
+      (let [resp (http-request :get "/pattern" ::PATTERN)]
         (is (= 204 (-> resp :status)))))
     (testing "Invalid pattern so returns error 407."
-      (let [resp (http-request "/posts/post" {:invalid-key '?})]
+      (let [resp (http-request "/pattern" {:invalid-key '?})]
         (is (= 470 (-> resp :status)))))
     (testing "Cannot delete user who does not exist so returns 409."
       (with-redefs [auth/has-permission? (constantly true)]
-        (let [resp (http-request "/users/removed-user"
+        (let [resp (http-request "/pattern"
                                  {:users
                                   {(list :removed-user :with [s/joshua-id])
                                    {:user/id '?}}})]
           (is (= 472 (-> resp :status))))))
     (testing "User does not have permission so returns 413."
-      (let [resp (http-request "/posts/new-post"
+      (let [resp (http-request "/pattern"
                                {:posts
                                 {(list :new-post :with [s/post-3])
                                  {:post/id '?}}})]
         (is (= 476 (-> resp :status)))))
     (testing "User is not found so returns 414."
       (with-redefs [auth/has-permission? (constantly true)]
-        (let [resp (http-request "/users/new-role/admin"
+        (let [resp (http-request "/pattern"
                                  {:users
                                   {:new-role
                                    {(list :admin :with ["unknown.email@basecity.com"])
@@ -152,7 +152,7 @@
     (testing "User is already admin so returns 415."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [bob-email (:user/email s/bob-user)
-              resp (http-request "/users/new-role/admin"
+              resp (http-request "/pattern"
                                  {:users
                                   {:new-role
                                    {(list :admin :with [bob-email])
@@ -162,7 +162,7 @@
     (testing "User does not have the required role to upgrade to new role so returns 477."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [alice-email (:user/email s/alice-user)
-              resp (http-request "/users/new-role/owner"
+              resp (http-request "/pattern"
                                  {:users
                                   {:new-role
                                    {(list :owner :with [alice-email])
@@ -171,7 +171,7 @@
     (testing "User does not have the required role to edit this post so returns 478."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [post-in (assoc-in s/post-1 [:post/last-editor :user/id] s/joshua-id)
-              resp (http-request "/posts/new-post"
+              resp (http-request "/pattern"
                                  {:posts
                                   {(list :new-post :with [post-in])
                                    {:post/id '?}}})]
@@ -179,14 +179,14 @@
 
   (testing "/posts endpoints:"
     (testing "Execute a request for all posts."
-      (let [resp (http-request "/posts/all"
+      (let [resp (http-request "/pattern"
                                {:posts
                                 {(list :all :with [])
                                  [{:post/id '?}]}})]
         (is (= (set [{:post/id s/post-2-id} {:post/id s/post-1-id}])
                (set (-> resp :body :posts :all))))))
     (testing "Execute a request for a post."
-      (let [resp (http-request "/posts/post"
+      (let [resp (http-request "/pattern"
                                {:posts
                                 {(list :post :with [s/post-1-id])
                                  {:post/id '?
@@ -220,7 +220,7 @@
         (testing "Submit a new post."
           (let [post-in s/post-3
                 post-out (assoc s/post-3 :post/author s/bob-user)
-                resp (http-request "/posts/new-post"
+                resp (http-request "/pattern"
                                    {:posts
                                     {(list :new-post :with [post-in])
                                      {:post/id '?
@@ -237,7 +237,7 @@
             (is (= post-out
                    (-> resp :body :posts :new-post)))))
         (testing "Adjust sorting on new post submission."
-          (let [resp (http-request "/posts/all"
+          (let [resp (http-request "/pattern"
                                    {:posts
                                     {(list :all :with [])
                                      [{:post/id '?
@@ -251,7 +251,7 @@
                    (-> resp :body :posts :all set)))))))
     (testing "Execute a request for a delete post."
       (with-redefs [auth/has-permission? (constantly true)]
-        (let [resp (http-request "/posts/removed-post"
+        (let [resp (http-request "/pattern"
                                  {:posts
                                   {(list :removed-post :with [s/post-3-id s/bob-id])
                                    {:post/id '?}}})]
@@ -261,7 +261,7 @@
   (testing "/users endpoints:"
     (testing "Execute a request for all users."
       (with-redefs [auth/has-permission? (constantly true)]
-        (let [resp (http-request "/users/all"
+        (let [resp (http-request "/pattern"
                                  {:users
                                   {(list :all :with [])
                                    [{:user/id '?
@@ -272,7 +272,7 @@
                   (select-keys s/bob-user [:user/id :user/name :user/roles])]
                  (-> resp :body :users :all))))))
     (testing "Execute a request for a user."
-      (let [resp (http-request "/users/user"
+      (let [resp (http-request "/pattern"
                                {:users
                                 {(list :user :with [s/alice-id])
                                  {:user/id '?
@@ -295,7 +295,7 @@
     (testing "Execute a request to grant admin role to an existing user."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [joshua-email (:user/email s/joshua-user)
-              resp (http-request "/users/new-role/admin"
+              resp (http-request "/pattern"
                                  {:users
                                   {:new-role
                                    {(list :admin :with [joshua-email])
@@ -306,7 +306,7 @@
     (testing "Execute a request to revoke admin role to an existing user."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [joshua-email (:user/email s/joshua-user)
-              resp (http-request "/users/revoke-role/admin"
+              resp (http-request "/pattern"
                                  {:users
                                   {:revoked-role
                                    {(list :admin :with [joshua-email])
@@ -314,7 +314,7 @@
                                                    :role/date-granted '?}]}}}})]
           (is (= [:editor]
                  (->> resp :body :users :revoked-role :admin :user/roles (map :role/name))))) 
-        (let [resp (http-request "/users/user"
+        (let [resp (http-request "/pattern"
                                  {:users
                                   {(list :user :with [s/joshua-id])
                                    {:user/roles [{:role/name '?
@@ -323,7 +323,7 @@
                  (->> resp :body :users :user :user/roles (map :role/name)))))))
     (testing "Execute a request for a delete user."
       (with-redefs [auth/has-permission? (constantly true)]
-        (let [resp (http-request "/users/removed-user"
+        (let [resp (http-request "/pattern"
                                  {:users
                                   {(list :removed-user :with [s/joshua-id])
                                    {:user/id '?}}})]

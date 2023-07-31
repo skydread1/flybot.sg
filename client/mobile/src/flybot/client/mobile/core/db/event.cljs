@@ -27,7 +27,7 @@
                  db
                  :navigator/ref @nav/nav-ref)
     :http-xhrio {:method          :post
-                 :uri             (base-uri "/posts/all")
+                 :uri             (base-uri "/pattern")
                  :headers {:cookie (:user/cookie db)}
                  :params {:posts
                           {(list :all :with [])
