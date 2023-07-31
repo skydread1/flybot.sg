@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.router
   (:require [flybot.client.web.core.dom.page :refer [page blog-single-post-page admin-page]]
+            [flybot.client.web.core.dom.profile :refer [profile-page]]
             [goog.object :as gobj]
             [reitit.frontend :as rei]
             [reitit.frontend.easy :as rfe]
@@ -42,6 +43,10 @@
    ["/admin"
     {:name :flybot/admin
      :view admin-page}]
+   
+   ["/profile"
+    {:name :flybot/profile
+     :view profile-page}]
 
    ["#footer-contact"
     {:name :flybot/contact}]])
