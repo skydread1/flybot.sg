@@ -1,6 +1,8 @@
 (ns flybot.client.common.db.fx
-  (:require [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]))
+  (:require [cljsjs.react-toastify]
+            [re-frame.core :as rf]
+            [reitit.frontend.easy :as rfe]
+            [reagent.core :as r]))
 
 ;; ---------- Routing ----------
 
@@ -14,3 +16,26 @@
  :fx.log/message
  (fn [messages]
    (.log js/console (apply str messages))))
+
+;; ---- Toast notifications ----
+
+(rf/reg-fx
+ :fx.ui/toast-notify
+ (fn [[{:notification/keys [type title body]} options]]
+   (let [type-options (case type
+                        :info {"type" "info"
+                               "autoClose" 10000
+                               "pauseOnHover" true}
+                        :success {"type" "success"
+                                  "autoClose" 5000
+                                  "pauseOnHover" false}
+                        :warning {"type" "warning"
+                                  "autoClose" 10000
+                                  "pauseOnHover" true}
+                        :error {"type" "error"
+                                "autoClose" 10000
+                                "pauseOnHover" true}
+                        {})]
+     (.toast js/ReactToastify
+             (r/as-element [:<> [:strong (str title)] [:p (str body)]])
+             (clj->js (merge type-options options))))))

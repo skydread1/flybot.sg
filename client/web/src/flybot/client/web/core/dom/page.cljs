@@ -1,8 +1,9 @@
 (ns flybot.client.web.core.dom.page
-  (:require [clojure.string :as str]
-            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
+  (:require [cljsjs.react-toastify]
+            [clojure.string :as str]
             [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
             [flybot.client.web.core.dom.page.options :as page.options]
+            [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 

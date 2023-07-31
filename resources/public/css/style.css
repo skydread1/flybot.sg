@@ -287,25 +287,31 @@ input[type=button] {
 }
 
 .burger {
-    fill: var(--text-primary-color);
     width: 32px;
     height: 32px;
 }
 
 svg {
-    fill: var(--link-primary-color);
     width: 250px;
+}
+
+svg:not(.Toastify *) {
+    fill: var(--link-primary-color);
 }
 
 svg:hover {
     fill: var(--text-secondary-color);
 }
 
-.done, .plus {
+svg.burger {
+    fill: var(--text-primary-color);
+}
+
+svg.done, svg.plus {
     fill: var(--border-primary-color);
 }
 
-.close, .trash {
+svg.close, svg.trash {
     fill: var(--error-primary-color);
 }
 
