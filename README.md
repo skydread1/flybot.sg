@@ -3,31 +3,54 @@ Full stack implementation of flybot.sg website
 
 ## Config files
 
-In the `config` directory, you can see 3 config files:
+In the `config` directory, you can see a `sys.edn` file. It gathers systems, oauth2 and owner configurations.
 
-1) `system.edn`
+1) systems
 
-It ontains the different environment properties that are used to setup the systems (dev, test, figwheel, prod).
+Depending on the system you use, the config varies, such as:
+- db uri
+- server
+- port
 
-2) `oauth2.edn`
+We have 4 different system types:
+- `figwheel-system`: provides a ring-handler to figwheel which starts its own server on port 9500. This system is designed for frontend dev with dummy data as website initial content.
+- `dev-system`: starts an aleph server on port 8123. Uses the same dummy data as figwheel. This system is meant to be used for backend dev.
+- `test-system`: starts aleph server on port 8100. Uses some test data that covers many scenario for good testing.
+- `prod-system`: starts an aleph server on port 8123. It uses existing data and do not clear any data on system halt!
 
-The oauth2 credentials to allow your application to access google services.
+_Note_: 
+- the 3 systems `figwheel`, `dev` and `test` clear the data on system `halt!`
+- the `prod` system does not clear the data on system `halt!`
+
+2) OAuth2
+
+The OAuth2 credentials allow your application to access google services.
 
 You need to provide the google id and secret that allow the oauth client to communicate with the oauth server.
 
 You can read more about it [here](https://github.com/skydread1/reitit-oauth2#readme)
 
-_Note_: not providing the creds will prevent you from login/logout
+All the systems (except `test-system`) need the `oauth2` credentials and developers need a company account to be able to test oauth2 locally as well.
 
-_Note 2_: the `redirect-uri` is specified in the `system.edn` because it depends on the environment.
+_Note: not providing the creds will prevent you from login/logout during dev._
 
-3) `owner.edn`
+_Note 2: the `redirect-uri` is specified in the :systems as `:oauth2-callback` because it depends on the environment._
 
-It contains the owner user, who is loaded to the DB at system start, so you can dev/test the admin panel features. You need to use a google account that is allowed by your `Location` (i.e. company account)
+3) owner
 
-_Note_: your google account needs to belong to the google application linked to the app.
+The `:owner` user is loaded to the DB when the system is `touch` (except for `prod`).
+You need to use a google account that is allowed by your `Location` (i.e. company account).
+The account provided in `:owner` is granted all roles so it has access to all the website sections in dev.
 
-_Note 2_: not providing your acc id will prevent you from doing admin/owner tasks.
+_Note: your google account needs to belong to the google application linked to the app._
+
+_Note 2: not providing your acc id will prevent you from doing admin/owner tasks._
+
+4) Figwheel
+
+You can notice that there is a flag `figwheel?` in `sys.edn`. It allows figwheel to use the system handler when you start the REPLs.
+
+The `figwheel-system` is touch when systems.clj is loaded. So if you do not want to work on the frontend (or in production), set the flag to false.
 
 ## frontend : WEB
 
@@ -131,10 +154,11 @@ Build:
 
 To run the uberjar
 ```
-OAUTH2="secret" \
-OWNER_USER="secret" \
-SYSTEM="{:http-port 8123, :db-uri \"datalevin/prod/flybotdb\", :oauth2-callback \"https://localhost:8123/oauth/google/callback\"}" \
-java -jar target/flybot.sg-{version}-standalone.jar
+SYSTEM="{...}" \
+java -jar \
+--add-opens=java.base/java.nio=ALL-UNNAMED \
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+target/flybot.sg-{version}-standalone.jar
 ```
 
 ## CD
@@ -161,8 +185,22 @@ docker run \
 -it \
 -p 8123:8123 \
 -v db-volume:/datalevin/prod/flybotdb \
--e OAUTH2="secret" \
--e OWNER_USER="secret" \
--e SYSTEM="{:http-port 8123, :db-uri \"/datalevin/prod/flybotdb\", :oauth2-callback \"https://localhost:8123/oauth/google/callback\"}" \
+-e SYSTEM="{...}" \
 some-image-uri:latest
 ```
+
+### Example of what the SYSTEM could look like for prod:
+
+```
+{:systems {:prod {:http-port       8123
+                  :db-uri          "/datalevin/prod/flybotdb"
+                  :oauth2-callback "https://www.flybot.sg/oauth/google/callback"}}
+ :oauth2 {:google-creds {:client-id     "secret"
+                         :client-secret "secret"}}
+ :owner #:user{:id    "google-personal-acc-id"
+               :email "bob@company.com"
+               :name  "Bob Smith"}}
+```
+Note that we removed the other systems config because they are not needed in prod.
+
+Also, the `:figwheel?` flag has been removed to prevent `figwheel-system` from starting when systems.clj loads in the prod container.

@@ -85,7 +85,7 @@
   "Provided to figwheel-main.edn.
    Figwheel uses this handler to starts a server on port 9500.
    Since the system is touched on namespace load, you need to have
-   the flag :fighweel? set to true in the config."
+   the flag :figwheel? set to true in the config."
   (when (:figwheel? CONFIG)
     (-> figwheel-system
         touch
