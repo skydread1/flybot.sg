@@ -42,9 +42,11 @@
     [navbar-web]
     (when-let [{:user/keys [name picture]} @(rf/subscribe [:subs/pattern '{:app/user ?x}])]
       [:div
-       [:img.user-pic
-        {:alt (str name " profile picture")
-         :src picture}]])
+       (internal-link
+        :flybot/profile
+        [:img.user-pic
+         {:alt (str name " profile picture")
+          :src picture}])])
     
     [:button.burger-btn.hidden {:on-click #(rf/dispatch [:evt.nav/toggle-navbar])}
      svg/burger-icon]]
