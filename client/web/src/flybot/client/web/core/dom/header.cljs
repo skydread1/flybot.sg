@@ -32,9 +32,10 @@
   [:header.container
    [:div.top
     [:div
-     [:img.flybotlogo
-      {:alt "Flybot logo"
-       :src "/assets/flybot-logo.png"}]]
+     [internal-link :flybot/home
+      [:img.flybotlogo
+       {:alt "Flybot"
+        :src "/assets/flybot-logo.png"}]]]
     [svg/theme-logo]
     (when @(rf/subscribe [:subs/pattern '{:app/user ?x}])
       [svg/user-mode-logo])

@@ -35,7 +35,8 @@
            admin-alice (update editor-alice :user/roles conj
                                [#:role{:name :admin :date-granted s/alice-date-granted}])
            role-form   (rf/subscribe [:subs/pattern '{:form.role/fields ?x}])
-           errors      (rf/subscribe [:subs/pattern '{:app/errors ?x}])]
+           errors      (rf/subscribe [:subs/pattern '{:app/errors ?x}])
+           notification (rf/subscribe [:subs/pattern {:app/notification '?x}])]
 
        ;;---------- GRANT ROLE ERROR
        (rf/dispatch [:evt.role.form/set-field :admin :user/email "email@wrong.com"])
@@ -49,6 +50,7 @@
        (rf/reg-fx :http-xhrio
                   (fn [_] (rf/dispatch
                            [:fx.http/grant-role-success
+                            :admin
                             {:users {:new-role {:admin admin-alice}}}])))
        ;; fill the new role form
        (rf/dispatch [:evt.role.form/set-field :admin :user/email email])
@@ -56,4 +58,9 @@
        (rf/dispatch [:evt.user.form/grant-role :admin])
        (testing "Form and error cleared."
          (is (not @role-form))
-         (is (not @errors)))))))
+         (is (not @errors)))
+       (testing "Notification sent."
+         (is (= #:notification{:type :success
+                               :title "New role granted"
+                               :body "Alice is now an administrator."}
+                (dissoc @notification :notification/id))))))))
