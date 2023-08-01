@@ -1,5 +1,5 @@
 (ns flybot.client.mobile.core.navigation
-  (:require [flybot.client.mobile.core.utils :refer [js->cljs]]))
+  (:require [flybot.client.common.utils :refer [js->cljs]]))
 
 ;; To preserve navigation ref when hot reloading
 (defonce nav-ref 

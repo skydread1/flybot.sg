@@ -2,8 +2,8 @@
   (:require ["react-native" :refer [Linking]]
             [clojure.string :as str]
             [flybot.client.common.db.event :refer [base-uri]]
+            [flybot.client.common.utils :refer [js->cljs]]
             [flybot.client.mobile.core.styles :refer [colors]]
-            [flybot.client.mobile.core.utils :refer [js->cljs]]
             [re-frame.core :as rf]
             [reagent.react-native :as rrn]))
 
