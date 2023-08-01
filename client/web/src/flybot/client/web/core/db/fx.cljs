@@ -1,9 +1,10 @@
 (ns flybot.client.web.core.db.fx
-  (:require [flybot.client.web.core.db.class-utils :as cu]
-            [flybot.client.web.core.db.localstorage :as l-storage]
+  (:require [clojure.edn :as edn]
             [flybot.client.common.db.fx]
-            [clojure.edn :as edn]
-            [re-frame.core :as rf]))
+            [flybot.client.web.core.db.class-utils :as cu]
+            [flybot.client.web.core.db.localstorage :as l-storage]
+            [re-frame.core :as rf]
+            [reagent.core :as reagent]))
 
 ;; ---------- Theme ----------
 
@@ -37,3 +38,28 @@
  :fx.app/set-theme-local-store
  (fn [next-theme]
    (l-storage/set-item :theme next-theme)))
+
+;;; ----- Notifications ------
+
+;; Pop-ups (toasts)
+
+(rf/reg-fx
+ :fx.app/toast-notify
+ (fn [[{:notification/keys [type title body]} options]]
+   (let [type-options (case type
+                        :info {"type" "info"
+                               "autoClose" 10000
+                               "pauseOnHover" true}
+                        :success {"type" "success"
+                                  "autoClose" 5000
+                                  "pauseOnHover" false}
+                        :warning {"type" "warning"
+                                  "autoClose" 10000
+                                  "pauseOnHover" true}
+                        :error {"type" "error"
+                                "autoClose" 10000
+                                "pauseOnHover" true}
+                        {})]
+     (.toast js/ReactToastify
+             (reagent/as-element [:<> [:strong (str title)] [:p (str body)]])
+             (clj->js (merge type-options options))))))

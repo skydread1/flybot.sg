@@ -146,3 +146,13 @@
  :evt.page/set-current-view
  (fn [db [_ new-match]]
    (assoc db :app/current-view new-match)))
+
+;;; ------ Notifications ------
+
+;; Pop-ups (toasts)
+
+(rf/reg-event-fx
+ :evt.app/toast-notify
+ (fn [{:keys [db]} [_ notification]]
+   (let [theme (-> db :app/theme name)]
+     {:fx [[:fx.app/toast-notify [notification {"theme" theme}]]]})))
