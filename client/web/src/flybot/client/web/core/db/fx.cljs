@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.db.fx
   (:require [clojure.edn :as edn]
+            [clojure.string :as str]
             [flybot.client.common.db.fx]
             [flybot.client.common.utils :refer [cljs->js]]
             [flybot.client.web.core.db.class-utils :as cu]
@@ -43,8 +44,8 @@
 ;; ----- Notification ------
 
 (defn toast-message
-  [{:notification/keys [type title body]}]
-  [:<> [:strong (str title)] [:p (str body)]])
+  [{:notification/keys [title body]}]
+  [:<> [:strong (str/upper-case title)] [:p (str body)]])
 
 ;; Pop-ups (toasts)
 
