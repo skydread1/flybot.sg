@@ -147,7 +147,7 @@
  (fn [db [_ new-match]]
    (assoc db :app/current-view new-match)))
 
-;;; ------ Notifications ------
+;; ------ Notification ------
 
 ;; Pop-ups (toasts)
 
