@@ -208,7 +208,9 @@
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
               src-dark src)
-        full-content [[post-authors post]
+        full-content [[:div {:id (web.utils/post->url-identifier post)
+                             :style {:height 0}}]
+                      [post-authors post]
                       hiccup-content]]
     (if (seq src)
     ;; returns 2 hiccup divs to be displayed in 2 columns

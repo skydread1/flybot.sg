@@ -19,10 +19,13 @@
                         text
                         true
                         {:id-ending (link/truncate-uuid id)
-                         :url-identifier (web.utils/post->url-identifier post)})
-    (link/internal-link (->> page name (str "flybot/") keyword)
+                         :url-identifier (web.utils/post->url-identifier post)}
+                        "top")
+    (link/internal-link (keyword :flybot page)
                         text
-                        true)))
+                        true
+                        nil
+                        (web.utils/post->url-identifier post))))
 
 (defn user-info
   [username date1 date2 page]
