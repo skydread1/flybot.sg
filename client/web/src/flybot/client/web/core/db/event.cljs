@@ -14,12 +14,17 @@
 (rf/reg-event-fx
  :fx.http/send-post-success
  (fn [_ [_ {:keys [posts]}]]
-   (let [{:post/keys [id] :as post} (:new-post posts)]
+   (let [{:post/keys [id last-edit-date] :as post} (:new-post posts)
+         post-title (web.utils/post->title post)]
      {:fx [[:dispatch [:evt.post/add-post post]]
            [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-modes :read]]
-           [:fx.log/message ["Post " id " sent."]]]})))
+           [:fx.log/message ["Post " id " sent."]]
+           [:dispatch [:evt.notification/set-notification
+                       :success
+                       (if last-edit-date "Post edited" "New post created")
+                       post-title]]]})))
 
 ;; ---------------- Routing -----------------
 
@@ -141,3 +146,13 @@
  :evt.page/set-current-view
  (fn [db [_ new-match]]
    (assoc db :app/current-view new-match)))
+
+;;; ------ Notifications ------
+
+;; Pop-ups (toasts)
+
+(rf/reg-event-fx
+ :evt.app/toast-notify
+ (fn [{:keys [db]} [_ notification]]
+   (let [theme (-> db :app/theme name)]
+     {:fx [[:fx.app/toast-notify [notification {"theme" theme}]]]})))

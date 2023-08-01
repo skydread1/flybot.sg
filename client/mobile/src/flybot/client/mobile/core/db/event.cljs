@@ -1,8 +1,9 @@
 (ns flybot.client.mobile.core.db.event
-  (:require [flybot.common.utils :refer [temporary-id?]]
-            [flybot.client.common.db.event :refer [base-uri]] 
+  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
+            [flybot.client.common.db.event :refer [base-uri]]
             [flybot.client.mobile.core.navigation :as nav]
-            [ajax.edn :refer [edn-request-format edn-response-format]]
+            [flybot.client.web.core.utils :as web.utils]
+            [flybot.common.utils :refer [temporary-id?]]
             [re-frame.core :as rf]))
 
 ;; ---------- http success/failure ----------
@@ -10,13 +11,18 @@
 (rf/reg-event-fx
  :fx.http/send-post-success
  (fn [_ [_ {:keys [posts]}]]
-   (let [{:post/keys [id] :as post} (:new-post posts)]
+   (let [{:post/keys [id last-edit-date] :as post} (:new-post posts)
+         post-title (web.utils/post->title post)]
      {:fx [[:dispatch [:evt.post/add-post post]]
            [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]
-           [:dispatch [:evt.nav/navigate "posts-list"]]]})))
+           [:dispatch [:evt.nav/navigate "posts-list"]]
+           [:dispatch [:evt.notification/set-notification
+                       :success
+                       (if last-edit-date "Post edited" "New post created")
+                       post-title]]]})))
 
 ;; ---------- App ----------
 
