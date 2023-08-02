@@ -208,8 +208,8 @@
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
               src-dark src)
-        full-content [[:div {:id (web.utils/post->url-identifier post)
-                             :style {:height 0}}]
+        full-content [[:div {:style {:height 0}}
+                       [:a {:id (web.utils/post->url-identifier post)}]]
                       [post-authors post]
                       hiccup-content]]
     (if (seq src)

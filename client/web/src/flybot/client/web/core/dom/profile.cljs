@@ -19,8 +19,7 @@
                         text
                         true
                         {:id-ending (link/truncate-uuid id)
-                         :url-identifier (web.utils/post->url-identifier post)}
-                        "top")
+                         :url-identifier (web.utils/post->url-identifier post)})
     (link/internal-link (keyword :flybot page)
                         text
                         true
