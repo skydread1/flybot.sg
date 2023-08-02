@@ -52,7 +52,7 @@
    [:post/author user-schema]
    [:post/last-editor {:optional true} user-schema]
    [:post/md-content [:and
-                      [:string {:min 100}]
+                      [:string {:min 10}]
                       [:fn
                        {:error/message "Level 1 Heading `#` missing in markdown."}
                        md/has-valid-h1-title?]]]
@@ -135,7 +135,6 @@
 
 (defn error-msg
   [errors]
-  (println (me/humanize errors))
   (-> errors
       (me/humanize 
        {:errors (-> me/default-errors

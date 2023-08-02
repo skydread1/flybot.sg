@@ -47,13 +47,13 @@
      ;; Mock failure http request
      (rf/reg-fx :http-xhrio
                 (fn [_]
-                  (rf/dispatch [:fx.http/failure "ERROR-SERVER"])))
+                  (rf/dispatch [:fx.http/failure {:status 500}])))
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initital db state is accurate in case of server error."
-       (is (= "ERROR-SERVER" @http-error))
+       (is (= {:status 500} @http-error))
        (is (= #:notification{:type :error
-                             :body "ERROR-SERVER"}
+                             :body "There was a server error. Please contact support if the issue persists."}
               (select-keys @notification [:notification/type
                                           :notification/body]))))
 
@@ -164,7 +164,7 @@
        (testing "Validation error added to db."
          (is @validation-error)
          (is (= #:notification{:type :error
-                               :title "Validation error"}
+                               :title "Form Input Error"}
                 (select-keys @notification [:notification/type
                                             :notification/title]))))
 
@@ -268,7 +268,7 @@
        (is (= [(assoc s/post-1 :post/mode :read)] @posts))
        (is (not @p1-form))
        (is (= #:notification{:type :success
-                             :title "Post removed"
+                             :title "Post deleted"
                              :body "Some content 2"}
               (dissoc @notification :notification/id))))
 
@@ -296,6 +296,6 @@
      (testing "Post got removed."
        (is (= [] @posts))
        (is (= #:notification{:type :success
-                             :title "Post removed"
+                             :title "Post deleted"
                              :body "Some content 1"}
               (dissoc @notification :notification/id)))))))
