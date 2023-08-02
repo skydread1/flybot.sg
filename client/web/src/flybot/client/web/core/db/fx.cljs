@@ -44,8 +44,16 @@
 ;; ----- Notification ------
 
 (defn toast-message
-  [{:notification/keys [title body]}]
-  [:<> [:strong (str/upper-case title)] [:p (str body)]])
+  [{:notification/keys [sub-type title body]}]
+  (if (= :form sub-type)
+    [:<> [:strong (str/upper-case title)]
+     [:ul
+      (doall
+       (for [e body]
+         [:li {:key e}
+          [:strong (first e)] 
+          (str ": " (apply str (interpose ", " (second e))))]))]]
+    [:<> [:strong (str/upper-case title)] [:p (str body)]]))
 
 ;; Pop-ups (toasts)
 
