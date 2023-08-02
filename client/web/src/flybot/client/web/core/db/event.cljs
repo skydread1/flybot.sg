@@ -146,8 +146,7 @@
  :evt.page/set-current-view
  (fn [{:keys [db]} [_ new-match]]
    {:db (assoc db :app/current-view new-match)
-    :fx (when-let [fragment (:fragment new-match)]
-          [[:fx.app/scroll-to fragment]])}))
+    :fx [[:fx.app/scroll-to (:fragment new-match)]]}))
 
 ;; ------ Notification ------
 

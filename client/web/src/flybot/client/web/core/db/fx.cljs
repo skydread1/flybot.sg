@@ -16,7 +16,7 @@
  :fx.app/scroll-to
  (fn [fragment]
    (reagent/after-render #(let [el (or (.getElementById js/document fragment)
-                                       "app")]
+                                       (.getElementById js/document "app"))]
                             (.scrollIntoView el)))))
 
 ;; ---------- Theme ----------
