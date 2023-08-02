@@ -5,10 +5,13 @@
    force the client to require any fields.
    However, for validation schema (form inputs for frontend, request params for backend),
    we often need the client to provide some mandatory fields."
-  (:require [flybot.common.utils :as u]
+  (:require [clojure.set :as set]
+            [flybot.common.utils :as u]
             [flybot.common.validation.markdown :as md]
             [malli.core :as m]
-            [malli.util :as mu]))
+            [malli.error :as me]
+            [malli.util :as mu]
+            [sg.flybot.pullable :as pull]))
 
 ;;---------- Validation Schemas ----------
 
@@ -28,24 +31,37 @@
                           [:role/date-granted inst?]]]]])
 
 (def user-email-schema
-  [:re #"^([a-zA-Z0-9_-]+)([\.])?([a-zA-Z0-9_-]+)@basecity\.com$"])
+  [:re
+   {:error/message "Email must be ending by @basecity.com."}
+   #"^([a-zA-Z0-9_-]+)([\.])?([a-zA-Z0-9_-]+)@basecity\.com$"])
+
+(def user-email-map-schema
+  "This schema is similar to user-email-schema but make it a map for better error display to the user."
+  [:map
+   [:user/email [:re
+                 {:error/message "Email must be ending by @basecity.com."}
+                 #"^([a-zA-Z0-9_-]+)([\.])?([a-zA-Z0-9_-]+)@basecity\.com$"]]])
 
 (def post-schema
   [:map {:closed true}
    [:post/id :uuid]
    [:post/page :keyword]
-   [:post/css-class {:optional true} :string]
+   [:post/css-class {:optional true} [:string {:min 3}]]
    [:post/creation-date inst?]
    [:post/last-edit-date {:optional true} inst?]
    [:post/author user-schema]
    [:post/last-editor {:optional true} user-schema]
-   [:post/md-content [:and :string [:fn md/has-valid-h1-title?]]]
+   [:post/md-content [:and
+                      [:string {:min 10}]
+                      [:fn
+                       {:error/message "Level 1 Heading `#` missing in markdown."}
+                       md/has-valid-h1-title?]]]
    [:post/image-beside
     {:optional true}
     [:map
-     [:image/src :string]
-     [:image/src-dark :string]
-     [:image/alt :string]]]
+     [:image/src [:string {:min 10}]]
+     [:image/src-dark [:string {:min 10}]]
+     [:image/alt [:string {:min 5}]]]]
    [:post/default-order {:optional true} nat-int?]])
 
 (def post-schema-create
@@ -107,13 +123,32 @@
   (let [validator (m/validator schema)]
     (if (validator data)
       data
-      (mu/explain-data schema data))))
+      (m/explain schema data))))
+
+(def humanize-keys
+  {'?md-content "Markdown"
+   '?css-class "CSS Class"
+   '?src "Image for Light Mode"
+   '?src-dark "Image for Dark Mode"
+   '?alt "Image Description"
+   '?user-email "Email"})
 
 (defn error-msg
   [errors]
-  (->> errors
-       :errors
-       (map #(select-keys % [:path :type]))))
+  (-> errors
+      (me/humanize 
+       {:errors (-> me/default-errors
+                    (assoc ::m/missing-key {:error/fn (fn [_ _] "Required field missing")}))})
+      ((pull/query '{:post/md-content ?md-content
+                     :post/css-class ?css-class
+                     :post/image-beside {:image/src ?src
+                                         :image/src-dark ?src-dark
+                                         :image/alt ?alt}
+                     :user/email ?user-email}))
+      (dissoc '&?)
+      (#(into {} (remove (comp nil? val) %)))
+      (set/rename-keys humanize-keys)
+      vec))
 
 (defn str->int
   [s]

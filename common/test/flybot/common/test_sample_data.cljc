@@ -86,7 +86,7 @@
 (def post-3
   #:post{:id            post-3-id
          :page          :home
-         :md-content    "# Post 3"
+         :md-content    "#Some content 3"
          :creation-date post-3-create-date
          :author        #:user{:id bob-id}})
 

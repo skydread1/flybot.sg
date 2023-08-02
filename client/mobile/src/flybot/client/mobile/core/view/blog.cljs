@@ -6,9 +6,10 @@
             ["react-native" :refer [Alert]]
             [clojure.string :as str]
             [flybot.common.utils :refer [temporary-id?]]
+            [flybot.client.common.utils :refer [cljs->js js->cljs]]
             [flybot.client.mobile.core.navigation :as nav]
             [flybot.client.mobile.core.styles :refer [colors]]
-            [flybot.client.mobile.core.utils :refer [cljs->js js->cljs] :as utils]
+            [flybot.client.mobile.core.utils :as utils]
             [re-frame.core :as rf]
             [reagent.core :as r]
             [reagent.react-native :as rrn]))
