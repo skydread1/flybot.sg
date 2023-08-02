@@ -128,9 +128,9 @@
 (def humanize-keys
   {'?md-content "Markdown"
    '?css-class "CSS Class"
-   '?src "Image Light Mode"
-   '?src-dark "Image Darc Mode"
-   '?alt "Image Desc"
+   '?src "Image for Light Mode"
+   '?src-dark "Image for Dark Mode"
+   '?alt "Image Description"
    '?user-email "Email"})
 
 (defn error-msg
