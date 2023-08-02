@@ -27,7 +27,7 @@
   ;; Initialize db
   (rf/dispatch [:evt.app/initialize]))
 
-(deftest add-roles
+(deftest grant-revoke-roles
   (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
     (rf-test/run-test-sync
      (test-fixtures)
@@ -38,29 +38,74 @@
            errors      (rf/subscribe [:subs/pattern '{:app/errors ?x}])
            notification (rf/subscribe [:subs/pattern {:app/notification '?x}])]
 
-       ;;---------- GRANT ROLE ERROR
-       (rf/dispatch [:evt.role.form/set-field :admin :user/email "email@wrong.com"])
-       ;; Send role but validation error
-       (rf/dispatch [:evt.user.form/grant-role :admin])
-       (testing "Form not cleared and error added to db."
-         (is @role-form)
-         (is @errors))
+       (testing "Grant role: Validation error:"
+         ;; Fill new role form
+         (rf/dispatch [:evt.role.form/set-field :new-role :admin :user/email "email@wrong.com"])
+         ;; Attempt to grant role
+         (rf/dispatch [:evt.user.form/grant-role :admin])
+         (testing "Form not cleared, error and notification added to DB."
+           (is @role-form)
+           (is @errors)
+           (is (= "Form Input Error" (:notification/title @notification))))
+         (rf/dispatch [:evt.form/clear :form.role/fields])
+         (rf/dispatch [:evt.error/clear-errors])
+         (rf/dispatch [:evt.notification/set-notification nil]))
 
-       ;;---------- GRANT ROLE SUCCESS
-       (rf/reg-fx :http-xhrio
-                  (fn [_] (rf/dispatch
-                           [:fx.http/grant-role-success
-                            :admin
-                            {:users {:new-role {:admin admin-alice}}}])))
-       ;; fill the new role form
-       (rf/dispatch [:evt.role.form/set-field :admin :user/email email])
-       ;; grant new role to user in the server
-       (rf/dispatch [:evt.user.form/grant-role :admin])
-       (testing "Form and error cleared."
-         (is (not @role-form))
-         (is (not @errors)))
-       (testing "Notification sent."
-         (is (= #:notification{:type :success
-                               :title "New role granted"
-                               :body "Alice is now an administrator."}
-                (dissoc @notification :notification/id))))))))
+       (testing "Revoke role: Validation error:"
+         (rf/dispatch [:evt.role.form/set-field :revoked-role :admin :user/email "email@wrong.com"])
+         (rf/dispatch [:evt.user.form/revoke-role :admin])
+         (testing "Form not cleared, error and notification added to DB."
+           (is @role-form)
+           (is @errors)
+           (is (= "Form Input Error" (:notification/title @notification))))
+         (rf/dispatch [:evt.form/clear :form.role/fields])
+         (rf/dispatch [:evt.error/clear-errors])
+         (rf/dispatch [:evt.notification/set-notification nil]))
+
+       (testing "Revoke role: Role not present:"
+         (rf/reg-fx :http-xhrio
+                    (fn [_]
+                      (rf/dispatch [:fx.http/failure {:status 479}])))
+         (rf/dispatch [:evt.role.form/set-field
+                       :revoked-role :admin :user/email email])
+         (rf/dispatch [:evt.user.form/revoke-role :admin])
+         (testing "Form not cleared, error and notification added to DB."
+           (is @role-form)
+           (is @errors)
+           (is (= "HTTP error" (:notification/title @notification)))))
+
+       (testing "Grant role: Success:"
+         (rf/reg-fx :http-xhrio
+                    (fn [_] (rf/dispatch
+                             [:fx.http/grant-role-success
+                              :admin
+                              {:users {:new-role {:admin admin-alice}}}])))
+         (rf/dispatch [:evt.role.form/set-field
+                       :new-role :admin :user/email email])
+         (rf/dispatch [:evt.user.form/grant-role :admin])
+         (testing "Form and error cleared."
+           (is (not @role-form))
+           (is (not @errors)))
+         (testing "Notification sent."
+           (is (= #:notification{:type :success
+                                 :title "New role granted"
+                                 :body "Alice is now an administrator."}
+                  (dissoc @notification :notification/id)))))
+
+       (testing "Revoke role: Success:"
+         (rf/reg-fx :http-xhrio
+                    (fn [_] (rf/dispatch
+                             [:fx.http/revoke-role-success
+                              :admin
+                              {:users {:revoked-role {:admin admin-alice}}}])))
+         (rf/dispatch [:evt.role.form/set-field
+                       :revoked-role :admin :user/email email])
+         (rf/dispatch [:evt.user.form/revoke-role :admin])
+         (testing "Form and error cleared."
+           (is (not @role-form))
+           (is (not @errors)))
+         (testing "Notification sent."
+           (is (= #:notification{:type :success
+                                 :title "Role revoked"
+                                 :body "Alice is no longer an administrator."}
+                  (dissoc @notification :notification/id)))))))))
