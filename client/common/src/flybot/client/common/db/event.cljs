@@ -19,14 +19,17 @@
 
 (rf/reg-event-db
  :fx.http/failure
- (fn [db [_ result]]
+ (fn [db [_ {:keys [status response] :as result}]]
     ;; result is a map containing details of the failure
-   (-> db
-       (assoc-in [:app/errors :failure-http-result] result)
-       (assoc :app/notification #:notification{:id (utils/mk-uuid)
-                                               :type :error
-                                               :title "HTTP failure"
-                                               :body result}))))
+   (let [notif-body (if (= "5" (first (str status)))
+                      "There was a server error. Please contact support if the issue persists."
+                      (str "Status: " status " | " (:message response)))]
+     (-> db
+         (assoc-in [:app/errors :failure-http-result] result)
+         (assoc :app/notification #:notification{:id (utils/mk-uuid)
+                                                 :type :error
+                                                 :title "HTTP error"
+                                                 :body notif-body})))))
 
 (rf/reg-event-fx
  :fx.http/all-success
@@ -68,7 +71,7 @@
            [:fx.log/message ["Post " (:post/id post) " deleted by " user-name "."]]
            [:dispatch [:evt.notification/set-notification
                        :success
-                       "Post removed"
+                       "Post deleted"
                        post-title]]]})))
 
 (rf/reg-event-fx
@@ -122,15 +125,15 @@
 (rf/reg-event-fx
  :evt.user.form/grant-role
  (fn [{:keys [db]} [_ role]]
-   (let [new-role-email (-> db :form.role/fields role :user/email (valid/validate valid/user-email-schema))]
-     (if (:errors new-role-email)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg new-role-email)]]]}
+   (let [role-info (-> db :form.role/fields role (valid/validate valid/user-email-map-schema))]
+     (if (:errors role-info)
+       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:users
                                        {:new-role
-                                        {(list role :with [new-role-email])
+                                        {(list role :with [(:user/email role-info)])
                                          {:user/name '?
                                           :user/roles [{:role/name '?
                                                         :role/date-granted '?}]}}}}
@@ -343,7 +346,8 @@
        (assoc-in [:app/errors :validation-errors] validation-err)
        (assoc :app/notification #:notification{:id (utils/mk-uuid)
                                                :type :error
-                                               :title "Validation error"
+                                               :sub-type :form
+                                               :title "Form Input Error"
                                                :body validation-err}))))
 
 (rf/reg-event-db

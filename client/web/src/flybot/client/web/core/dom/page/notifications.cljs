@@ -1,6 +1,7 @@
 (ns flybot.client.web.core.dom.page.notifications
-  "Rendering app notifications as pop-up (\"toast\") notifications in the DOM."
-  (:require [cljsjs.react-toastify]
+  "Rendering app notifications as pop-up `toast` notifications in the DOM."
+  (:require [flybot.client.common.utils :refer [js->cljs cljs->js]]
+            [cljsjs.react-toastify]
             [re-frame.core :as rf]))
 
 (def toast-notification-container
@@ -10,14 +11,14 @@
   using the `z-index` property or by declaring it last) so that notifications
   properly cover them."
   [:> (-> (.-ToastContainer js/ReactToastify)
-          js->clj
-          (update "defaultProps" #(merge % {"position" "bottom-center"
-                                            "hideProgressBar" true
-                                            "newestOnTop" true
-                                            "pauseOnFocusLoss" false
-                                            "pauseOnHover" false
-                                            "closeButton" false}))
-          clj->js)])
+          js->cljs
+          (update :default-props #(merge % {:position "bottom-center"
+                                            :hide-progress-bar true
+                                            :newest-on-top true
+                                            :pause-on-focus-loss false
+                                            :pause-on-hover false
+                                            :close-button false}))
+          cljs->js)])
 
 (defn toast-notification-subscription
   []

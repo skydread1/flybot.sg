@@ -149,7 +149,7 @@
     :fx (when-let [fragment (:fragment new-match)]
           [[:fx.app/scroll-to fragment]])}))
 
-;;; ------ Notifications ------
+;; ------ Notification ------
 
 ;; Pop-ups (toasts)
 
