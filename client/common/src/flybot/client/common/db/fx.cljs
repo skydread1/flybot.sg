@@ -1,8 +1,7 @@
 (ns flybot.client.common.db.fx
   (:require [cljsjs.react-toastify]
             [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]
-            [reagent.core :as r]))
+            [reitit.frontend.easy :as rfe]))
 
 ;; ---------- Routing ----------
 

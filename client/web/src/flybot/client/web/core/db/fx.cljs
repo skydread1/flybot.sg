@@ -8,6 +8,17 @@
             [re-frame.core :as rf]
             [reagent.core :as reagent]))
 
+;;; -------- Routing ---------
+
+;; URL document fragments
+
+(rf/reg-fx
+ :fx.app/scroll-to
+ (fn [fragment]
+   (reagent/after-render #(let [el (or (.getElementById js/document fragment)
+                                       (.getElementById js/document "app"))]
+                            (.scrollIntoView el)))))
+
 ;; ---------- Theme ----------
 
 ;; html tag css manipulation
