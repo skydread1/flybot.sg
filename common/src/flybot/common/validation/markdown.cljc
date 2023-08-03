@@ -1,4 +1,5 @@
-(ns flybot.common.validation.markdown)
+(ns flybot.common.validation.markdown 
+  (:require [clojure.string :as str]))
 
 ;; Overridden by the figwheel config option :closure-defines
 #?(:cljs (goog-define MOBILE? false)
@@ -12,7 +13,7 @@
   at the start, otherwise returns false."
   [md-content]
   (if MOBILE?
-    true
+    (-> md-content (str/split #"#" 3) second (str/split #"\n") first str/trim seq)
     (let [starts-with-h1? (fn [[div _ [element]]]
                             (and (= :div div) (= :h1 element)))
           contains-exactly-one-h1? (fn [hiccup]
