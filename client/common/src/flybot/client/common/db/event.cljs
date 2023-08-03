@@ -378,3 +378,8 @@
                                               :sub-type :form
                                               :title "Form Input Error"
                                               :body validation-err})))
+
+(rf/reg-event-db
+ :evt.notif/clear
+ (fn [db _]
+   (dissoc db :app/notification)))
