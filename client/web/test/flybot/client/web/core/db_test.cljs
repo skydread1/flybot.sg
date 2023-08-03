@@ -41,7 +41,6 @@
          user         (rf/subscribe [:subs/pattern '{:app/user ?x}])
          navbar-open? (rf/subscribe [:subs/pattern '{:nav/navbar-open? ?x}])
          posts        (rf/subscribe [:subs.post/posts :home])
-         http-error   (rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])
          notification (rf/subscribe [:subs/pattern {:app/notification '?x}])]
      ;;---------- SERVER ERROR
      ;; Mock failure http request
@@ -51,7 +50,6 @@
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initital db state is accurate in case of server error."
-       (is (= {:status 500} @http-error))
        (is (= #:notification{:type :error
                              :body "There was a server error. Please contact support if the issue persists."}
               (select-keys @notification [:notification/type
@@ -128,8 +126,6 @@
            p1-form          (rf/subscribe [:subs/pattern '{:form/fields ?x}])
            p1-preview       (rf/subscribe [:subs/pattern '{:form/fields {:post/view ?x}}])
            posts            (rf/subscribe [:subs.post/posts :home])
-           errors           (rf/subscribe [:subs/pattern '{:app/errors ?x}])
-           validation-error (rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])
            notification     (rf/subscribe [:subs/pattern {:app/notification '?x}])
            new-post-1       (assoc s/post-1
                                    :post/md-content     "#New Content 1"
@@ -161,8 +157,7 @@
        (rf/dispatch [:evt.post.form/set-field :post/md-content nil])
      ;; Send post but validation error
        (rf/dispatch [:evt.post.form/send-post])
-       (testing "Validation error added to db."
-         (is @validation-error)
+       (testing "Validation error notification added to db."
          (is (= #:notification{:type :error
                                :title "Form Input Error"}
                 (select-keys @notification [:notification/type
@@ -182,9 +177,8 @@
          (is (= [(assoc new-post-1 :post/mode :read)
                  (assoc s/post-2 :post/mode :read)]
                 @posts)))
-       (testing "Form and errors cleared."
-         (is (not @p1-form))
-         (is (not @errors)))
+       (testing "Form cleared."
+         (is (not @p1-form)))
        (testing "Notification sent."
          (is (= #:notification{:type :success
                                :title "Post edited"
