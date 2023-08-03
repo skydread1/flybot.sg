@@ -99,13 +99,33 @@
                               "a user")
                             ".")]]]})))
 
+(rf/reg-event-fx
+ :fx.http/revoke-role-success
+ (fn [_ [_ role-revoked {:keys [users]}]]
+   (let [{:user/keys [name]} (-> users :revoked-role role-revoked)]
+     {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
+           [:dispatch [:evt.error/clear-errors]]
+           [:fx.log/message
+            ["User " name " has had a role revoked: " role-revoked]]
+           [:dispatch [:evt.notification/set-notification
+                       :success
+                       "Role revoked"
+                       (str name
+                            " is no longer "
+                            (case role-revoked
+                              :owner "an owner"
+                              :admin "an administrator"
+                              :editor "an editor"
+                              "a user")
+                            ".")]]]})))
+
 ;; ---------- User ----------
 
 (rf/reg-event-db
  :evt.role.form/set-field
  [(rf/path :form.role/fields)]
- (fn [form [_ role id value]]
-   (assoc-in form [role id] value)))
+ (fn [form [_ operation role id value]]
+   (assoc-in form [operation role id] value)))
 
 (rf/reg-event-db
  :evt.user/toggle-mode
@@ -125,7 +145,7 @@
 (rf/reg-event-fx
  :evt.user.form/grant-role
  (fn [{:keys [db]} [_ role]]
-   (let [role-info (-> db :form.role/fields role (valid/validate valid/user-email-map-schema))]
+   (let [role-info (-> db :form.role/fields :new-role role (valid/validate valid/user-email-map-schema))]
      (if (:errors role-info)
        {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
@@ -140,6 +160,24 @@
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
                      :on-success      [:fx.http/grant-role-success role]
+                     :on-failure      [:fx.http/failure]}}))))
+
+(rf/reg-event-fx
+ :evt.user.form/revoke-role
+ (fn [{:keys [db]} [_ role]]
+   (let [role-info (-> db :form.role/fields :revoked-role role (valid/validate valid/user-email-map-schema))]
+     (if (:errors role-info)
+       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg role-info)]]]}
+       {:http-xhrio {:method          :post
+                     :uri             (base-uri "/pattern")
+                     :headers         {:cookie (:user/cookie db)}
+                     :params          {:users
+                                       {:revoked-role
+                                        {(list role :with [(:user/email role-info)])
+                                         {:user/name '?}}}}
+                     :format          (edn-request-format {:keywords? true})
+                     :response-format (edn-response-format {:keywords? true})
+                     :on-success      [:fx.http/revoke-role-success role]
                      :on-failure      [:fx.http/failure]}}))))
 
 ;; ---------- Post ----------
