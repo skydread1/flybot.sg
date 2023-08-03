@@ -14,8 +14,8 @@
 
 (defn navbar-content []
   [(internal-link :flybot/home "Home")
+   (internal-link :flybot/about "About")
    (internal-link :flybot/apply "Apply")
-   (internal-link :flybot/about "About Us")
    (internal-link :flybot/blog "Blog")
    (internal-link :flybot/contact "Contact" false)
    (login-link)])

@@ -3,6 +3,7 @@
             [flybot.client.common.utils :as client.utils]
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.svg :as svg]
+            [flybot.client.web.core.dom.page.title :as title]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 
@@ -67,6 +68,7 @@
                              (filter #(= id (-> % :post/last-editor :user/id))))]
      (if email
        [:<>
+        [title/page-title (str (or user-name email) "'s profile | Flybot")]
         [:h1 "User Profile: " user-name]
         [:div.perso-details
          [:div
@@ -86,6 +88,8 @@
          (doall
           (for [post posts-created]
             (post-short post)))]]
-       [:div
-        [:h2 "You are not logged in."]
-        [:p "This section is dedicated to logged-in users."]]))])
+       [:<>
+        [title/page-title "User profile | Flybot"]
+        [:div
+         [:h2 "You are not logged in."]
+         [:p "This section is only accessible to logged-in users."]]]))])

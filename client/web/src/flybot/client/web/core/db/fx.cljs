@@ -6,8 +6,8 @@
             [flybot.client.web.core.db.class-utils :as cu]
             [flybot.client.web.core.db.localstorage :as l-storage]
             [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]
-            [reagent.core :as reagent]))
+            [reagent.core :as reagent]
+            [reitit.frontend.easy :as rfe]))
 
 ;;; -------- Routing ---------
 
@@ -23,6 +23,13 @@
    (reagent/after-render #(let [el (or (.getElementById js/document fragment)
                                        (.getElementById js/document "app"))]
                             (.scrollIntoView el)))))
+
+;;; ------- Page title -------
+
+(rf/reg-fx
+ :fx.app/set-html-title
+ (fn [title]
+   (set! (.-title js/document) title)))
 
 ;; ---------- Theme ----------
 
@@ -59,6 +66,8 @@
 
 ;; ----- Notification ------
 
+;; Pop-ups (toasts)
+
 (defn toast-message
   [{:notification/keys [type title body]}]
   (if (= :error/form type)
@@ -70,8 +79,6 @@
           [:strong (first e)] 
           (str ": " (apply str (interpose ", " (second e))))]))]]
     [:<> [:strong (str/upper-case title)] [:p (str body)]]))
-
-;; Pop-ups (toasts)
 
 (rf/reg-fx
  :fx.app/toast-notify

@@ -5,6 +5,7 @@
             [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
             [flybot.client.web.core.dom.page.options :as page.options]
             [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
+            [flybot.client.web.core.dom.page.title :as title]
             [flybot.client.web.core.utils :as web.utils]
             [re-frame.core :as rf]))
 
@@ -48,18 +49,25 @@
                                   posts))
                        (sort-by :post/default-order posts))
         new-post {:post/id "new-post-temp-id"}]
-    [:section.container
-     {:class (name page-name)
-      :key   (name page-name)}
-     [:h1 page-name]
-     (when (= :blog page-name)
-       [:div.post [page.options/blog-sorting-form]])
-     [page-post new-post :demote-headings]
-     (doall
-      (for [post sorted-posts]
-        (if (= :blog page-name)
-          (blog-post-short post)
-          (page-post post :demote-headings))))]))
+    [:<>
+     [title/page-title (case page-name
+                         :home "Flybot"
+                         :about "About | Flybot"
+                         :apply "Apply | Flybot"
+                         :blog "Blog | Flybot"
+                         "Flybot")]
+     [:section.container
+      {:class (name page-name)
+       :key   (name page-name)}
+      [:h1 page-name]
+      (when (= :blog page-name)
+        [:div.post [page.options/blog-sorting-form]])
+      [page-post new-post :demote-headings]
+      (doall
+       (for [post sorted-posts]
+         (if (= :blog page-name)
+           (blog-post-short post)
+           (page-post post :demote-headings))))]]))
 
 (defn blog-single-post-page
   "Given the blog post identifier, returns the corresponding post in a page.
@@ -79,16 +87,23 @@
                          vals
                          first
                          post/add-post-hiccup-content)]
-    [:section.container
-     {:class (name :blog)
-      :key   (name :blog)}
-     (if queried-post
-       (page-post queried-post)
-       [:div.post
-        [:h2 "No blog posts reside here (yet…)"]
-        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
+    [:<>
+     [title/page-title (str (client.utils/post->title queried-post)
+                            " - Blog | Flybot")]
+     [:section.container
+      {:class (name :blog)
+       :key   (name :blog)}
+      (if queried-post
+        (page-post queried-post)
+        [:<>
+         [title/page-title "Post not found - Blog | Flybot"]
+         [:div.post
+          [:h2 "No blog posts reside here (yet…)"]
+          [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]]])]]))
 
 (defn admin-page
   "Returns the admin content."
   []
-  [admin-panel])
+  [:<>
+   [title/page-title "Administrator settings | Flybot"]
+   [admin-panel]])
