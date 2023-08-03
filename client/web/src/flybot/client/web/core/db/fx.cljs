@@ -69,8 +69,8 @@
 ;; Pop-ups (toasts)
 
 (defn toast-message
-  [{:notification/keys [sub-type title body]}]
-  (if (= :form sub-type)
+  [{:notification/keys [type title body]}]
+  (if (= :error/form type)
     [:<> [:strong (str/upper-case title)]
      [:ul
       (doall
@@ -84,10 +84,11 @@
  :fx.app/toast-notify
  (fn [[{:notification/keys [type] :as notif} options]]
    (let [type-options (case type
-                        :info    {:type "info" :auto-close 10000 :pause-on-hover true}
-                        :success {:type "success" :auto-close 5000 :pause-on-hover false}
-                        :warning {:type "warning" :auto-close 10000 :pause-on-hover true}
-                        :error   {:type "error" :auto-close 10000 :pause-on-hover true}
+                        :info       {:type "info" :auto-close 10000 :pause-on-hover true}
+                        :success    {:type "success" :auto-close 5000 :pause-on-hover false}
+                        :warning    {:type "warning" :auto-close 10000 :pause-on-hover true}
+                        :error/form {:type "error" :auto-close 10000 :pause-on-hover true}
+                        :error/http {:type "error" :auto-close 10000 :pause-on-hover true}
                         {})]
      (.toast js/ReactToastify
              (reagent/as-element (toast-message notif))

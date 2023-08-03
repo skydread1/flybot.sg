@@ -36,21 +36,22 @@
 
 ;;---------- errors ----------
 
-(defn errors
+(defn notif-message
+  [{:notification/keys [type title body]}]
+  (let [notif-body (if (= :error/form type)
+                     (apply str (for [e body]
+                                  (str (first e) ": " (apply str (interpose ", " (second e))) "\n")))
+                     (str body))]
+    (rn-alert (str/upper-case title)
+              notif-body
+              [{:text "Ok"
+                :on-press #(rf/dispatch [:evt.notif/clear])}])))
+
+(defn notif
   []
-  [rrn/view
-   {:style {:background-color "white"
-            :color "red"
-            :justify-content "center"
-            :align-items "center"}}
-   (when-let [http-error @(rf/subscribe [:subs/pattern '{:app/errors {:failure-http-result ?x}}])]
-     [rrn/text
-      {:style {:color "red"}}
-      (str "server error:" (-> http-error :response :message))])
-   (when-let [validation-error @(rf/subscribe [:subs/pattern '{:app/errors {:validation-errors ?x}}])]
-     [rrn/text
-      {:style {:color "red"}}
-      (str "validation error: " validation-error)])])
+  (let [notification @(rf/subscribe [:subs/pattern {:app/notification '?x}])]
+    (when notification
+      (notif-message notification))))
 
 ;;---------- Read Post Screen -----------
 
@@ -245,7 +246,7 @@
   [post-id]
   [rrn/view
    [edit-post-btns post-id]
-   [errors]
+   [notif]
    [edit-post-form]])
 
 (defn preview-post-btn

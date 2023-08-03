@@ -35,7 +35,6 @@
            admin-alice (update editor-alice :user/roles conj
                                [#:role{:name :admin :date-granted s/alice-date-granted}])
            role-form   (rf/subscribe [:subs/pattern '{:form.role/fields ?x}])
-           errors      (rf/subscribe [:subs/pattern '{:app/errors ?x}])
            notification (rf/subscribe [:subs/pattern {:app/notification '?x}])]
 
        (testing "Grant role: Validation error:"
@@ -43,24 +42,20 @@
          (rf/dispatch [:evt.role.form/set-field :new-role :admin :user/email "email@wrong.com"])
          ;; Attempt to grant role
          (rf/dispatch [:evt.user.form/grant-role :admin])
-         (testing "Form not cleared, error and notification added to DB."
+         (testing "Form not cleared, error notification added to DB."
            (is @role-form)
-           (is @errors)
            (is (= "Form Input Error" (:notification/title @notification))))
          (rf/dispatch [:evt.form/clear :form.role/fields])
-         (rf/dispatch [:evt.error/clear-errors])
-         (rf/dispatch [:evt.notification/set-notification nil]))
+         (rf/dispatch [:evt.notif/clear]))
 
        (testing "Revoke role: Validation error:"
          (rf/dispatch [:evt.role.form/set-field :revoked-role :admin :user/email "email@wrong.com"])
          (rf/dispatch [:evt.user.form/revoke-role :admin])
-         (testing "Form not cleared, error and notification added to DB."
+         (testing "Form not cleared, error notification added to DB."
            (is @role-form)
-           (is @errors)
            (is (= "Form Input Error" (:notification/title @notification))))
          (rf/dispatch [:evt.form/clear :form.role/fields])
-         (rf/dispatch [:evt.error/clear-errors])
-         (rf/dispatch [:evt.notification/set-notification nil]))
+         (rf/dispatch [:evt.notif/clear]))
 
        (testing "Revoke role: Role not present:"
          (rf/reg-fx :http-xhrio
@@ -69,9 +64,8 @@
          (rf/dispatch [:evt.role.form/set-field
                        :revoked-role :admin :user/email email])
          (rf/dispatch [:evt.user.form/revoke-role :admin])
-         (testing "Form not cleared, error and notification added to DB."
+         (testing "Form not cleared, error notification added to DB."
            (is @role-form)
-           (is @errors)
            (is (= "HTTP error" (:notification/title @notification)))))
 
        (testing "Grant role: Success:"
@@ -83,9 +77,8 @@
          (rf/dispatch [:evt.role.form/set-field
                        :new-role :admin :user/email email])
          (rf/dispatch [:evt.user.form/grant-role :admin])
-         (testing "Form and error cleared."
-           (is (not @role-form))
-           (is (not @errors)))
+         (testing "Form cleared."
+           (is (not @role-form)))
          (testing "Notification sent."
            (is (= #:notification{:type :success
                                  :title "New role granted"
@@ -101,9 +94,8 @@
          (rf/dispatch [:evt.role.form/set-field
                        :revoked-role :admin :user/email email])
          (rf/dispatch [:evt.user.form/revoke-role :admin])
-         (testing "Form and error cleared."
-           (is (not @role-form))
-           (is (not @errors)))
+         (testing "Form cleared."
+           (is (not @role-form)))
          (testing "Notification sent."
            (is (= #:notification{:type :success
                                  :title "Role revoked"
