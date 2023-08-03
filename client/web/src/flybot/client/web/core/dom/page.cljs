@@ -48,6 +48,12 @@
                                   posts))
                        (sort-by :post/default-order posts))
         new-post {:post/id "new-post-temp-id"}]
+    (set! (.-title js/document) (case page-name
+                                  :home "Flybot"
+                                  :about "About | Flybot"
+                                  :apply "Apply | Flybot"
+                                  :blog "Blog | Flybot"
+                                  "Flybot"))
     [:section.container
      {:class (name page-name)
       :key   (name page-name)}
@@ -79,16 +85,21 @@
                          vals
                          first
                          post/add-post-hiccup-content)]
+    (set! (.-title js/document) (str (client.utils/post->title queried-post)
+                                     " - Blog | Flybot"))
     [:section.container
      {:class (name :blog)
       :key   (name :blog)}
      (if queried-post
        (page-post queried-post)
-       [:div.post
-        [:h2 "No blog posts reside here (yet…)"]
-        [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]])]))
+       (do
+         (set! (.-title js/document) "Post not found - Blog | Flybot")
+         [:div.post
+          [:h2 "No blog posts reside here (yet…)"]
+          [:p "Check your URL while we work on filling up the space here! 🚧 👷 🚧"]]))]))
 
 (defn admin-page
   "Returns the admin content."
   []
+  (set! (.-title js/document) "Administrator settings | Flybot")
   [admin-panel])

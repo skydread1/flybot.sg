@@ -65,6 +65,7 @@
          posts-edited   (->> all-posts
                              (filter :post/last-editor)
                              (filter #(= id (-> % :post/last-editor :user/id))))]
+     (set! (.-title js/document) (str user-name "'s profile | Flybot"))
      (if email
        [:<>
         [:h1 "User Profile: " user-name]
@@ -88,4 +89,4 @@
             (post-short post)))]]
        [:div
         [:h2 "You are not logged in."]
-        [:p "This section is dedicated to logged-in users."]]))])
+        [:p "This section is only accessible to logged-in users."]]))])
