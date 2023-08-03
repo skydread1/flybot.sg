@@ -1,8 +1,15 @@
 (ns flybot.client.common.utils
   "Rendering app notifications as pop-up `toast` notifications in the DOM."
   (:require [camel-snake-kebab.core :as csk]
-            [camel-snake-kebab.extras :as cske]))
+            [camel-snake-kebab.extras :as cske]
+            [clojure.string :as str]))
 
+;; Overridden by the figwheel config option :closure-defines
+(goog-define MOBILE? false)
+
+(when-not MOBILE?
+  (require '[markdown-to-hiccup.core :as mth]))
+   
 (defn cljs->js
   "Convert the keys from kebab-case keywords to camelCase strings,
    and then convert the cljs to js.
@@ -19,3 +26,19 @@
   (->> data
        js->clj
        (cske/transform-keys csk/->kebab-case-keyword)))
+
+(defn post->title
+  "Returns a title string based on the given post's Markdown H1 heading. If the
+  content does not contain an H1 heading, returns nil. If the content is not a
+  string, returns nil."
+  [{:post/keys [md-content]}]
+  (when (string? md-content)
+    (if MOBILE?
+      (-> md-content (str/split #"#" 3) second (str/split #"\n") first str/trim)
+      (some->> md-content
+               mth/md->hiccup
+               (#(mth/hiccup-in % :h1 0))
+               seq
+               flatten
+               (filter string?)
+               str/join))))

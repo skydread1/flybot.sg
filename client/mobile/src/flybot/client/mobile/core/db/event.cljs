@@ -1,8 +1,8 @@
 (ns flybot.client.mobile.core.db.event
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
             [flybot.client.common.db.event :refer [base-uri]]
+            [flybot.client.common.utils :as client.utils]
             [flybot.client.mobile.core.navigation :as nav]
-            [flybot.client.web.core.utils :as web.utils]
             [flybot.common.utils :refer [temporary-id?]]
             [re-frame.core :as rf]))
 
@@ -12,7 +12,7 @@
  :fx.http/send-post-success
  (fn [_ [_ {:keys [posts]}]]
    (let [{:post/keys [id last-edit-date] :as post} (:new-post posts)
-         post-title (web.utils/post->title post)]
+         post-title (client.utils/post->title post)]
      {:fx [[:dispatch [:evt.post/add-post post]]
            [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.error/clear-errors]]

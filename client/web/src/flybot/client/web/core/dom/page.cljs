@@ -1,6 +1,7 @@
 (ns flybot.client.web.core.dom.page
   (:require [cljsjs.react-toastify]
             [clojure.string :as str]
+            [flybot.client.common.utils :as client.utils]
             [flybot.client.web.core.dom.page.admin :refer [admin-panel]]
             [flybot.client.web.core.dom.page.options :as page.options]
             [flybot.client.web.core.dom.page.post :as post :refer [blog-post-short page-post]]
@@ -39,7 +40,7 @@
                          (sort-by (case by
                                     :date-created :post/creation-date
                                     :date-updated :post/last-edit-date
-                                    :title web.utils/post->title
+                                    :title client.utils/post->title
                                     :post/creation-date)
                                   (if (= :ascending direction)
                                     compare
