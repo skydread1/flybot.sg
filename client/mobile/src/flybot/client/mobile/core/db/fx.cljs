@@ -1,7 +1,7 @@
 (ns flybot.client.mobile.core.db.fx
   (:require [flybot.client.common.db.fx]
             [flybot.client.mobile.core.db.asyncstorage :as async-storage]
-            [flybot.client.mobile.core.utils :refer [cljs->js]]
+            [flybot.client.common.utils :refer [cljs->js]]
             [re-frame.core :as rf]))
 
 ;; navigation

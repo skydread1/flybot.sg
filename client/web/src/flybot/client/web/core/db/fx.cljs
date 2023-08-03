@@ -6,9 +6,14 @@
             [flybot.client.web.core.db.class-utils :as cu]
             [flybot.client.web.core.db.localstorage :as l-storage]
             [re-frame.core :as rf]
+            [reitit.frontend.easy :as rfe]
             [reagent.core :as reagent]))
 
 ;;; -------- Routing ---------
+
+(rf/reg-fx
+ :fx.router/replace-state
+ (fn [args] (apply rfe/replace-state args)))
 
 ;; URL document fragments
 

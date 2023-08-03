@@ -2,7 +2,7 @@
   (:require [ajax.edn :refer [edn-request-format edn-response-format]]
             [clojure.edn :as edn]
             [day8.re-frame.http-fx]
-            [flybot.client.web.core.utils :as web.utils]
+            [flybot.client.common.utils :as client.utils]
             [flybot.common.utils :as utils :refer [toggle]]
             [flybot.common.validation :as valid]
             [re-frame.core :as rf]))
@@ -63,7 +63,7 @@
  :fx.http/remove-post-success
  (fn [{:keys [db]} [_ {:keys [posts]}]]
    (let [post   (-> posts :removed-post)
-         post-title (web.utils/post->title post)
+         post-title (client.utils/post->title post)
          user-name (-> db :app/user :user/name)]
      {:fx [[:dispatch [:evt.post/delete-post post]]
            [:dispatch [:evt.form/clear :form/fields]]

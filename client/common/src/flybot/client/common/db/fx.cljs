@@ -1,13 +1,5 @@
 (ns flybot.client.common.db.fx
-  (:require [cljsjs.react-toastify]
-            [re-frame.core :as rf]
-            [reitit.frontend.easy :as rfe]))
-
-;; ---------- Routing ----------
-
-(rf/reg-fx
- :fx.router/replace-state
- (fn [args] (apply rfe/replace-state args)))
+  (:require [re-frame.core :as rf]))
 
 ;; ---------- Logging ----------
 

@@ -14,8 +14,6 @@
             [reagent.core :as r]
             [reagent.react-native :as rrn]))
 
-
-
 (def markdown (.-default Markdown))
 (def default-icon (.-default icon))
 (def check-box (.-default BouncyCheckbox))
@@ -77,30 +75,26 @@
                :padding-bottom 5}})
 
 (defn post-author
-  [show-authors? author show-dates? date authored?]
+  [author date authored?]
   [rrn/view
    {:style {:flex-direction "row"
             :align-items "center"}}
-   (when (or show-authors? show-dates?)
-     [:> default-icon
-      {:name "create"
-       :size 30
-       :color (:green colors)}])
-   (when show-authors?
-     [rrn/text
-      {:style {:color (:green colors)
-               :padding 5}}
-      (:user/name author)])
-   (when show-dates?
-     [rrn/text
-      {:style {:color (:green colors)
-               :padding 5}}
-      (utils/format-date date)])
-   (when (or show-authors? show-dates?)
-     [rrn/text
-      {:style {:color (:green colors)
-               :padding 5}}
-      (if authored? "[Authored]" "[Edited]")])])
+   [:> default-icon
+    {:name "create"
+     :size 30
+     :color (:green colors)}]
+   [rrn/text
+    {:style {:color (:green colors)
+             :padding 5}}
+    (:user/name author)]
+   [rrn/text
+    {:style {:color (:green colors)
+             :padding 5}}
+    (utils/format-date date)]
+   [rrn/text
+    {:style {:color (:green colors)
+             :padding 5}}
+    (if authored? "[Authored]" "[Edited]")]])
 
 (defn md-title
   "Returns the title # of the given markdown
@@ -133,9 +127,9 @@
                :border-bottom-width 1
                :border-bottom-color (:blue colors)}
               {:padding 10})}
-    [post-author show-authors? author show-dates? creation-date true]
+    [post-author author creation-date true]
     (when-not (temporary-id? id)
-      [post-author show-authors? last-editor show-dates? last-edit-date false])]
+      [post-author last-editor last-edit-date false])]
    [rrn/view
     {}
     [:> markdown
@@ -197,7 +191,7 @@
                  (rn-alert "Confirmation" "Are you sure you want to save your changes?"
                            [{:text "Cancel"}
                             {:text "Submit"
-                             :on-press #(rf/dispatch [:evt.post.form/send-post post-id])}]))}]
+                             :on-press #(rf/dispatch [:evt.post.form/send-post])}]))}]
    [rrn/button
     {:title "Delete"
      :on-press (fn []

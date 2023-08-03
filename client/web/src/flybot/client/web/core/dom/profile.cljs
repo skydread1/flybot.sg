@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.dom.profile
   (:require [clojure.string :as str]
+            [flybot.client.common.utils :as client.utils]
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.svg :as svg]
             [flybot.client.web.core.utils :as web.utils]
@@ -43,7 +44,7 @@
 
 (defn post-short
   [{:post/keys [id page css-class creation-date last-edit-date] :as post}]
-  (let [post-title (web.utils/post->title post)]
+  (let [post-title (client.utils/post->title post)]
     [:div.post.short
      {:key id
       :id id}

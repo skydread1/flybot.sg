@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.dom.page.post
   (:require [clojure.walk :as walk]
+            [flybot.client.common.utils :as client.utils]
             [flybot.client.web.core.dom.common.link :as link]
             [flybot.client.web.core.dom.common.role :as role]
             [flybot.client.web.core.dom.common.svg :as svg]
@@ -141,7 +142,7 @@
                   (->> other-posts
                        (sort-by :post/default-order)
                        (map-indexed (fn [i post]
-                                      [i (web.utils/post->title post)])))]
+                                      [i (client.utils/post->title post)])))]
               [:option
                {:value position
                 :key (str "position-" position)}
@@ -335,7 +336,7 @@
 
 (defn blog-post-short
   [{:post/keys [css-class id] :as post}]
-  (let [post-title (web.utils/post->title post)]
+  (let [post-title (client.utils/post->title post)]
     [:div.post.short
      {:key id
       :id id}

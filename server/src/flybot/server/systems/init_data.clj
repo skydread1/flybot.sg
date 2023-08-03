@@ -105,7 +105,8 @@
           :md-content (slurp-md "blog" "welcome.md")
           :image-beside #:image{:src "/assets/flybot-logo.png"
                                 :src-dark "/assets/flybot-logo.png"
-                                :alt "Flybot Logo"}}
+                                :alt "Flybot Logo"}
+          :default-order 0}
    #:post{:id (u/mk-uuid)
           :page :blog
           :css-class "md-example"
@@ -116,7 +117,8 @@
           :md-content (slurp-md "blog" "mdsample.md")
           :image-beside #:image{:src "https://octodex.github.com/images/dojocat.jpg"
                                 :src-dark "https://octodex.github.com/images/stormtroopocat.jpg"
-                                :alt "Cat Logo"}}])
+                                :alt "Cat Logo"}
+          :default-order 1}])
 
 (def home-posts
   [#:post{:id (u/mk-uuid)
