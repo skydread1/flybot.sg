@@ -1,4 +1,5 @@
 (ns flybot.client.mobile.core.utils
+  "Convenient functions for mobile client."
   (:require [clojure.string :as str]))
 
 (defn format-date

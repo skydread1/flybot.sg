@@ -1,4 +1,5 @@
 (ns flybot.common.utils
+  "Convenient functions for both server and client."
   (:require #?(:clj [datalevin.core :as d])))
 
 (defn mk-uuid

@@ -1,5 +1,5 @@
 (ns flybot.client.common.utils
-  "Rendering app notifications as pop-up `toast` notifications in the DOM."
+  "Convenient functions for both web and mobile clients."
   (:require [camel-snake-kebab.core :as csk]
             [camel-snake-kebab.extras :as cske]
             [clojure.string :as str]))

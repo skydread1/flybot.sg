@@ -1,4 +1,5 @@
 (ns flybot.client.web.core.utils
+  "Convenient functions for web client."
   (:require
    [clojure.string :as str]
    [flybot.client.common.utils :refer [post->title]]))
