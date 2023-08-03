@@ -2,5 +2,6 @@
   :watch-dirs ["client/mobile/src" "client/common/src" "common/src"]}
 {:main flybot.client.mobile.core
  :closure-defines {flybot.client.common.db.event/BASE-URI "http://localhost:9500"
+                   flybot.client.common.db.event/MOBILE? true
                    flybot.common.validation.markdown/MOBILE? true
                    flybot.client.common.utils/MOBILE? true}}
