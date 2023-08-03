@@ -73,7 +73,9 @@
 (defn post-form
   []
   (let [page @(rf/subscribe [:subs/pattern '{:app/current-view {:data {:page-name ?x}}}])
-        nb-posts-in-page (-> @(rf/subscribe [:subs.post/posts page]) count inc)]
+        post-id @(rf/subscribe [:subs/pattern {:form/fields {:post/id '?x}}])
+        other-posts (->> @(rf/subscribe [:subs.post/posts page])
+                         (filter #(not= post-id (:post/id %))))]
     [:div.post-body
      [:form
       [:fieldset
@@ -126,16 +128,29 @@
        [:label {:for "position"} "Post position in the page:"]
        [:br]
        (when-not (= :blog page)
-         [:select
-          {:name "position"
-           :value (or @(rf/subscribe [:subs/pattern '{:form/fields {:post/default-order ?x}}]) 0)
-           :on-change #(rf/dispatch [:evt.post.form/set-field
-                                     :post/default-order
-                                     (.. % -target -value)])}
-          (for [num (range nb-posts-in-page)]
+         (let [max-position (count other-posts)]
+           [:select
+            {:name "position"
+             :defaultValue (or @(rf/subscribe [:subs/pattern
+                                               {:form/fields
+                                                {:post/default-order '?x}}])
+                               max-position)
+             :on-change #(rf/dispatch [:evt.post.form/set-field
+                                       :post/default-order
+                                       (.. % -target -value)])}
+            (for [[position post-title]
+                  (->> other-posts
+                       (sort-by :post/default-order)
+                       (map-indexed (fn [i post]
+                                      [i (web.utils/post->title post)])))]
+              [:option
+               {:value position
+                :key (str "position-" position)}
+               (str "Above \"" post-title "\"")])
             [:option
-             {:value num :key (str "position-" num)} 
-             num])])
+             {:value max-position
+              :key (str "position-" max-position)}
+             "End of page"]]))
        [:br]
        [svg/theme-logo]]
       [:br]
