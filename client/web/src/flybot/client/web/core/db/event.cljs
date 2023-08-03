@@ -144,6 +144,11 @@
 ;; ---------- View ----------
 
 (rf/reg-event-fx
+ :evt.page/set-title
+ (fn [_ [_ page-title]]
+   {:fx [[:fx.app/set-html-title page-title]]}))
+
+(rf/reg-event-fx
  :evt.page/set-current-view
  (fn [{:keys [db]} [_ new-match]]
    {:db (assoc db :app/current-view new-match)
