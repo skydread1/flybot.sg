@@ -37,8 +37,8 @@
 ;;---------- errors ----------
 
 (defn notif-message
-  [{:notification/keys [sub-type title body]}]
-  (let [notif-body (if (= :form sub-type)
+  [{:notification/keys [type title body]}]
+  (let [notif-body (if (= :form-error type)
                      (apply str (for [e body]
                                   (str (first e) ": " (apply str (interpose ", " (second e))) "\n")))
                      (str body))]

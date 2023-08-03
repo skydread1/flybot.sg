@@ -21,7 +21,7 @@
            [:dispatch [:evt.form/clear :form/fields]]
            [:dispatch [:evt.post/set-modes :read]]
            [:fx.log/message ["Post " id " sent."]]
-           [:dispatch [:evt.notification/set-notification
+           [:dispatch [:evt.notif/set-notif
                        :success
                        (if last-edit-date "Post edited" "New post created")
                        post-title]]]})))

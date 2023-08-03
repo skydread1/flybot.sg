@@ -25,7 +25,7 @@
                       "There was a server error. Please contact support if the issue persists."
                       (str "Status: " status " | " (:message response)))]
      (assoc db :app/notification #:notification{:id (utils/mk-uuid)
-                                                :type :error
+                                                :type :http-error
                                                 :title "HTTP error"
                                                 :body notif-body}))))
 
@@ -66,7 +66,7 @@
      {:fx [[:dispatch [:evt.post/delete-post post]]
            [:dispatch [:evt.form/clear :form/fields]]
            [:fx.log/message ["Post " (:post/id post) " deleted by " user-name "."]]
-           [:dispatch [:evt.notification/set-notification
+           [:dispatch [:evt.notif/set-notif
                        :success
                        "Post deleted"
                        post-title]]]})))
@@ -83,7 +83,7 @@
    (let [{:user/keys [name roles]} (-> users :new-role role-granted)]
      {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
            [:fx.log/message ["User " name "'s roles are now " (map :role/name roles)]]
-           [:dispatch [:evt.notification/set-notification
+           [:dispatch [:evt.notif/set-notif
                        :success
                        "New role granted"
                        (str name
@@ -102,7 +102,7 @@
      {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
            [:fx.log/message
             ["User " name " has had a role revoked: " role-revoked]]
-           [:dispatch [:evt.notification/set-notification
+           [:dispatch [:evt.notif/set-notif
                        :success
                        "Role revoked"
                        (str name
@@ -142,7 +142,7 @@
  (fn [{:keys [db]} [_ role]]
    (let [role-info (-> db :form.role/fields :new-role role (valid/validate valid/user-email-map-schema))]
      (if (:errors role-info)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg role-info)]]]}
+       {:fx [[:dispatch [:evt.notif/set-notif :form-error "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
@@ -162,7 +162,7 @@
  (fn [{:keys [db]} [_ role]]
    (let [role-info (-> db :form.role/fields :revoked-role role (valid/validate valid/user-email-map-schema))]
      (if (:errors role-info)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg role-info)]]]}
+       {:fx [[:dispatch [:evt.notif/set-notif :form-error "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
@@ -259,7 +259,7 @@
    (let [user-id (-> db :app/user :user/id)
          post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema-create))]
      (if (:errors post)
-       {:fx [[:dispatch [:evt.error/set-validation-errors (valid/error-msg post)]]]}
+       {:fx [[:dispatch [:evt.notif/set-notif :form-error "Form Input Error" (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
@@ -360,24 +360,13 @@
 ;; ------- Notifications ------
 
 (rf/reg-event-db
- :evt.notification/set-notification
+ :evt.notif/set-notif
  [(rf/path :app/notification)]
  (fn [_ [_ type title body]]
    #:notification{:id (utils/mk-uuid)
                   :type type
                   :title title
                   :body body}))
-
-;; ---------- Errors ----------
-
-(rf/reg-event-db
- :evt.error/set-validation-errors
- (fn [db [_ validation-err]]
-   (assoc db :app/notification #:notification{:id (utils/mk-uuid)
-                                              :type :error
-                                              :sub-type :form
-                                              :title "Form Input Error"
-                                              :body validation-err})))
 
 (rf/reg-event-db
  :evt.notif/clear

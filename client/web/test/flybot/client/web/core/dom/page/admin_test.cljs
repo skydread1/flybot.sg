@@ -46,8 +46,7 @@
            (is @role-form)
            (is (= "Form Input Error" (:notification/title @notification))))
          (rf/dispatch [:evt.form/clear :form.role/fields])
-         (rf/dispatch [:evt.error/clear-errors])
-         (rf/dispatch [:evt.notification/set-notification nil]))
+         (rf/dispatch [:evt.notif/clear]))
 
        (testing "Revoke role: Validation error:"
          (rf/dispatch [:evt.role.form/set-field :revoked-role :admin :user/email "email@wrong.com"])
@@ -56,8 +55,7 @@
            (is @role-form)
            (is (= "Form Input Error" (:notification/title @notification))))
          (rf/dispatch [:evt.form/clear :form.role/fields])
-         (rf/dispatch [:evt.error/clear-errors])
-         (rf/dispatch [:evt.notification/set-notification nil]))
+         (rf/dispatch [:evt.notif/clear]))
 
        (testing "Revoke role: Role not present:"
          (rf/reg-fx :http-xhrio
