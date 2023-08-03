@@ -20,7 +20,6 @@
 (rf/reg-event-db
  :fx.http/failure
  (fn [db [_ {:keys [status response]}]]
-    ;; result is a map containing details of the failure
    (let [notif-body (if (= "5" (first (str status)))
                       "There was a server error. Please contact support if the issue persists."
                       (str "Status: " status " | " (:message response)))]
