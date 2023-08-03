@@ -142,7 +142,7 @@
                   (->> other-posts
                        (sort-by :post/default-order)
                        (map-indexed (fn [i post]
-                                      [i (web.utils/post->title post)])))]
+                                      [i (client.utils/post->title post)])))]
               [:option
                {:value position
                 :key (str "position-" position)}
