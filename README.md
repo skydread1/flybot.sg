@@ -105,6 +105,7 @@ Regression tests are run on every save and the results are displayed at http://l
 Prerequisites:
 - [prepare your environment](https://reactnative.dev/docs/next/environment-setup)
 - if no `node_modules`, run `npm install` at the root
+- for ios, run `pod install` in the `ios` directory
 - be sure to update `:client-root-path` in config/system.edn
 - only tested with Xcode simulator
 
