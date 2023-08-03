@@ -25,7 +25,7 @@
                       "There was a server error. Please contact support if the issue persists."
                       (str "Status: " status " | " (:message response)))]
      (assoc db :app/notification #:notification{:id (utils/mk-uuid)
-                                                :type :http-error
+                                                :type :error/http
                                                 :title "HTTP error"
                                                 :body notif-body}))))
 
@@ -142,7 +142,7 @@
  (fn [{:keys [db]} [_ role]]
    (let [role-info (-> db :form.role/fields :new-role role (valid/validate valid/user-email-map-schema))]
      (if (:errors role-info)
-       {:fx [[:dispatch [:evt.notif/set-notif :form-error "Form Input Error" (valid/error-msg role-info)]]]}
+       {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
@@ -162,7 +162,7 @@
  (fn [{:keys [db]} [_ role]]
    (let [role-info (-> db :form.role/fields :revoked-role role (valid/validate valid/user-email-map-schema))]
      (if (:errors role-info)
-       {:fx [[:dispatch [:evt.notif/set-notif :form-error "Form Input Error" (valid/error-msg role-info)]]]}
+       {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
@@ -259,7 +259,7 @@
    (let [user-id (-> db :app/user :user/id)
          post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema-create))]
      (if (:errors post)
-       {:fx [[:dispatch [:evt.notif/set-notif :form-error "Form Input Error" (valid/error-msg post)]]]}
+       {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg post)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}

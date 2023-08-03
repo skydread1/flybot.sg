@@ -50,7 +50,7 @@
      ;; Initialize db
      (rf/dispatch [:evt.app/initialize])
      (testing "Initital db state is accurate in case of server error."
-       (is (= #:notification{:type :http-error
+       (is (= #:notification{:type :error/http
                              :body "There was a server error. Please contact support if the issue persists."}
               (select-keys @notification [:notification/type
                                           :notification/body]))))
@@ -158,7 +158,7 @@
      ;; Send post but validation error
        (rf/dispatch [:evt.post.form/send-post])
        (testing "Validation error notification added to db."
-         (is (= #:notification{:type :form-error
+         (is (= #:notification{:type :error/form
                                :title "Form Input Error"}
                 (select-keys @notification [:notification/type
                                             :notification/title]))))

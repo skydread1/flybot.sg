@@ -61,7 +61,7 @@
 
 (defn toast-message
   [{:notification/keys [type title body]}]
-  (if (= :form-error type)
+  (if (= :error/form type)
     [:<> [:strong (str/upper-case title)]
      [:ul
       (doall
@@ -80,8 +80,8 @@
                         :info       {:type "info" :auto-close 10000 :pause-on-hover true}
                         :success    {:type "success" :auto-close 5000 :pause-on-hover false}
                         :warning    {:type "warning" :auto-close 10000 :pause-on-hover true}
-                        :form-error {:type "error" :auto-close 10000 :pause-on-hover true}
-                        :http-error {:type "error" :auto-close 10000 :pause-on-hover true}
+                        :error/form {:type "error" :auto-close 10000 :pause-on-hover true}
+                        :error/http {:type "error" :auto-close 10000 :pause-on-hover true}
                         {})]
      (.toast js/ReactToastify
              (reagent/as-element (toast-message notif))
