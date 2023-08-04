@@ -31,9 +31,7 @@
   "Alice is editor"
   #:user{:id "alice-id"
          :email "alice@basecity.com"
-         :name "Alice Martin"
-         :roles [#:role{:name :editor
-                        :date-granted (u/mk-date)}]})
+         :name "Alice Martin"})
 
 (def users
   [owner-user bob-user alice-user])

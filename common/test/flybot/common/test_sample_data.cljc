@@ -12,7 +12,8 @@
    #inst "2023-01-05"
    #inst "2023-01-06"
    #inst "2023-01-07"
-   #inst "2023-01-08"])
+   #inst "2023-01-08"
+   #inst "2023-01-09"])
 
 ;;---------- Users ----------
 
@@ -22,6 +23,7 @@
 (def bob-date-granted (nth dates 0))
 (def alice-date-granted (nth dates 1))
 (def joshua-date-granted (nth dates 2))
+(def charlie-date-granted (nth dates 8))
 
 (def bob-user
   #:user{:id "bob-id"
@@ -48,6 +50,12 @@
          :picture "joshua-pic"
          :roles [#:role{:name :editor
                         :date-granted joshua-date-granted}]})
+
+(def charlie-user
+  #:user{:id "charlie-id"
+         :email "charlie@basecity.com"
+         :name "Charlie"
+         :picture "charlie-pic"})
 
 ;;---------- Posts ----------
 

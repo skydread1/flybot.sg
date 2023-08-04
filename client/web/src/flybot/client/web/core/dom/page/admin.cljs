@@ -86,6 +86,10 @@
        [grant-role-form :admin]]
       [:div
        [:form
+        [grant-role-button :editor]]
+       [grant-role-form :editor]]
+      [:div
+       [:form
         [revoke-role-button :admin]]
        [revoke-role-form :admin]]]
      [:div

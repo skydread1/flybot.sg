@@ -9,7 +9,7 @@
             [robertluo.fun-map :refer [halt! touch]]))
 
 (def test-data [s/post-1 s/post-2
-                s/bob-user s/alice-user])
+                s/bob-user s/alice-user s/charlie-user])
 (def test-system
   (-> (config/system-config :test)
       sys/system
@@ -146,7 +146,15 @@
         (is (= {:error {:type    :user/already-have-role
                         :role    :admin
                         :user-email admin-email}}
-               (sut/grant-admin-role (d/db db-conn) admin-email)))))))
+               (sut/grant-admin-role (d/db db-conn) admin-email)))))
+    (testing "Editor role case where not previous role is required."
+      (with-redefs [utils/mk-date (constantly s/charlie-date-granted)]
+        (let [new-role {:role/name :editor :role/date-granted s/charlie-date-granted}
+              updated-charlie (update s/charlie-user :user/roles conj new-role)
+              effects (assoc s/charlie-user :user/roles [new-role])]
+          (is (= {:response updated-charlie
+                  :effects  {:db {:payload [effects]}}}
+                 (sut/grant-editor-role (d/db db-conn) (:user/email s/charlie-user)))))))))
 
 (deftest revoke-role
   (let [db-conn (-> test-system :db-conn :conn)]
