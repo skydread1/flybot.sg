@@ -147,10 +147,10 @@
                         :role    :admin
                         :user-email admin-email}}
                (sut/grant-admin-role (d/db db-conn) admin-email)))))
-    (testing "Editor role case where not previous role is required."
+    (testing "Editor role case where no previous role is required."
       (with-redefs [utils/mk-date (constantly s/charlie-date-granted)]
         (let [new-role {:role/name :editor :role/date-granted s/charlie-date-granted}
-              updated-charlie (update s/charlie-user :user/roles conj new-role)
+              updated-charlie (assoc s/charlie-user :user/roles [new-role])
               effects (assoc s/charlie-user :user/roles [new-role])]
           (is (= {:response updated-charlie
                   :effects  {:db {:payload [effects]}}}
