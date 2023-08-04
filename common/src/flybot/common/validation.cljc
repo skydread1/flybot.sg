@@ -136,7 +136,7 @@
    '?alt "Image Description"
    '?new-admin "Grant Admin Role"
    '?new-owner "Grant Owner Role"
-   '?ex-admin "Revoke Admin Role"})
+   '?revoked-admin "Revoke Admin Role"})
 
 (defn error-msg
   [errors]
@@ -151,7 +151,7 @@
                                          :image/alt ?alt}
                      :new-role {:admin {:user/email ?new-admin}
                                 :owner {:user/email ?new-owner}}
-                     :revoked-role {:admin {:user/email ?ex-admin}}}))
+                     :revoked-role {:admin {:user/email ?revoked-admin}}}))
       (dissoc '&?)
       (#(into {} (remove (comp nil? val) %)))
       (set/rename-keys humanize-keys)
