@@ -111,6 +111,7 @@
               [:registered [:=> [:cat :string user-email-schema :string :string] user-schema]]
               [:logged [:=> [:cat] user-schema]]]]
       [:new-role [:map
+                  [:editor [:=> [:cat user-email-schema] user-schema]]
                   [:admin [:=> [:cat user-email-schema] user-schema]]
                   [:owner [:=> [:cat user-email-schema] user-schema]]]]
       [:revoked-role [:map
@@ -134,6 +135,7 @@
    '?src "Image for Light Mode"
    '?src-dark "Image for Dark Mode"
    '?alt "Image Description"
+   '?new-editor "Grant Editor Role"
    '?new-admin "Grant Admin Role"
    '?new-owner "Grant Owner Role"
    '?revoked-admin "Revoke Admin Role"})
@@ -149,8 +151,9 @@
                      :post/image-beside {:image/src ?src
                                          :image/src-dark ?src-dark
                                          :image/alt ?alt}
-                     :new-role {:admin {:user/email ?new-admin}
-                                :owner {:user/email ?new-owner}}
+                     :new-role {:editor {:user/email ?new-editor}
+                                :admin  {:user/email ?new-admin}
+                                :owner  {:user/email ?new-owner}}
                      :revoked-role {:admin {:user/email ?revoked-admin}}}))
       (dissoc '&?)
       (#(into {} (remove (comp nil? val) %)))

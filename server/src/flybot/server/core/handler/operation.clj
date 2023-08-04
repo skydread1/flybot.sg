@@ -125,12 +125,12 @@
 
 (defn- grant-role
   [db email role-to-have role-to-grant]
-  (let [{:user/keys [roles] :as user} (db/get-user-by-email db email)]
+  (let [{:user/keys [roles] :as user :or {roles []}} (db/get-user-by-email db email)]
     (cond (not user)
           {:error {:type           :user/not-found
                    :user-email     email}}
           
-          (not (some #{role-to-have} (map :role/name roles)))
+          (and role-to-have (not (some #{role-to-have} (map :role/name roles))))
           {:error {:type           :user/missing-role
                    :missing-role   role-to-have
                    :requested-role role-to-grant
@@ -143,8 +143,11 @@
           
           :else
           (let [new-role {:role/name role-to-grant :role/date-granted (utils/mk-date)}]
-            {:response (update user :user/roles conj new-role)
+            {:response (update user :user/roles #(-> % vec (conj new-role)))
              :effects  {:db {:payload [(assoc user :user/roles [new-role])]}}}))))
+
+(def grant-editor-role
+  #(grant-role %1 %2 nil :editor))
 
 (def grant-admin-role
   #(grant-role %1 %2 :editor :admin))
@@ -194,9 +197,11 @@
                            (fn [id] (delete-user db id)))
            :auth         {:registered (fn [id email name picture] (register-user db id email name picture))
                           :logged     (fn [] (login-user db (:user-id session)))}
-           :new-role     {:admin (with-role session :owner
-                                   (fn [email] (grant-admin-role db email)))
-                          :owner (with-role session :owner
-                                   (fn [email] (grant-owner-role db email)))}
+           :new-role     {:editor (with-role session :owner
+                                    (fn [email] (grant-editor-role db email)))
+                          :admin  (with-role session :owner
+                                    (fn [email] (grant-admin-role db email)))
+                          :owner  (with-role session :owner
+                                    (fn [email] (grant-owner-role db email)))}
            :revoked-role {:admin (with-role session :owner
                                    (fn [email] (revoke-admin-role db email)))}}})
