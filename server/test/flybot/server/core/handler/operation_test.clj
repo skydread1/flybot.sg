@@ -33,8 +33,10 @@
                                [(assoc post-in :post/default-order 2)]}}}
                (sut/add-post (d/db db-conn) post-in)))))
     (testing "User is admin and edits post of other so returns new post."
-      (let [post-in s/post-1
+      (let [post-in (assoc s/post-1
+                           :post/md-content "# Edited content 1")
             post-out (assoc s/post-1
+                            :post/md-content "# Edited content 1"
                             :post/author s/alice-user
                             :post/last-editor s/bob-user)]
         (is (= {:response post-out

@@ -220,10 +220,23 @@
 (rf/reg-event-fx
  :evt.post.form/send-post
  (fn [{:keys [db]} _]
-   (let [user-id (-> db :app/user :user/id)
-         post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema-create))]
-     (if (:errors post)
+   (let [content-keys [:post/css-class
+                       :post/md-content
+                       :post/image-beside
+                       :post/default-order]
+         user-id (-> db :app/user :user/id)
+         post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema-create))
+         existing-post (get-in db [:app/posts (:post/id post)])]
+     (cond
+       (:errors post)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg post)]]]}
+       (= (select-keys post content-keys)
+          (select-keys existing-post content-keys))
+       {:fx [[:dispatch [:evt.notif/set-notif
+                         :warning
+                         "Post unchanged"
+                         (client.utils/post->title post)]]]}
+       :else
        {:http-xhrio (merge http-xhrio-default
                            {:headers    (when MOBILE? {:cookie (:user/cookie db)})
                             :params     {:posts

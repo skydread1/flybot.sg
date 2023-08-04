@@ -11,7 +11,8 @@
    #inst "2023-01-04"
    #inst "2023-01-05"
    #inst "2023-01-06"
-   #inst "2023-01-07"])
+   #inst "2023-01-07"
+   #inst "2023-01-08"])
 
 ;;---------- Users ----------
 
@@ -59,6 +60,7 @@
 (def post-1-edit-date (nth dates 4))
 (def post-2-create-date (nth dates 5))
 (def post-3-create-date (nth dates 6))
+(def post-3-edit-date (nth dates 7))
 
 (def post-1
   #:post{:id             post-1-id

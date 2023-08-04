@@ -30,23 +30,34 @@
 (defn add-post
   "Add the post to the DB with only the author/editor IDs included.
    Returns the post with the full author/editor profiles included."
-  [db post]
-  (let [author-id (-> post :post/author :user/id)
+  [db {:post/keys [id page] :as post}]
+  (let [content-keys [:post/page
+                      :post/css-class
+                      :post/md-content
+                      :post/image-beside
+                      :post/default-order]
+        existing-post (db/get-post db id)
+        author-id (-> post :post/author :user/id)
         editor-id (-> post :post/last-editor :user/id)
         author (db/get-user db author-id)
         editor (db/get-user db editor-id)
         full-post (cond-> (assoc post :post/author author)
                     editor (assoc :post/last-editor editor))
-        page (:post/page post)
         posts (-> db
                   (db/get-all-posts-of page)
                   (utils/update-post-orders-with post :new-post))]
-    (if (and editor-id (not= author-id editor-id) (not (admin? editor)))
+    (cond
+      (and editor-id (not= author-id editor-id) (not (admin? editor)))
       {:error {:type :user/cannot-edit-post
                :author-id author-id
                :editor-id editor-id
                :required-role :admin
                :current-role :editor}}
+      (and existing-post
+           (= (select-keys post content-keys)
+              (select-keys existing-post content-keys)))
+      {:response existing-post}
+      :else
       {:response full-post
        :effects  {:db {:payload posts}}})))
 
