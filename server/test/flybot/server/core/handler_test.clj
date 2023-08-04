@@ -248,7 +248,57 @@
                       :post/default-order 1}
                      {:post/id s/post-1-id
                       :post/default-order 0}}
-                   (-> resp :body :posts :all set)))))))
+                   (-> resp :body :posts :all set)))))
+        (testing "Submitting an empty edit is a no-op:"
+          (let [post-in (assoc s/post-3
+                               :post/last-editor {:user/id s/bob-id}
+                               :post/last-edit-date s/post-3-edit-date
+                               :post/default-order 2)
+                post-out (assoc s/post-3
+                                :post/author s/bob-user
+                                :post/default-order 2)
+                new-post-resp
+                (http-request "/pattern"
+                              {:posts
+                               {(list :new-post :with [post-in])
+                                {:post/id '?
+                                 :post/page '?
+                                 :post/author {:user/id '?
+                                               :user/email '?
+                                               :user/name '?
+                                               :user/picture '?
+                                               :user/roles [{:role/name '?
+                                                             :role/date-granted '?}]}
+                                 :post/creation-date '?
+                                 :post/last-editor {:user/id '?
+                                                    :user/email '?
+                                                    :user/name '?
+                                                    :user/picture '?
+                                                    :user/roles [{:role/name '?
+                                                                  :role/date-granted '?}]}
+                                 :post/last-edit-date '?
+                                 :post/md-content '?
+                                 :post/default-order '?}}})
+                get-post-resp
+                (http-request "/pattern"
+                              {:posts
+                               {(list :post :with [s/post-3-id])
+                                {:post/id '?
+                                 :post/last-editor {:user/id '?
+                                                    :user/email '?
+                                                    :user/name '?
+                                                    :user/picture '?
+                                                    :user/roles [{:role/name '?
+                                                                  :role/date-granted '?}]}
+                                 :post/last-edit-date '?}}})]
+            (testing "Response is the existing post."
+              (is (= post-out
+                     (-> new-post-resp :body :posts :new-post))))
+            (testing "Post does not have a editor or edit date."
+              (is (empty?
+                   (-> get-post-resp :body :posts :post
+                       (select-keys [:post/last-editor
+                                     :post/last-edit-date])))))))))
     (testing "Execute a request for a delete post."
       (with-redefs [auth/has-permission? (constantly true)]
         (let [resp (http-request "/pattern"
