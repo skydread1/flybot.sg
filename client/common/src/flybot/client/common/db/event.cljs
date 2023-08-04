@@ -77,36 +77,18 @@
     :fx [[:fx.log/message ["User logged out."]]]}))
 
 (rf/reg-event-fx
- :fx.http/grant-role-success
- (fn [_ [_ role-granted {:keys [users]}]]
-   (let [{:user/keys [name roles]} (-> users :new-role role-granted)]
+ :fx.http/update-role-success
+ (fn [_ [_ operation role-granted {:keys [users]}]]
+   (let [{:user/keys [name roles]} (-> users operation role-granted)
+         new-role? (= :new-role operation)]
      {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
            [:fx.log/message ["User " name "'s roles are now " (map :role/name roles)]]
            [:dispatch [:evt.notif/set-notif
                        :success
-                       "New role granted"
+                       (if new-role? "New role granted" "Role revoked")
                        (str name
-                            " is now "
+                            (if new-role? " is now " " is no longer ")
                             (case role-granted
-                              :owner "an owner"
-                              :admin "an administrator"
-                              :editor "an editor"
-                              "a user")
-                            ".")]]]})))
-
-(rf/reg-event-fx
- :fx.http/revoke-role-success
- (fn [_ [_ role-revoked {:keys [users]}]]
-   (let [{:user/keys [name]} (-> users :revoked-role role-revoked)]
-     {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
-           [:fx.log/message
-            ["User " name " has had a role revoked: " role-revoked]]
-           [:dispatch [:evt.notif/set-notif
-                       :success
-                       "Role revoked"
-                       (str name
-                            " is no longer "
-                            (case role-revoked
                               :owner "an owner"
                               :admin "an administrator"
                               :editor "an editor"
@@ -137,45 +119,25 @@
                  :on-failure      [:fx.http/failure]}}))
 
 (rf/reg-event-fx
- :evt.user.form/grant-role
- (fn [{:keys [db]} [_ role]]
-   (let [schema     (valid/update-role-schema :new-role role)
+ :evt.user.form/update-role
+ (fn [{:keys [db]} [_ operation role]]
+   (let [schema     (valid/update-role-schema operation role)
          role-info  (-> db :form.role/fields (valid/validate (valid/prepare-role schema)))
-         user-email (-> role-info :new-role role :user/email)]
+         user-email (-> role-info operation role :user/email)]
      (if (:errors role-info)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
                      :uri             (base-uri "/pattern")
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:users
-                                       {:new-role
+                                       {operation
                                         {(list role :with [user-email])
                                          {:user/name '?
                                           :user/roles [{:role/name '?
                                                         :role/date-granted '?}]}}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/grant-role-success role]
-                     :on-failure      [:fx.http/failure]}}))))
-
-(rf/reg-event-fx
- :evt.user.form/revoke-role
- (fn [{:keys [db]} [_ role]]
-   (let [schema     (valid/update-role-schema :revoked-role role)
-         role-info  (-> db :form.role/fields (valid/validate (valid/prepare-role schema)))
-         user-email (-> role-info :revoked-role role :user/email)]
-     (if (:errors role-info)
-       {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
-       {:http-xhrio {:method          :post
-                     :uri             (base-uri "/pattern")
-                     :headers         {:cookie (:user/cookie db)}
-                     :params          {:users
-                                       {:revoked-role
-                                        {(list role :with [user-email])
-                                         {:user/name '?}}}}
-                     :format          (edn-request-format {:keywords? true})
-                     :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/revoke-role-success role]
+                     :on-success      [:fx.http/update-role-success operation role]
                      :on-failure      [:fx.http/failure]}}))))
 
 ;; ---------- Post ----------

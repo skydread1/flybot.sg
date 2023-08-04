@@ -141,7 +141,6 @@
 
 (defn error-msg
   [errors]
-  (println errors)
   (-> errors
       (me/humanize 
        {:errors (-> me/default-errors
