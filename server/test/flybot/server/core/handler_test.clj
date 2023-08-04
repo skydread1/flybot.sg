@@ -270,12 +270,7 @@
                                                :user/roles [{:role/name '?
                                                              :role/date-granted '?}]}
                                  :post/creation-date '?
-                                 :post/last-editor {:user/id '?
-                                                    :user/email '?
-                                                    :user/name '?
-                                                    :user/picture '?
-                                                    :user/roles [{:role/name '?
-                                                                  :role/date-granted '?}]}
+                                 :post/last-editor {:user/id '?}
                                  :post/last-edit-date '?
                                  :post/md-content '?
                                  :post/default-order '?}}})
@@ -284,12 +279,7 @@
                               {:posts
                                {(list :post :with [s/post-3-id])
                                 {:post/id '?
-                                 :post/last-editor {:user/id '?
-                                                    :user/email '?
-                                                    :user/name '?
-                                                    :user/picture '?
-                                                    :user/roles [{:role/name '?
-                                                                  :role/date-granted '?}]}
+                                 :post/last-editor {:user/id '?}
                                  :post/last-edit-date '?}}})]
             (testing "Response is the existing post."
               (is (= post-out
