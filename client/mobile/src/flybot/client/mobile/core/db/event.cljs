@@ -1,6 +1,5 @@
 (ns flybot.client.mobile.core.db.event
-  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-            [flybot.client.common.db.event :refer [base-uri]]
+  (:require [flybot.client.common.db.event :refer [http-xhrio-default]]
             [flybot.client.common.utils :as client.utils]
             [flybot.client.mobile.core.navigation :as nav]
             [flybot.common.utils :refer [temporary-id?]]
@@ -31,38 +30,35 @@
    {:db         (assoc
                  db
                  :navigator/ref @nav/nav-ref)
-    :http-xhrio {:method          :post
-                 :uri             (base-uri "/pattern")
-                 :headers {:cookie (:user/cookie db)}
-                 :params {:posts
-                          {(list :all :with [])
-                           [{:post/id '?
-                             :post/page '?
-                             :post/css-class '?
-                             :post/creation-date '?
-                             :post/last-edit-date '?
-                             :post/author {:user/id '?
-                                           :user/name '?}
-                             :post/last-editor {:user/id '?
-                                                :user/name '?}
-                             :post/md-content '?
-                             :post/image-beside {:image/src '?
-                                                 :image/src-dark '?
-                                                 :image/alt '?}
-                             :post/default-order '?}]}
-                          :users
-                          {:auth
-                           {(list :logged :with [])
-                            {:user/id '?
-                             :user/email '?
-                             :user/name '?
-                             :user/picture '?
-                             :user/roles [{:role/name '?
-                                           :role/date-granted '?}]}}}}
-                 :format          (edn-request-format {:keywords? true})
-                 :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/all-success]
-                 :on-failure      [:fx.http/failure]}}))
+    :http-xhrio (merge http-xhrio-default
+                       {:headers    {:cookie (:user/cookie db)}
+                        :params     {:posts
+                                     {(list :all :with [])
+                                      [{:post/id '?
+                                        :post/page '?
+                                        :post/css-class '?
+                                        :post/creation-date '?
+                                        :post/last-edit-date '?
+                                        :post/author {:user/id '?
+                                                      :user/name '?}
+                                        :post/last-editor {:user/id '?
+                                                           :user/name '?}
+                                        :post/md-content '?
+                                        :post/image-beside {:image/src '?
+                                                            :image/src-dark '?
+                                                            :image/alt '?}
+                                        :post/default-order '?}]}
+                                     :users
+                                     {:auth
+                                      {(list :logged :with [])
+                                       {:user/id '?
+                                        :user/email '?
+                                        :user/name '?
+                                        :user/picture '?
+                                        :user/roles [{:role/name '?
+                                                      :role/date-granted '?}]}}}}
+                        
+                        :on-success [:fx.http/all-success]})}))
 
 (rf/reg-event-fx
  :evt.app/initialize-with-cookie
