@@ -85,36 +85,18 @@
     :fx [[:fx.log/message ["User logged out."]]]}))
 
 (rf/reg-event-fx
- :fx.http/grant-role-success
- (fn [_ [_ role-granted {:keys [users]}]]
-   (let [{:user/keys [name roles]} (-> users :new-role role-granted)]
+ :fx.http/update-role-success
+ (fn [_ [_ operation role-granted {:keys [users]}]]
+   (let [{:user/keys [name roles]} (-> users operation role-granted)
+         new-role? (= :new-role operation)]
      {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
            [:fx.log/message ["User " name "'s roles are now " (map :role/name roles)]]
            [:dispatch [:evt.notif/set-notif
                        :success
-                       "New role granted"
+                       (if new-role? "New role granted" "Role revoked")
                        (str name
-                            " is now "
+                            (if new-role? " is now " " is no longer ")
                             (case role-granted
-                              :owner "an owner"
-                              :admin "an administrator"
-                              :editor "an editor"
-                              "a user")
-                            ".")]]]})))
-
-(rf/reg-event-fx
- :fx.http/revoke-role-success
- (fn [_ [_ role-revoked {:keys [users]}]]
-   (let [{:user/keys [name]} (-> users :revoked-role role-revoked)]
-     {:fx [[:dispatch [:evt.form/clear :form.role/fields]]
-           [:fx.log/message
-            ["User " name " has had a role revoked: " role-revoked]]
-           [:dispatch [:evt.notif/set-notif
-                       :success
-                       "Role revoked"
-                       (str name
-                            " is no longer "
-                            (case role-revoked
                               :owner "an owner"
                               :admin "an administrator"
                               :editor "an editor"
@@ -144,34 +126,22 @@
                         :on-success [:fx.http/logout-success]})}))
 
 (rf/reg-event-fx
- :evt.user.form/grant-role
- (fn [{:keys [db]} [_ role]]
-   (let [role-info (-> db :form.role/fields :new-role role (valid/validate valid/user-email-map-schema))]
+ :evt.user.form/update-role
+ (fn [{:keys [db]} [_ operation role]]
+   (let [schema     (valid/update-role-schema operation role)
+         role-info  (-> db :form.role/fields (valid/validate (valid/prepare-role schema)))
+         user-email (-> role-info operation role :user/email)]
      (if (:errors role-info)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio (merge http-xhrio-default
                            {:headers    (when MOBILE? {:cookie (:user/cookie db)})
                             :params     {:users
-                                         {:new-role
-                                          {(list role :with [(:user/email role-info)])
+                                         {operation
+                                          {(list role :with [user-email])
                                            {:user/name '?
                                             :user/roles [{:role/name '?
                                                           :role/date-granted '?}]}}}}
-                            :on-success [:fx.http/grant-role-success role]})}))))
-
-(rf/reg-event-fx
- :evt.user.form/revoke-role
- (fn [{:keys [db]} [_ role]]
-   (let [role-info (-> db :form.role/fields :revoked-role role (valid/validate valid/user-email-map-schema))]
-     (if (:errors role-info)
-       {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
-       {:http-xhrio (merge http-xhrio-default
-                           {:headers    (when MOBILE? {:cookie (:user/cookie db)})
-                            :params     {:users
-                                         {:revoked-role
-                                          {(list role :with [(:user/email role-info)])
-                                           {:user/name '?}}}}
-                            :on-success [:fx.http/revoke-role-success role]})}))))
+                            :on-success [:fx.http/update-role-success operation role]})}))))
 
 ;; ---------- Post ----------
 

@@ -27,7 +27,7 @@
   ;; Initialize db
   (rf/dispatch [:evt.app/initialize]))
 
-(deftest grant-revoke-roles
+(deftest update-roles
   (with-redefs [utils/mk-date (constantly s/alice-date-granted)]
     (rf-test/run-test-sync
      (test-fixtures)
@@ -41,7 +41,7 @@
          ;; Fill new role form
          (rf/dispatch [:evt.role.form/set-field :new-role :admin :user/email "email@wrong.com"])
          ;; Attempt to grant role
-         (rf/dispatch [:evt.user.form/grant-role :admin])
+         (rf/dispatch [:evt.user.form/update-role :new-role :admin])
          (testing "Form not cleared, error notification added to DB."
            (is @role-form)
            (is (= "Form Input Error" (:notification/title @notification))))
@@ -50,7 +50,7 @@
 
        (testing "Revoke role: Validation error:"
          (rf/dispatch [:evt.role.form/set-field :revoked-role :admin :user/email "email@wrong.com"])
-         (rf/dispatch [:evt.user.form/revoke-role :admin])
+         (rf/dispatch [:evt.user.form/update-role :revoked-role :admin])
          (testing "Form not cleared, error notification added to DB."
            (is @role-form)
            (is (= "Form Input Error" (:notification/title @notification))))
@@ -63,7 +63,7 @@
                       (rf/dispatch [:fx.http/failure {:status 479}])))
          (rf/dispatch [:evt.role.form/set-field
                        :revoked-role :admin :user/email email])
-         (rf/dispatch [:evt.user.form/revoke-role :admin])
+         (rf/dispatch [:evt.user.form/update-role :revoked-role :admin])
          (testing "Form not cleared, error notification added to DB."
            (is @role-form)
            (is (= "HTTP error" (:notification/title @notification)))))
@@ -71,12 +71,13 @@
        (testing "Grant role: Success:"
          (rf/reg-fx :http-xhrio
                     (fn [_] (rf/dispatch
-                             [:fx.http/grant-role-success
+                             [:fx.http/update-role-success
+                              :new-role
                               :admin
                               {:users {:new-role {:admin admin-alice}}}])))
          (rf/dispatch [:evt.role.form/set-field
                        :new-role :admin :user/email email])
-         (rf/dispatch [:evt.user.form/grant-role :admin])
+         (rf/dispatch [:evt.user.form/update-role :new-role :admin])
          (testing "Form cleared."
            (is (not @role-form)))
          (testing "Notification sent."
@@ -88,12 +89,13 @@
        (testing "Revoke role: Success:"
          (rf/reg-fx :http-xhrio
                     (fn [_] (rf/dispatch
-                             [:fx.http/revoke-role-success
+                             [:fx.http/update-role-success
+                              :revoked-role
                               :admin
                               {:users {:revoked-role {:admin admin-alice}}}])))
          (rf/dispatch [:evt.role.form/set-field
                        :revoked-role :admin :user/email email])
-         (rf/dispatch [:evt.user.form/revoke-role :admin])
+         (rf/dispatch [:evt.user.form/update-role :revoked-role :admin])
          (testing "Form cleared."
            (is (not @role-form)))
          (testing "Notification sent."

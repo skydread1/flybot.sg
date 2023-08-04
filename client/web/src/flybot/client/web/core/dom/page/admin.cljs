@@ -9,14 +9,14 @@
   [role]
   [:button
    {:type "button"
-    :on-click #(rf/dispatch [:evt.user.form/grant-role role])}
+    :on-click #(rf/dispatch [:evt.user.form/update-role :new-role role])}
    svg/done-icon])
 
 (defn revoke-role-button
   [role]
   [:button
    {:type "button"
-    :on-click #(rf/dispatch [:evt.user.form/revoke-role role])}
+    :on-click #(rf/dispatch [:evt.user.form/update-role :revoked-role role])}
    svg/trash-icon])
 
 ;;; --------- Forms ----------

@@ -34,6 +34,14 @@
             [:a :int]
             [:b {:optional true} :int]]])))))
 
+(deftest remove-empties
+  (testing "Map keys with empty values are removed."
+    (is (= {:a1 1 :a3 {:b1 2}}
+           (sut/remove-empty-vals {:a1 1
+                                   :a2 nil
+                                   :a3 {:b1 2 :b2 {}}
+                                   :a4 {:b1 nil :b2 {}}})))))
+
 (deftest prepare-post
   (testing "Creation of a post."
     (with-redefs [utils/mk-uuid (constantly s/post-2-id)
