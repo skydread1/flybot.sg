@@ -163,6 +163,19 @@
                 (select-keys @notification [:notification/type
                                             :notification/title]))))
 
+      ;;---------- EMPTY EDIT IS IGNORED
+       (testing "Empty edit (content unchanged):"
+         (rf/dispatch [:evt.post.form/set-field
+                       :post/md-content (:post/md-content s/post-1)])
+         (rf/dispatch [:evt.post.form/send-post])
+         (testing "Warning notification sent."
+           (is (= #:notification{:type :warning
+                                 :title "Post unchanged"
+                                 :body "Some content 1"}
+                  (dissoc @notification :notification/id))))
+         (testing "Form not cleared."
+           (is @p1-form)))
+
      ;;---------- SEND POST SUCCESS
      ;; Mock success http request
      ;; Change md-content in the form
