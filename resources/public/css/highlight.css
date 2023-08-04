@@ -7,6 +7,9 @@ pre code.hljs {
   display: block;
   overflow-x: auto;
   padding: 1rem;
+  border-style: groove;
+  border-width: 1px;
+  border-color: var(--button-primary-color);
 }
 
 code.hljs {
