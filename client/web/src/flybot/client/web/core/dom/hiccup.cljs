@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.dom.hiccup
-  (:require [clojure.walk :refer [postwalk]]
+  (:require [clojure.string :as str]
+            [clojure.walk :refer [postwalk]]
             [markdown-to-hiccup.core :as mth]
             [re-frame.core :as rf]))
 
@@ -20,13 +21,19 @@
     [tag (assoc props :src (:srcdark props)) value]
     [tag props value]))
 
-(defn md-code-block-default-plaintext
-  "Marks code blocks without any specified languages as plain text."
+(defn md-code-block
+  "Decorates code blocks:
+
+  - Mark code blocks without any specified languages as plain text.
+  - Make code blocks responsive to dark and light themes."
   [h]
-  (let [[_ props content] (hiccup-with-properties h)]
+  (let [theme @(rf/subscribe [:subs/pattern '{:app/theme ?x}])
+        [_ props content] (hiccup-with-properties h)]
     (if (= :code (get content 0))
       (let [[_ code-props code-content] (hiccup-with-properties content)]
-        [:pre props
+        [:pre (if (= :dark theme)
+                (merge-with #(str/join " " %&) {:class "dark"} props)
+                props)
          [:code (merge {:class "text"} code-props)
           code-content]])
       h)))
@@ -44,7 +51,7 @@
             (and (vector? h) (= :img (first h)))
             (md-dark-image h)
             (and (vector? h) (= :pre (first h)))
-            (md-code-block-default-plaintext h)
+            (md-code-block h)
             :else
             h)))))
 
