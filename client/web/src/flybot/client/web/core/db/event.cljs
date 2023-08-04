@@ -1,8 +1,7 @@
 (ns flybot.client.web.core.db.event
-  (:require [ajax.edn :refer [edn-request-format edn-response-format]]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [day8.re-frame.http-fx]
-            [flybot.client.common.db.event]
+            [flybot.client.common.db.event :refer [http-xhrio-default]]
             [flybot.client.common.utils :as client.utils]
             [flybot.client.web.core.utils :as web.utils]
             [flybot.common.utils :as utils :refer [toggle]]
@@ -84,37 +83,33 @@
                    :app/theme        app-theme
                    :user/mode        :reader
                    :nav/navbar-open? false)
-      :http-xhrio {:method          :post
-                   :uri             "/pattern"
-                   :params {:posts
-                            {(list :all :with [])
-                             [{:post/id '?
-                               :post/page '?
-                               :post/css-class '?
-                               :post/creation-date '?
-                               :post/last-edit-date '?
-                               :post/author {:user/id '?
-                                             :user/name '?}
-                               :post/last-editor {:user/id '?
-                                                  :user/name '?}
-                               :post/md-content '?
-                               :post/image-beside {:image/src '?
-                                                   :image/src-dark '?
-                                                   :image/alt '?}
-                               :post/default-order '?}]}
-                            :users
-                            {:auth
-                             {(list :logged :with [])
-                              {:user/id '?
-                               :user/email '?
-                               :user/name '?
-                               :user/picture '?
-                               :user/roles [{:role/name '?
-                                             :role/date-granted '?}]}}}}
-                   :format          (edn-request-format {:keywords? true})
-                   :response-format (edn-response-format {:keywords? true})
-                   :on-success      [:fx.http/all-success]
-                   :on-failure      [:fx.http/failure]}
+      :http-xhrio (merge http-xhrio-default
+                         {:params     {:posts
+                                       {(list :all :with [])
+                                        [{:post/id '?
+                                          :post/page '?
+                                          :post/css-class '?
+                                          :post/creation-date '?
+                                          :post/last-edit-date '?
+                                          :post/author {:user/id '?
+                                                        :user/name '?}
+                                          :post/last-editor {:user/id '?
+                                                             :user/name '?}
+                                          :post/md-content '?
+                                          :post/image-beside {:image/src '?
+                                                              :image/src-dark '?
+                                                              :image/alt '?}
+                                          :post/default-order '?}]}
+                                       :users
+                                       {:auth
+                                        {(list :logged :with [])
+                                         {:user/id '?
+                                          :user/email '?
+                                          :user/name '?
+                                          :user/picture '?
+                                          :user/roles [{:role/name '?
+                                                        :role/date-granted '?}]}}}}
+                          :on-success [:fx.http/all-success]})
       :fx         [[:fx.app/update-html-class app-theme]]})))
 
 ;; Theme (dark/light)
@@ -127,6 +122,13 @@
      {:db (assoc db :app/theme next-theme)
       :fx [[:fx.app/set-theme-local-store next-theme]
            [:fx.app/toggle-css-class [cur-theme next-theme]]]})))
+
+;; Code syntax highlighting
+
+(rf/reg-event-fx
+ :evt.app/highlight-code
+ (fn [_ [_ html-id]]
+   {:fx [[:fx.app/highlight-code html-id]]}))
 
 ;; ---------- Navbar ----------
 

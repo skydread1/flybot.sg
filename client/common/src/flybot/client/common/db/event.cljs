@@ -9,11 +9,19 @@
 
 ;; Overridden by the figwheel config option :closure-defines
 (goog-define BASE-URI "")
+(goog-define MOBILE? false)
 
 (defn base-uri
   "Given the relative `path`, use the BASE-URI to build the absolute path uri."
   [path]
   (str BASE-URI path))
+
+(def http-xhrio-default
+  {:method          :post
+   :uri             (base-uri "/pattern")
+   :format          (edn-request-format {:keywords? true})
+   :response-format (edn-response-format {:keywords? true})
+   :on-failure      [:fx.http/failure]})
 
 ;; ---------- http success/failure ----------
 
@@ -112,11 +120,10 @@
 (rf/reg-event-fx
  :evt.user/logout
  (fn [_ _]
-   {:http-xhrio {:method          :get
-                 :uri             (base-uri "/users/logout")
-                 :response-format (edn-response-format {:keywords? true})
-                 :on-success      [:fx.http/logout-success]
-                 :on-failure      [:fx.http/failure]}}))
+   {:http-xhrio (merge http-xhrio-default
+                       {:method     :get
+                        :uri        (base-uri "/users/logout")
+                        :on-success [:fx.http/logout-success]})}))
 
 (rf/reg-event-fx
  :evt.user.form/update-role
@@ -126,19 +133,15 @@
          user-email (-> role-info operation role :user/email)]
      (if (:errors role-info)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
-       {:http-xhrio {:method          :post
-                     :uri             (base-uri "/pattern")
-                     :headers         {:cookie (:user/cookie db)}
-                     :params          {:users
-                                       {operation
-                                        {(list role :with [user-email])
-                                         {:user/name '?
-                                          :user/roles [{:role/name '?
-                                                        :role/date-granted '?}]}}}}
-                     :format          (edn-request-format {:keywords? true})
-                     :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/update-role-success operation role]
-                     :on-failure      [:fx.http/failure]}}))))
+       {:http-xhrio (merge http-xhrio-default
+                           {:headers    (when MOBILE? {:cookie (:user/cookie db)})
+                            :params     {:users
+                                         {operation
+                                          {(list role :with [user-email])
+                                           {:user/name '?
+                                            :user/roles [{:role/name '?
+                                                          :role/date-granted '?}]}}}}
+                            :on-success [:fx.http/update-role-success operation role]})}))))
 
 ;; ---------- Post ----------
 
@@ -195,18 +198,14 @@
  :evt.post/remove-post
  (fn [{:keys [db]} [_ post-id]]
    (let [user-id (-> db :app/user :user/id)]
-     {:http-xhrio {:method          :post
-                   :uri             (base-uri "/pattern")
-                   :headers         {:cookie (:user/cookie db)}
-                   :params          {:posts
-                                     {(list :removed-post :with [post-id user-id])
-                                      {:post/id '?
-                                       :post/md-content '?
-                                       :post/page '?}}}
-                   :format          (edn-request-format {:keywords? true})
-                   :response-format (edn-response-format {:keywords? true})
-                   :on-success      [:fx.http/remove-post-success]
-                   :on-failure      [:fx.http/failure]}})))
+     {:http-xhrio (merge http-xhrio-default
+                         {:headers    (when MOBILE? {:cookie (:user/cookie db)})
+                          :params     {:posts
+                                       {(list :removed-post :with [post-id user-id])
+                                        {:post/id '?
+                                         :post/md-content '?
+                                         :post/page '?}}}
+                          :on-success [:fx.http/remove-post-success]})})))
 
 ;; ---------- Post Form ----------
 
@@ -225,29 +224,25 @@
          post    (-> db :form/fields (valid/prepare-post user-id) (valid/validate valid/post-schema-create))]
      (if (:errors post)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg post)]]]}
-       {:http-xhrio {:method          :post
-                     :uri             (base-uri "/pattern")
-                     :headers         {:cookie (:user/cookie db)}
-                     :params          {:posts
-                                       {(list :new-post :with [post])
-                                        {:post/id '?
-                                         :post/page '?
-                                         :post/css-class '?
-                                         :post/creation-date '?
-                                         :post/last-edit-date '?
-                                         :post/author {:user/id '?
-                                                       :user/name '?}
-                                         :post/last-editor {:user/id '?
-                                                            :user/name '?}
-                                         :post/md-content '?
-                                         :post/image-beside {:image/src '?
-                                                             :image/src-dark '?
-                                                             :image/alt '?}
-                                         :post/default-order '?}}}
-                     :format          (edn-request-format {:keywords? true})
-                     :response-format (edn-response-format {:keywords? true})
-                     :on-success      [:fx.http/send-post-success]
-                     :on-failure      [:fx.http/failure]}}))))
+       {:http-xhrio (merge http-xhrio-default
+                           {:headers    (when MOBILE? {:cookie (:user/cookie db)})
+                            :params     {:posts
+                                         {(list :new-post :with [post])
+                                          {:post/id '?
+                                           :post/page '?
+                                           :post/css-class '?
+                                           :post/creation-date '?
+                                           :post/last-edit-date '?
+                                           :post/author {:user/id '?
+                                                         :user/name '?}
+                                           :post/last-editor {:user/id '?
+                                                              :user/name '?}
+                                           :post/md-content '?
+                                           :post/image-beside {:image/src '?
+                                                               :image/src-dark '?
+                                                               :image/alt '?}
+                                           :post/default-order '?}}}
+                            :on-success [:fx.http/send-post-success]})}))))
 
 ;; Form body
 
@@ -265,28 +260,24 @@
                     :post/author (-> db :app/user (select-keys [:user/id :user/name]))
                     :post/creation-date (utils/mk-date)
                     :post/default-order (->> db :app/posts vals (filter #(= page (:post/page %))) count)})})
-     {:http-xhrio {:method          :post
-                   :uri             (base-uri "/pattern")
-                   :params          {:posts
-                                     {(list :post :with [post-id])
-                                      {:post/id '?
-                                       :post/page '?
-                                       :post/css-class '?
-                                       :post/creation-date '?
-                                       :post/last-edit-date '?
-                                       :post/author {:user/id '?
-                                                     :user/name '?}
-                                       :post/last-editor {:user/id '?
-                                                          :user/name '?}
-                                       :post/md-content '?
-                                       :post/image-beside {:image/src '?
-                                                           :image/src-dark '?
-                                                           :image/alt '?}
-                                       :post/default-order '?}}}
-                   :format          (edn-request-format {:keywords? true})
-                   :response-format (edn-response-format {:keywords? true})
-                   :on-success      [:fx.http/post-success]
-                   :on-failure      [:fx.http/failure]}})))
+     {:http-xhrio (merge http-xhrio-default
+                         {:params     {:posts
+                                       {(list :post :with [post-id])
+                                        {:post/id '?
+                                         :post/page '?
+                                         :post/css-class '?
+                                         :post/creation-date '?
+                                         :post/last-edit-date '?
+                                         :post/author {:user/id '?
+                                                       :user/name '?}
+                                         :post/last-editor {:user/id '?
+                                                            :user/name '?}
+                                         :post/md-content '?
+                                         :post/image-beside {:image/src '?
+                                                             :image/src-dark '?
+                                                             :image/alt '?}
+                                         :post/default-order '?}}}
+                          :on-success [:fx.http/post-success]})})))
 
 (rf/reg-event-db
  :evt.post.form/set-field

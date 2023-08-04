@@ -36,6 +36,7 @@
   :client  {:extra-deps {com.bhauman/figwheel-main             {:mvn/version "0.2.18"}
                          org.clojure/clojurescript             {:mvn/version "1.11.60"}
                          reagent/reagent                       {:mvn/version "1.2.0"}
+                         cljsjs/highlight                      {:mvn/version "11.7.0-0"}
                          cljsjs/react                          {:mvn/version "18.2.0-1"}
                          cljsjs/react-dom                      {:mvn/version "18.2.0-1"}
                          cljsjs/react-toastify                 {:mvn/version "9.1.0-0"}

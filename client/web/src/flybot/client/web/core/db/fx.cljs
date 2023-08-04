@@ -1,9 +1,11 @@
 (ns flybot.client.web.core.db.fx
-  (:require [clojure.edn :as edn]
+  (:require [cljsjs.highlight]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [flybot.client.common.db.fx]
             [flybot.client.common.utils :refer [cljs->js]]
             [flybot.client.web.core.db.class-utils :as cu]
+            [flybot.client.web.core.db.fx.highlight]
             [flybot.client.web.core.db.localstorage :as l-storage]
             [re-frame.core :as rf]
             [reagent.core :as reagent]
@@ -63,6 +65,14 @@
  :fx.app/set-theme-local-store
  (fn [next-theme]
    (l-storage/set-item :theme next-theme)))
+
+;; code syntax highlighting
+
+(rf/reg-fx
+ :fx.app/highlight-code
+ (fn [id]
+   (.configure js/hljs #js {:cssSelector (str "#" id " pre code")})
+   (.highlightAll js/hljs)))
 
 ;; ----- Notification ------
 
