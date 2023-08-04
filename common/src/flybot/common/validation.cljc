@@ -134,7 +134,6 @@
    '?src "Image for Light Mode"
    '?src-dark "Image for Dark Mode"
    '?alt "Image Description"
-   '?user-email "Email"
    '?new-admin "Grant Admin Role"
    '?new-owner "Grant Owner Role"
    '?ex-admin "Revoke Admin Role"})
