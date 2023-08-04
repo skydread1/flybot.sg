@@ -5,6 +5,7 @@
             [flybot.client.common.db.fx]
             [flybot.client.common.utils :refer [cljs->js]]
             [flybot.client.web.core.db.class-utils :as cu]
+            [flybot.client.web.core.db.fx.highlight]
             [flybot.client.web.core.db.localstorage :as l-storage]
             [re-frame.core :as rf]
             [reagent.core :as reagent]

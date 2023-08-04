@@ -3,12 +3,6 @@
   https://github.com/highlightjs/highlight.js/tree/main/src/styles
  */
 
-pre:has(code.hljs) {
-  display: block;
-  overflow-x: auto;
-  padding: 0.5rem 0rem;
-}
-
 pre code.hljs {
   display: block;
   overflow-x: auto;
