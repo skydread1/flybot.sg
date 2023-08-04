@@ -123,6 +123,13 @@
       :fx [[:fx.app/set-theme-local-store next-theme]
            [:fx.app/toggle-css-class [cur-theme next-theme]]]})))
 
+;; Code syntax highlighting
+
+(rf/reg-event-fx
+ :evt.app/highlight-code
+ (fn [_ [_ html-id]]
+   {:fx [[:fx.app/highlight-code html-id]]}))
+
 ;; ---------- Navbar ----------
 
 (rf/reg-event-db
