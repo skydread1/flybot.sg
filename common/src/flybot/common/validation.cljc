@@ -6,6 +6,7 @@
    However, for validation schema (form inputs for frontend, request params for backend),
    we often need the client to provide some mandatory fields."
   (:require [clojure.set :as set]
+            [clojure.walk :as walk]
             [flybot.common.utils :as u]
             [flybot.common.validation.markdown :as md]
             [malli.core :as m]
@@ -35,12 +36,14 @@
    {:error/message "Email must be ending by @basecity.com."}
    #"^([a-zA-Z0-9_-]+)([\.])?([a-zA-Z0-9_-]+)@basecity\.com$"])
 
-(def user-email-map-schema
-  "This schema is similar to user-email-schema but make it a map for better error display to the user."
+(defn update-role-schema
+  "Schema to validate admin form page inputs."
+  [operation role]
   [:map
-   [:user/email [:re
-                 {:error/message "Email must be ending by @basecity.com."}
-                 #"^([a-zA-Z0-9_-]+)([\.])?([a-zA-Z0-9_-]+)@basecity\.com$"]]])
+   [operation
+    [:map
+     [role [:map {:closed true}
+              [:user/email user-email-schema]]]]]])
 
 (def post-schema
   [:map {:closed true}
@@ -131,10 +134,14 @@
    '?src "Image for Light Mode"
    '?src-dark "Image for Dark Mode"
    '?alt "Image Description"
-   '?user-email "Email"})
+   '?user-email "Email"
+   '?new-admin "Grant Admin Role"
+   '?new-owner "Grant Owner Role"
+   '?ex-admin "Revoke Admin Role"})
 
 (defn error-msg
   [errors]
+  (println errors)
   (-> errors
       (me/humanize 
        {:errors (-> me/default-errors
@@ -144,7 +151,9 @@
                      :post/image-beside {:image/src ?src
                                          :image/src-dark ?src-dark
                                          :image/alt ?alt}
-                     :user/email ?user-email}))
+                     :new-role {:admin {:user/email ?new-admin}
+                                :owner {:user/email ?new-owner}}
+                     :revoked-role {:admin {:user/email ?ex-admin}}}))
       (dissoc '&?)
       (#(into {} (remove (comp nil? val) %)))
       (set/rename-keys humanize-keys)
@@ -154,6 +163,16 @@
   [s]
   #?(:clj (Integer/parseInt (str s)) :cljs (js/parseInt s)))
 
+(defn remove-empty-vals
+  "Given a map `m`, remove keys that have empty or nil values."
+  [m]
+  (let [f (fn [x]
+            (if (map? x)
+              (let [kvs (filter (comp seq str second) x)]
+                (when-not (empty? kvs) (into {} kvs)))
+              x))]
+    (clojure.walk/postwalk f m)))
+
 (defn prepare-post
   "Given a `post` from the post form and the `user-id`,
    returns a post matching server format requirements."
@@ -162,8 +181,13 @@
         date-field   (if temp-id? :post/creation-date :post/last-edit-date)
         writer-field (if temp-id? :post/author :post/last-editor)]
     (-> post
+        remove-empty-vals
         (dissoc :post/view :post/mode :post/to-delete?)
         (update :post/id (if temp-id? (constantly (u/mk-uuid)) identity))
         (assoc date-field (u/mk-date))
         (assoc-in [writer-field :user/id] user-id)
         (update :post/default-order str->int))))
+
+(defn prepare-role
+  [role-update]
+  (-> (remove-empty-vals role-update)))

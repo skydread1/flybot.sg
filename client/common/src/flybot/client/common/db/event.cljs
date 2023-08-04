@@ -139,7 +139,9 @@
 (rf/reg-event-fx
  :evt.user.form/grant-role
  (fn [{:keys [db]} [_ role]]
-   (let [role-info (-> db :form.role/fields :new-role role (valid/validate valid/user-email-map-schema))]
+   (let [schema     (valid/update-role-schema :new-role role)
+         role-info  (-> db :form.role/fields (valid/validate (valid/prepare-role schema)))
+         user-email (-> role-info :new-role role :user/email)]
      (if (:errors role-info)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
@@ -147,7 +149,7 @@
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:users
                                        {:new-role
-                                        {(list role :with [(:user/email role-info)])
+                                        {(list role :with [user-email])
                                          {:user/name '?
                                           :user/roles [{:role/name '?
                                                         :role/date-granted '?}]}}}}
@@ -159,7 +161,9 @@
 (rf/reg-event-fx
  :evt.user.form/revoke-role
  (fn [{:keys [db]} [_ role]]
-   (let [role-info (-> db :form.role/fields :revoked-role role (valid/validate valid/user-email-map-schema))]
+   (let [schema     (valid/update-role-schema :revoked-role role)
+         role-info  (-> db :form.role/fields (valid/validate (valid/prepare-role schema)))
+         user-email (-> role-info :revoked-role role :user/email)]
      (if (:errors role-info)
        {:fx [[:dispatch [:evt.notif/set-notif :error/form "Form Input Error" (valid/error-msg role-info)]]]}
        {:http-xhrio {:method          :post
@@ -167,7 +171,7 @@
                      :headers         {:cookie (:user/cookie db)}
                      :params          {:users
                                        {:revoked-role
-                                        {(list role :with [(:user/email role-info)])
+                                        {(list role :with [user-email])
                                          {:user/name '?}}}}
                      :format          (edn-request-format {:keywords? true})
                      :response-format (edn-response-format {:keywords? true})
