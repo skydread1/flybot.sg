@@ -143,9 +143,7 @@
           
           :else
           (let [new-role {:role/name role-to-grant :role/date-granted (utils/mk-date)}]
-            {:response (-> user
-                           (update :user/roles vec)
-                           (update  :user/roles conj new-role))
+            {:response (update user :user/roles #(-> % vec (conj new-role)))
              :effects  {:db {:payload [(assoc user :user/roles [new-role])]}}}))))
 
 (def grant-editor-role
