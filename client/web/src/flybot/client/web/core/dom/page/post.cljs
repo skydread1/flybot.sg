@@ -220,13 +220,14 @@
               (user-info editor-name last-edit-date nil :editor)])])))
 
 (defn post-view
-  [{:post/keys [css-class image-beside hiccup-content] :as post}]
+  [{:post/keys [id css-class image-beside hiccup-content] :as post}]
   (let [{:image/keys [src src-dark alt]} image-beside
         src (if (= :dark @(rf/subscribe [:subs/pattern '{:app/theme ?x}]))
               src-dark src)
         fragment-anchor [:div {:style {:height 0}}
                          [:a {:id (web.utils/post->url-identifier post)}]]
-        code-highlighting (fn [] (rf/dispatch [:evt.app/highlight-code]))
+        code-highlighting (fn [] (rf/dispatch [:evt.app/highlight-code
+                                              (str "post-" id)]))
         full-content [fragment-anchor
                       [post-authors post]
                       hiccup-content
@@ -257,7 +258,7 @@
   (when-not (utils/temporary-id? id)
     [:div.post
      {:key id
-      :id id}
+      :id (str "post-" id)}
      [post-view post]]))
 
 (defn post-read
@@ -267,7 +268,7 @@
     :as post}]
   [:div.post
    {:key id
-    :id id}
+    :id (str "post-" id)}
    [:div.post-header
     [:form
      [edit-button id]
@@ -282,7 +283,7 @@
   [{:post/keys [id]}]
   [:div.post
    {:key id
-    :id  id}
+    :id (str "post-" id)}
    [:div.post-header
     (when-not @(rf/subscribe [:subs/pattern '{:form/fields {:post/to-delete? ?x}}])
       [:form
@@ -342,7 +343,7 @@
   (let [post-title (client.utils/post->title post)]
     [:div.post.short
      {:key id
-      :id id}
+      :id (str "post-" id)}
      [post-link post
       [:div.post-body
        {:class css-class}

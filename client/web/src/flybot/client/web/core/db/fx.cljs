@@ -70,7 +70,8 @@
 
 (rf/reg-fx
  :fx.app/highlight-code
- (fn [_]
+ (fn [id]
+   (.configure js/hljs #js {:cssSelector (str "#" id " pre code")})
    (.highlightAll js/hljs)))
 
 ;; ----- Notification ------

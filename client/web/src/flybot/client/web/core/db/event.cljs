@@ -132,8 +132,8 @@
 
 (rf/reg-event-fx
  :evt.app/highlight-code
- (fn [_ _]
-   {:fx [[:fx.app/highlight-code nil]]}))
+ (fn [_ [_ html-id]]
+   {:fx [[:fx.app/highlight-code html-id]]}))
 
 ;; ---------- Navbar ----------
 
