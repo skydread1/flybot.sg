@@ -1,5 +1,6 @@
 (ns flybot.client.web.core.db.fx
-  (:require [clojure.edn :as edn]
+  (:require [cljsjs.highlight]
+            [clojure.edn :as edn]
             [clojure.string :as str]
             [flybot.client.common.db.fx]
             [flybot.client.common.utils :refer [cljs->js]]
@@ -63,6 +64,13 @@
  :fx.app/set-theme-local-store
  (fn [next-theme]
    (l-storage/set-item :theme next-theme)))
+
+;; code syntax highlighting
+
+(rf/reg-fx
+ :fx.app/highlight-code
+ (fn [_]
+   (.highlightAll js/hljs)))
 
 ;; ----- Notification ------
 
