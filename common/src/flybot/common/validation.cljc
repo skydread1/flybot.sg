@@ -162,7 +162,7 @@
   #?(:clj (Integer/parseInt (str s)) :cljs (js/parseInt s)))
 
 (defn remove-empty-vals
-  "Given a map `m`, remove keys that have empty or nil values."
+  "Given a map `m`, remove keys that have empty maps or nil values."
   [m]
   (let [f (fn [x]
             (if (map? x)
