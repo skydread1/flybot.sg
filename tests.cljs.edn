@@ -2,8 +2,8 @@
 ^{:launch-js
   ;; mac
   #_["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-   "--headless" "--remote-debugging-port=9222" :open-url]
+   "--headless" "--disable-gpu" "--disable-dev-shm" "--remote-debugging-port=9222" :open-url]
   ;; ubuntu
   ["/opt/google/chrome/chrome"
-   "--headless" "--remote-debugging-port=9222" :open-url]}
+   "--headless" "--disable-gpu" "--disable-dev-shm" "--remote-debugging-port=9222" :open-url]}
 {:main flybot.client.web.test-runner}
