@@ -87,7 +87,7 @@
   ;; build frontend js bundle : clj -T:build js-bundle
   ;; build backend uberjar: clj -T:build uber
   ;; build both js and jar : clj -T:build uber+js
-  :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "76b78fe"}}
+  :build {:deps       {io.github.clojure/tools.build {:git/tag "v0.9.6" :git/sha "8e78bcc"}}
           :ns-default build}
 
   ;; build image and push to image repo
