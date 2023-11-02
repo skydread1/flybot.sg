@@ -1,3 +1,9 @@
 #kaocha/v1
- #meta-merge [{:tests [{:id         :unit
-                        :test-paths ["common/test" "server/test"]}]}]
+ {:tests [{:id         :unit
+           :test-paths ["common/test" "server/test"]}]
+  :plugins [:kaocha.plugin/profiling
+            :kaocha.plugin/notifier
+            :kaocha.plugin/cloverage]
+  :cloverage/opts {:codecov? true
+                   :test-ns-regex ["test.*"]
+                   :src-ns-path ["server" "common"]}}
