@@ -30,6 +30,11 @@ jobs:
       - name: Run the cljs tests
         run: clojure -A:jvm-base:client:web/test-headless
 
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
       - name: Build main.js
         run: clojure -T:build js-bundle
 
