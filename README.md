@@ -93,3 +93,11 @@ In the document [How to run the different systems](docs/development/how-to-run.m
 ## 🛠️ Contributing
 
 If you find any issue and want to contribute, you are welcome to do so!
+
+To do so, create an issue.
+
+The issue title is a **problem** you want to **solve**, for instance:
+- *Post edits with no changes are still submitted*
+- *Users are not notified on successful actions*
+
+Add the # of the issue at the beginning of your forked branch (i.e. *12-fix-frontend-post-issue*)
