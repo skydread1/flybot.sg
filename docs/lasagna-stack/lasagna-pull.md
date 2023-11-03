@@ -1,6 +1,6 @@
 # Lasagna Pull Rational
 
-[flybot-sg/lasagna-pull](https://github.com/flybot-sg/lasagna-pull) by @robertluo aims at precisely select from deep data structure in Clojure.
+[flybot-sg/lasagna-pull](https://github.com/flybot-sg/lasagna-pull) by [@robertluo](https://github.com/robertluo) aims at precisely select from deep data structure in Clojure.
 
 ## 🔸 Goal
 

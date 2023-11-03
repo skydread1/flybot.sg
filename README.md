@@ -21,15 +21,15 @@
 
 <h1 align="center">🔸 FLYBOT Web and Mobile App 🔸</h1>
 
-This project is a `mono-repo` **Clojure(Script)** full-stack web and mobile app.
+This `mono-repo` hosts a **Clojure(Script)** full-stack web and mobile app.
 
 ## 💡 Rational
 
 As a company specialized in Clojure, it made sense for us to have our Blog Website developed with Clojure(Script). We wanted to have a way to highlight what we do, our open-source contributions, our job offers and so on.
 
-Moreover, the second goal of this project was too highlight some of our open-source libraries by @robertluo that belong to a stack we call `lasagna` as a reference to having separate layers of implementation as opposed to the spaghetti code and architecture we all fear.
+Moreover, the second goal of this project was too highlight some of our open-source libraries by [@robertluo](https://github.com/robertluo) that belong to a stack we call `lasagna` as a reference to having separate layers of implementation as opposed to the spaghetti code and architecture we all fear.
 
-This stack is currently composed of 2 libraries
+This stack is currently composed of 2 libraries:
 
 ### 🔗 [fun-map](https://github.com/robertluo/fun-map)
 
@@ -38,6 +38,16 @@ This stack is currently composed of 2 libraries
 ### 🔗 [lasagna-pull](https://github.com/flybot-sg/lasagna-pull)
 
 **lasagna-pull** is a Clojure library that provides an intuitive query language for precisely selecting and extracting data from deep and nested data structures, offering features like filtering, parameterization, and even pattern validation using malli schemas.
+
+## 🔸 Features
+
+Employees can use their corporate google account to log in to the website. Once logged in, they can create-edit-delete posts. Some admin users can delete interact with other users'posts. 
+
+They have several optional configurations to customize their posts such as the order of apparition of the post in the page, having an cover image for the post etc
+
+Therefore, logged in users can switch the UI to `edit mode` and create/edit posts. There is a `preview` post feature as well (similar to what you can see on GitHub for instance).
+
+You will find classic website features such as light/dark mode, syntax highlighting in code block and responsive design.
 
 ## 🔸 Lasagna Stack
 

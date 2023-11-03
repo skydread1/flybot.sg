@@ -1,6 +1,6 @@
 # Fun-Map Rational
 
-This report aims at introducing the Lasagna stack library [fun-map](https://github.com/robertluo/fun-map). Fun-Map blurs the line between identity, state and function. As a results, it is a very convenient tool to define `system` in your applications by providing an elegant way to perform associative dependency injections.
+The Lasagna stack library [fun-map](https://github.com/robertluo/fun-map) by [@robertluo](https://github.com/robertluo). Fun-Map blurs the line between identity, state and function. As a results, it is a very convenient tool to define `system` in your applications by providing an elegant way to perform associative dependency injections.
 
 ## 🔸 Goal
 
