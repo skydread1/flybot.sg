@@ -1,22 +1,12 @@
 <div align="center">
-    <a href="https://www.flybot.sg/" target="_blank" rel="noopener noreferrer">
-        <img src="resources/public/assets/flybot-logo.png" alt="flybot logo" width="25%">
-    </a>
+    <a href="https://www.flybot.sg/" target="_blank" rel="noopener noreferrer"><img src="resources/public/assets/flybot-logo.png" alt="flybot logo" width="25%"></a>
 </div>
 
 <div align="center">
-    <a href="https://clojure.org/" target="_blank" rel="noopener noreferrer">
-        <img src="https://img.shields.io/badge/clojure-v1.11.1-blue.svg" alt="Clojure Version">
-    </a>
-    <a href="https://github.com/skydread1/flybot.sg/actions/workflows/main.yml">
-        <img src="https://github.com/skydread1/flybot.sg/actions/workflows/main.yml/badge.svg" alt="CI">
-    </a>    
-    <a href="https://codecov.io/gh/skydread1/flybot.sg" >
-        <img src="https://codecov.io/gh/skydread1/flybot.sg/branch/master/graph/badge.svg"/>
-    </a>
-    <a href="https://github.com/skydread1/flybot.sg" target="_blank" rel="noopener noreferrer">
-        <img src="https://img.shields.io/badge/contributions-welcome-blue.svg" alt="Contributions welcome">
-    </a>
+    <a href="https://clojure.org/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/clojure-v1.11.1-blue.svg" alt="Clojure Version"></a>
+    <a href="https://github.com/skydread1/flybot.sg/actions/workflows/main.yml"><img src="https://github.com/skydread1/flybot.sg/actions/workflows/main.yml/badge.svg" alt="CI"></a>    
+    <a href="https://codecov.io/gh/skydread1/flybot.sg" ><img src="https://codecov.io/gh/skydread1/flybot.sg/branch/master/graph/badge.svg"/></a>
+    <a href="https://github.com/skydread1/flybot.sg" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/contributions-welcome-blue.svg" alt="Contributions welcome"></a>
 </div>
 
 <h1 align="center">🔸 FLYBOT Web and Mobile App 🔸</h1>
