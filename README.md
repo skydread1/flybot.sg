@@ -39,15 +39,11 @@ This stack is currently composed of 2 libraries:
 
 **lasagna-pull** is a Clojure library that provides an intuitive query language for precisely selecting and extracting data from deep and nested data structures, offering features like filtering, parameterization, and even pattern validation using malli schemas.
 
-## 🔸 Features
+## 💎 Features
 
-Employees can use their corporate google account to log in to the website. Once logged in, they can create-edit-delete posts. Some admin users can delete interact with other users'posts. 
-
-They have several optional configurations to customize their posts such as the order of apparition of the post in the page, having an cover image for the post etc
-
-Therefore, logged in users can switch the UI to `edit mode` and create/edit posts. There is a `preview` post feature as well (similar to what you can see on GitHub for instance).
-
-You will find classic website features such as light/dark mode, syntax highlighting in code block and responsive design.
+You can view the features of the **web** and **mobile** apps in:
+- [Web App Features](docs/features/web-app-features.md)
+- [Mobile App Features](docs/features/mobile-app-features.md)
 
 ## 🔸 Lasagna Stack
 
