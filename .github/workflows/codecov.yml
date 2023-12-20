@@ -1,0 +1,31 @@
+name: Codecov
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions: write-all
+
+jobs:
+  upload-coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Install clojure tools
+        uses: DeLaGuardo/setup-clojure@12.1
+        with:
+          cli: latest
+          
+      ## Kaocha with Cloverage generates codecov files
+      ## refer to tests.edn
+      - name: Run the clj tests
+        run: clojure -A:server/test
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

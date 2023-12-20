@@ -1,207 +1,97 @@
-# flybot.sg
-Full stack implementation of flybot.sg website
+<div align="center">
+    <a href="https://www.flybot.sg/" target="_blank" rel="noopener noreferrer"><img src="resources/public/assets/flybot-logo.png" alt="flybot logo" width="25%"></a>
+</div>
 
-## Config files
+<div align="center">
+    <a href="https://clojure.org/" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/clojure-v1.11.1-blue.svg" alt="Clojure Version"></a>
+    <a href="https://github.com/skydread1/flybot.sg/actions/workflows/main.yml"><img src="https://github.com/skydread1/flybot.sg/actions/workflows/main.yml/badge.svg" alt="CI"></a>    
+    <a href="https://codecov.io/gh/skydread1/flybot.sg" ><img src="https://codecov.io/gh/skydread1/flybot.sg/branch/master/graph/badge.svg"/></a>
+    <a href="https://github.com/skydread1/flybot.sg" target="_blank" rel="noopener noreferrer"><img src="https://img.shields.io/badge/contributions-welcome-blue.svg" alt="Contributions welcome"></a>
+</div>
 
-In the `config` directory, you can see a `sys.edn` file. It gathers systems, oauth2 and owner configurations.
+<h1 align="center">🔸 FLYBOT Web and Mobile App 🔸</h1>
 
-1) systems
+This `mono-repo` hosts a **Clojure(Script)** full-stack web and mobile app.
 
-Depending on the system you use, the config varies, such as:
-- db uri
-- server
-- port
+## 💡 Rational
 
-We have 4 different system types:
-- `figwheel-system`: provides a ring-handler to figwheel which starts its own server on port 9500. This system is designed for frontend dev with dummy data as website initial content.
-- `dev-system`: starts an aleph server on port 8123. Uses the same dummy data as figwheel. This system is meant to be used for backend dev.
-- `test-system`: starts aleph server on port 8100. Uses some test data that covers many scenario for good testing.
-- `prod-system`: starts an aleph server on port 8123. It uses existing data and do not clear any data on system halt!
+As a company specialized in Clojure, it made sense for us to have our Blog Website developed with Clojure(Script). We wanted to have a way to highlight what we do, our open-source contributions, our job offers and so on.
 
-_Note_: 
-- the 3 systems `figwheel`, `dev` and `test` clear the data on system `halt!`
-- the `prod` system does not clear the data on system `halt!`
+Moreover, the second goal of this project was too highlight some of our open-source libraries by [@robertluo](https://github.com/robertluo) that belong to a stack we call `lasagna` as a reference to having separate layers of implementation as opposed to the spaghetti code and architecture we all fear.
 
-2) OAuth2
+This stack is currently composed of 2 libraries:
 
-The OAuth2 credentials allow your application to access google services.
+### 🔗 [fun-map](https://github.com/robertluo/fun-map)
 
-You need to provide the google id and secret that allow the oauth client to communicate with the oauth server.
+**Fun-Map** is a Clojure library that blurs the line between identity, state, and function, providing a convenient way to perform associative dependency injections, allowing you to manage state and build systems with ease.
 
-You can read more about it [here](https://github.com/skydread1/reitit-oauth2#readme)
+### 🔗 [lasagna-pull](https://github.com/flybot-sg/lasagna-pull)
 
-All the systems (except `test-system`) need the `oauth2` credentials and developers need a company account to be able to test oauth2 locally as well.
+**lasagna-pull** is a Clojure library that provides an intuitive query language for precisely selecting and extracting data from deep and nested data structures, offering features like filtering, parameterization, and even pattern validation using malli schemas.
 
-_Note: not providing the creds will prevent you from login/logout during dev._
+## 💎 Features
 
-_Note 2: the `redirect-uri` is specified in the :systems as `:oauth2-callback` because it depends on the environment._
+You can view the features of the **web** and **mobile** apps in:
+- [Web App Features](docs/features/web-app-features.md)
+- [Mobile App Features](docs/features/mobile-app-features.md)
 
-3) owner
+## 🔸 Lasagna Stack
 
-The `:owner` user is loaded to the DB when the system is `touch` (except for `prod`).
-You need to use a google account that is allowed by your `Location` (i.e. company account).
-The account provided in `:owner` is granted all roles so it has access to all the website sections in dev.
+You can learn more about the rational of the lasagna stack libraries in:
+- [Fun-Map Rational](docs/lasagna-stack/fun-map.md)
+- [Lasagna-Pull Rational](docs/lasagna-stack/lasagna-pull.md)
 
-_Note: your google account needs to belong to the google application linked to the app._
+Also, you can see how these libraries applied to our app in:
+- [Fun-Map applied to flybot.sg](docs/lasagna-stack/fun-map-applied-to-flybot.md)
+- [Lasagna-Pull applied to flybot.sg](docs/lasagna-stack/lasagna-pull-applied-to-flybot.md) 
 
-_Note 2: not providing your acc id will prevent you from doing admin/owner tasks._
+## 🖊️ Architecture
 
-4) Figwheel
+Our repo is a `mono-repo` that host the **server**, the **web** client and the **mobile** client.
 
-You can notice that there is a flag `figwheel?` in `sys.edn`. It allows figwheel to use the system handler when you start the REPLs.
+The server is done in Clojure leveraging:
+- **robertluo/fun-map** for associative dependency injections
+- **sg.flybot/lasagna-pull** to represent the API as pure Clojure data and fetch only relevant data
+- **aleph/aleph** for server
+- **metosin/reitit** for routing
+- **datalevin/datalevin** for storage
 
-The `figwheel-system` is touch when systems.clj is loaded. So if you do not want to work on the frontend (or in production), set the flag to false.
+The web client is done in ClojureScript leveraging:
+- **reagent/reagent** for React interfacing
+- **re-frame/re-frame** for state management
+- **com.bhauman/figwheel-main** for development tooling
 
-## frontend : WEB
+The mobile client is done in ClojureScript leveraging:
+- **io.vouch/reagent-react-native** for React Native
+- **re-frame/re-frame** for state management
+- **com.bhauman/figwheel-main** for development tooling
 
-### DEV
+To learn more about what our repo contain and how it is organized, consult:
+- [Clojure Mono Repo example : server + 2 clients](docs/architecture/mono-repo.md)
 
-You can perform ClojureScript jack-in to open the webpage in a browser on port `9500`, alongside an interactive REPL in your IDE (VS Code or Emacs).
+## ⏳ Status
 
-You can then edit and save source files to trigger hot reloading in the browser.
+✔️ the web app is finished and hosted on AWS
 
-#### Prerequisites
+🔨 the mobile app is not finished and was only tested on iOS locally (it is not a priority for us to release it at the moment)
 
-- Delete any `main.js` in the resources folder
-- Delete `node_modules` at the root (not needed for the web)
-- Go to `resources/public/index.html` and check if `cljs-out/dev-main.js` is the script source in `index.html`  (near the end of the file)
-- Open a source file in either VS Code or Emacs
+## ▶️ Run the app
 
-#### VS Code
+In the document [How to run the different systems](docs/development/how-to-run.md), you will find how to:
+- Start clj REPL
+- Start clj/cljs REPL for web dev
+- Start clj/cljs REPL for mobile dev (with Xcode simulator)
+- Run clj and cljs tests
+- Build the js bundle
+- Build an uberjar
+- Generate a container image locally or on AWS ECR
 
-If you use VS Code, the jack-in is done in 2 steps to be able to start the REPL in VS Code instead of terminal:
+## 🛠️ Contributing
 
-1. Choose the aliases for the deps and enter
-2. Choose the ClojureScript REPL you want to launch and enter
+If you find any issue and want to contribute, you are welcome to do so!
 
-Jack-in `deps+figwheel`:
+The issue title is a **problem** you want to **solve**, for instance:
+- *Post edits with no changes are still submitted*
+- *Users are not notified on successful actions*
 
-- Deps: `:jvm-base`, `:client`
-- REPL: `:web/dev`
-
-#### Emacs
-
-If you use Emacs (or Doom Emacs, or Spacemacs) with CIDER, the CIDER jack-in is done in 3 steps:
-
-1. `C-u M-x cider-jack-in-clj&cljs` or `C-u M-x cider-jack-in-cljs`
-2. By default, emacs use the `cider/nrepl` alias such as in `-M:cider/nrepl`. You need to keep this alias at the end such as `-M:jvm-base:client:web/dev:cider/nrepl`
-3. Select ClojureScript REPL type: `figwheel-main`
-4. Select figwheel-main build: `dev`
-
-### TEST in terminal
-
-```
-clj -A:jvm-base:client:web/test
-```
-
-### Regression tests on save
-
-Regression tests are run on every save and the results are displayed at http://localhost:9500/figwheel-extra-main/auto-testing
-
-## frontend : MOBILE
-
-### DEV
-
-Prerequisites:
-- [prepare your environment](https://reactnative.dev/docs/next/environment-setup)
-- if no `node_modules`, run `npm install` at the root
-- for ios, run `pod install` in the `ios` directory
-- be sure to update `:client-root-path` in config/system.edn
-- only tested with Xcode simulator
-
-Features:
-- Server will be launched on port 9500
-- Just save a file to trigger hot reloading on your Xcode simulator
-
-Jack-in `deps+figwheel`:
-- DEPS: `:jvm-base`, `:client`, `:mobile/rn`
-- REPL: `:mobile/ios`
-- Simulator: run `npm run ios` in an external terminal - once done it will star the cljs repl in VSCode
-
-## backend
-
-### DEV
-
-Prerequisites:
-- if you want to have a UI, you can generate the `main.js` bundle via `clj T:build js-bundle`
-
-Features:
-- the `system` ns provide you a dev system to start server on port 8123 with sample data for db
-- the tests use a dedicated test system
-
-Jack-in `deps+figwheel`:
-- DEPS: `:jvm-base`, `:server/dev`
-
-### TEST in terminal
-
-```
-clj -A:jvm-base:server/test
-```
-
-### Package to uberjar
-
-Prerequisites:
-- delete `node_modules` at the root because no need for the web
-- Check if `main.js` is the script source in `index.html` 
-
-Features:
-- build js bundle
-- build uberjar
-
-Build:
-- `clj T:build js-bundle`
-- `clj T:build uber`
-- `clj T:build uber+js`
-
-To run the uberjar
-```
-SYSTEM="{...}" \
-java -jar \
---add-opens=java.base/java.nio=ALL-UNNAMED \
---add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
-target/flybot.sg-{version}-standalone.jar
-```
-
-## CD
-
-### Create a container image and push it to ECR
-
-You need to have aws cli installed (v2 or v1) and you need an env variable `$ECR_REPO` setup with the ECR repo string.
-
-You have several [possibilities](https://github.com/atomisthq/jibbit/blob/main/src/jibbit/aws_ecr.clj) to provide credentials to login to your AWS ECR, notably
-- For authorizer type `:profile`: AWS credentials profile in ~/.aws/credentials and `:profile-name` key to jibbit authorizer
-- For authorizer type `:environment`: Env variables AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
-
-To create the image and push it to the ECR account
-- `clj -T:jib build` 
-
-### Create a container image to try locally with docker
-There is a `jib-dev.edn` provided with the config to create the image locally.
-
-### Start container with image
-
-```
-docker run \
---rm \
--it \
--p 8123:8123 \
--v db-volume:/datalevin/prod/flybotdb \
--e SYSTEM="{...}" \
-some-image-uri:latest
-```
-
-### Example of what the SYSTEM could look like for prod:
-
-```
-{:systems {:prod {:http-port       8123
-                  :db-uri          "/datalevin/prod/flybotdb"
-                  :oauth2-callback "https://www.flybot.sg/oauth/google/callback"}}
- :oauth2 {:google-creds {:client-id     "secret"
-                         :client-secret "secret"}}
- :owner #:user{:id    "google-personal-acc-id"
-               :email "bob@company.com"
-               :name  "Bob Smith"}}
-```
-Note that we removed the other systems config because they are not needed in prod.
-
-Also, the `:figwheel?` flag has been removed to prevent `figwheel-system` from starting when systems.clj loads in the prod container.
+Add the # of the issue at the beginning of your forked branch (i.e. *12-fix-frontend-post-issue*)
