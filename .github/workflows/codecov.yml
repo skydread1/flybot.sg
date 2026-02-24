@@ -2,7 +2,7 @@ name: Codecov
 
 on:
   push:
-    branches:
+    branches-ignore:
       - '**'
 
 permissions: write-all

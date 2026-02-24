@@ -1,3 +1,9 @@
+> **Archived** — This project is no longer maintained. The site has been rebuilt on top of the [lasagna-pattern](https://github.com/flybot-sg/lasagna-pattern) toolbox (a ground-up rewrite of the pull-pattern stack).
+>
+> New repository: [flybot-sg/lasagna-pattern](https://github.com/flybot-sg/lasagna-pattern) (see `examples/flybot-site/`)
+>
+> The code still works if you're looking for an example of a full-stack Clojure(Script) app with lasagna-pull, fun-map, Reagent, Re-frame, and Reitit routing.
+
 <div align="center">
     <a href="https://www.flybot.sg/" target="_blank" rel="noopener noreferrer"><img src="resources/public/assets/flybot-logo.png" alt="flybot logo" width="25%"></a>
 </div>
